@@ -1,0 +1,15 @@
+
+
+$with idMenu <- idMenuLang
+  <button.trigger-lang.circle.transparent data-ui=##{idMenu}>
+    <i>language
+    <menu.right.no-wrap ##{idMenu}>
+      $forall (lang,label) <- langs
+        <a role=menuitem data-lang=#{lang}>
+          #{label}
+
+<form method=post action=@{action} ##{idFormLang} hidden>
+  <input type=url name=#{paramBacklink} value=#{backlink} ##{idInputBacklink}>
+  <select name=#{paramLang} form=#{idFormLang} ##{idHiddenSelect}>
+    <option value=ru :"ru" == lang:selected>RU
+    <option value=en :"en" == lang:selected>EN

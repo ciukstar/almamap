@@ -1,0 +1,9 @@
+
+^{widgetTopbar Nothing (msgr MsgDocumentation) idOverlay Nothing Nothing}
+
+<main.responsive>
+
+  <h1>_{MsgAppName}
+
+
+  ^{widgetSnackbar msgs}

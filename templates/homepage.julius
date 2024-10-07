@@ -1,0 +1,127 @@
+
+
+mapboxgl.accessToken = #{mapboxPk};
+
+const map = new mapboxgl.Map({
+  container: #{idMap},
+  center: [76.9406462, 43.2239423],
+  zoom: 9,
+  style: "mapbox://styles/mapbox/dark-v11"
+});
+
+fetch('https://overpass-api.de/api/interpreter',{
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+  body: new URLSearchParams({
+    data: `
+[out:json];
+(
+rel["ISO3166-2"="KZ-75"] -> .rel;
+.rel map_to_area -> .city;
+);
+
+node["tourism"]["name"]["wikidata"](area.city);
+
+out body;
+`
+  })
+}).then(data => data.json()).then(res => {
+  
+  res.elements.filter(x => 'node' == x.type).forEach(x => {
+    const el = document.createElement('div');
+    el.className = 'marker';
+
+    el.addEventListener('click', (e) => {
+
+      const name = x.tags['name:kk'] ? x.tags['name:kk']
+            : ( x.tags['name:ru'] ? x.tags['name:ru']
+                : ( x.tags['name:en'] ? x.tags['name:en']
+                    : x.tags.name
+                  )
+              );
+
+      const descr = x.tags['description:kk'] ? x.tags['description:kk']
+            : ( x.tags['description:ru'] ? x.tags['description:ru']
+                : ( x.tags['description:en'] ? x.tags['description:en']
+                    : x.tags.description
+                  )
+              );
+
+      document.getElementById(#{idDialogOverviewTitle}).textContent = name;
+      
+      if ('image' in x.tags) {
+
+        const figure = document.createElement('figure');
+        figure.style['text-align'] = 'center';
+        
+        const img = document.createElement('img');
+        img.src = x.tags.image;
+        img.height = 300;
+        img.loading = 'lazy';
+        
+        const figcaption = document.createElement('figcaption');
+        figcaption.textContent = descr ? descr : name;
+        
+        figure.replaceChildren(img,figcaption);
+        document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+        
+      } else if ('wikidata' in x.tags) {
+
+
+        const params = new URLSearchParams({
+          action: 'wbgetclaims',
+          entity: x.tags.wikidata,
+          property: 'P18',
+          format: 'json'
+        });
+
+        const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);        
+        
+        fetch(`@{FetchR}?url=${url}`,{
+          headers: {'Accept': 'application/json'}
+        }).then((res) => res.json()).then(function (res) {
+
+          if (!!res) {
+          
+            const src = `https://commons.wikimedia.org/w/thumb.php?width=300&f=${res.replaceAll(" ", "_")}`;
+
+            const figure = document.createElement('figure');
+            figure.style['text-align'] = 'center';
+            
+            const img = document.createElement('img');
+            img.src = src;
+            img.width = 300;
+            img.loading = 'lazy';
+          
+            const figcaption = document.createElement('figcaption');
+            figcaption.textContent = descr ? descr : name;
+          
+            figure.replaceChildren(img,figcaption);
+            document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+          }
+          
+        }).catch(err => {
+          console.error(err);
+        });
+        
+      } else {
+      
+        document.getElementById(#{idDialogOverviewContent}).textContent = descr ? descr : name;
+          
+      }
+      
+      document.getElementById(#{idDialogOverview}).show();
+    });
+    
+    new mapboxgl.Marker(el)
+      .setLngLat([x.lon, x.lat])
+      .setOffset([0,-8])
+      .addTo(map);
+  });
+});
+
+document.getElementById(#{idButttonCloseDialog}).addEventListener('click', e => {
+  document.getElementById(#{idDialogOverviewTitle}).textContent = '';
+  document.getElementById(#{idDialogOverviewContent}).textContent = '';
+  document.getElementById(#{idDialogOverview}).close();
+});

@@ -1,0 +1,31 @@
+
+
+<main.responsive.no-padding>
+
+  <div ##{idMap}>
+    
+
+^{widgetSnackbar msgs}
+
+<footer.transparent>
+  <nav.transparent>
+      
+    <button.square.round.large.small-blur>
+      <i>park
+      
+    <button.square.round.large.small-blur>
+      <i>search
+      
+    <button.square.round.large.small-blur>
+      <i>checklist
+      
+    <button.square.round.large.small-blur>
+      <i>menu
+
+
+<dialog ##{idDialogOverview}>
+  <h6 ##{idDialogOverviewTitle}>
+  <div ##{idDialogOverviewContent}>
+  <nav.right-align.no-space>
+    <button.transparent.link ##{idButttonCloseDialog}>
+      _{MsgClose}
