@@ -6,6 +6,7 @@ RUN mkdir -p /opt/almamap \
         && rm -rf /var/lib/apt/lists/*
 
 ARG YESOD_DEMO_LANG=EN
+ARG YESOD_MAPBOX_PK
 
 WORKDIR       /opt/almamap
 COPY almamap /opt/almamap
@@ -15,6 +16,7 @@ COPY demo     /opt/almamap/demo
 
 ENV YESOD_PORT=8080
 ENV YESOD_DEMO_LANG=${YESOD_DEMO_LANG}
+ENV YESOD_MAPBOX_PK=${YESOD_MAPBOX_PK}
 
 EXPOSE 8080
 CMD ["./almamap"]

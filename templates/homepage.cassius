@@ -5,11 +5,32 @@
     bottom: 0
     width: 100%
 
-    .marker
+    .marker-tourism
         width: 24px
         height: 24px
         backgroundSize: 100%
         background-image: url('@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
+        filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
+
+    .marker-parks
+        width: 24px
+        height: 24px
+        backgroundSize: 100%
+        background-image: url('@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
+        filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
+
+    .marker-restaurant
+        width: 24px
+        height: 24px
+        backgroundSize: 100%
+        background-image: url('@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
+        filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
+        
+    .marker-government
+        width: 24px
+        height: 24px
+        backgroundSize: 100%
+        background-image: url('@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
 
 footer

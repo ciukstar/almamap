@@ -19,12 +19,12 @@ import Data.Text (unpack)
 import Database.Esqueleto.Experimental
     ( SqlExpr, Value (unValue), selectOne, from, table, countRows, select
     , (^.), (==.), (:&)((:&))
-    , innerJoin, on, where_, val, just, valList, in_, groupBy
+    , innerJoin, on, where_, val, just, valList, in_
     )
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar, widgetTopbar
-    , Route(AuthR, HomeR, DataR, StaticR, FetchR)
+    ( App (appSettings), Handler, widgetSnackbar
+    , Route(StaticR, FetchR)
     , AppMessage
       ( MsgHome, MsgClose
       )
@@ -35,7 +35,11 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 import Settings.StaticFiles
-    ( img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg)
+    ( img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    , img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    )
 
 import Text.Hamlet (Html)
 
@@ -64,6 +68,7 @@ getHomeR = do
         setTitleI MsgHome
         
         idMap <- newIdent
+        idButtonSwitch <- newIdent
         idDialogOverview <- newIdent
         idDialogOverviewTitle <- newIdent
         idDialogOverviewContent <- newIdent

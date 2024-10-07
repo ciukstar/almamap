@@ -10,7 +10,7 @@
 <footer.transparent>
   <nav.transparent>
       
-    <button.square.round.large.small-blur>
+    <button.square.round.large.small-blur ##{idButtonSwitch}>
       <i>park
       
     <button.square.round.large.small-blur>

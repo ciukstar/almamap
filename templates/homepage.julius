@@ -1,4 +1,5 @@
 
+const markers = [];
 
 mapboxgl.accessToken = #{mapboxPk};
 
@@ -9,119 +10,205 @@ const map = new mapboxgl.Map({
   style: "mapbox://styles/mapbox/dark-v11"
 });
 
-fetch('https://overpass-api.de/api/interpreter',{
-  method: 'POST',
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-  body: new URLSearchParams({
-    data: `
+const queryTourism = `
 [out:json];
 (
 rel["ISO3166-2"="KZ-75"] -> .rel;
 .rel map_to_area -> .city;
 );
 
-node["tourism"]["name"]["wikidata"](area.city);
+(
+node["tourism"]["name"](area.city);
+node["tourism"]["description"](area.city);
+);
 
 out body;
-`
-  })
-}).then(data => data.json()).then(res => {
-  
-  res.elements.filter(x => 'node' == x.type).forEach(x => {
-    const el = document.createElement('div');
-    el.className = 'marker';
+`;
 
-    el.addEventListener('click', (e) => {
+  const queryParks = `
+[out:json];
+(
+rel["ISO3166-2"="KZ-75"] -> .rel;
+.rel map_to_area -> .city;
+);
 
-      const name = x.tags['name:kk'] ? x.tags['name:kk']
-            : ( x.tags['name:ru'] ? x.tags['name:ru']
-                : ( x.tags['name:en'] ? x.tags['name:en']
-                    : x.tags.name
-                  )
-              );
+(
+node["leisure"="park"]["name"](area.city);
+node["leisure"="park"]["description"](area.city);
+);
 
-      const descr = x.tags['description:kk'] ? x.tags['description:kk']
-            : ( x.tags['description:ru'] ? x.tags['description:ru']
-                : ( x.tags['description:en'] ? x.tags['description:en']
-                    : x.tags.description
-                  )
-              );
+out body;
+`;
 
-      document.getElementById(#{idDialogOverviewTitle}).textContent = name;
-      
-      if ('image' in x.tags) {
+  const queryRestaurant = `
+[out:json];
+(
+rel["ISO3166-2"="KZ-75"] -> .rel;
+.rel map_to_area -> .city;
+);
 
-        const figure = document.createElement('figure');
-        figure.style['text-align'] = 'center';
-        
-        const img = document.createElement('img');
-        img.src = x.tags.image;
-        img.height = 300;
-        img.loading = 'lazy';
-        
-        const figcaption = document.createElement('figcaption');
-        figcaption.textContent = descr ? descr : name;
-        
-        figure.replaceChildren(img,figcaption);
-        document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
-        
-      } else if ('wikidata' in x.tags) {
+(
+node["amenity"="restaurant"]["name"](area.city);
+node["amenity"="restaurant"]["description"](area.city);
+);
+
+out body;
+`;
+
+  const queryGovernment = `
+[out:json];
+(
+rel["ISO3166-2"="KZ-75"] -> .rel;
+.rel map_to_area -> .city;
+);
+
+(
+node["government"]["name"](area.city);
+node["government"]["description"](area.city);
+);
+
+out body;
+`;
 
 
-        const params = new URLSearchParams({
-          action: 'wbgetclaims',
-          entity: x.tags.wikidata,
-          property: 'P18',
-          format: 'json'
-        });
+markMap(queryTourism,'marker-tourism');
 
-        const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);        
-        
-        fetch(`@{FetchR}?url=${url}`,{
-          headers: {'Accept': 'application/json'}
-        }).then((res) => res.json()).then(function (res) {
+var currentSwitch = 'attractions';
 
-          if (!!res) {
-          
-            const src = `https://commons.wikimedia.org/w/thumb.php?width=300&f=${res.replaceAll(" ", "_")}`;
-
-            const figure = document.createElement('figure');
-            figure.style['text-align'] = 'center';
-            
-            const img = document.createElement('img');
-            img.src = src;
-            img.width = 300;
-            img.loading = 'lazy';
-          
-            const figcaption = document.createElement('figcaption');
-            figcaption.textContent = descr ? descr : name;
-          
-            figure.replaceChildren(img,figcaption);
-            document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
-          }
-          
-        }).catch(err => {
-          console.error(err);
-        });
-        
-      } else {
-      
-        document.getElementById(#{idDialogOverviewContent}).textContent = descr ? descr : name;
-          
-      }
-      
-      document.getElementById(#{idDialogOverview}).show();
+document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e) {
+  if (currentSwitch === 'attractions') {
+    markMap(queryParks,'marker-parks').then(_ => {
+      e.target.querySelector('i').textContent = 'restaurant';
     });
-    
-    new mapboxgl.Marker(el)
-      .setLngLat([x.lon, x.lat])
-      .setOffset([0,-8])
-      .addTo(map);
-  });
+    currentSwitch = 'park';
+  } else if (currentSwitch === 'park') {
+    markMap(queryRestaurant,'marker-restaurant').then(_ => {
+      e.target.querySelector('i').textContent = 'account_balance';
+    });
+    currentSwitch = 'restaurant';
+  } else if (currentSwitch === 'restaurant') {
+    markMap(queryGovernment,'marker-government').then(_ => {
+      e.target.querySelector('i').textContent = 'attractions';
+    });
+    currentSwitch = 'government';
+  } else if (currentSwitch === 'government') {
+    markMap(queryTourism,'marker-tourism').then(_ => {
+      e.target.querySelector('i').textContent = 'park';
+    });
+    currentSwitch = 'attractions';
+  }
 });
+  
 
 document.getElementById(#{idButttonCloseDialog}).addEventListener('click', e => {
   document.getElementById(#{idDialogOverviewTitle}).textContent = '';
   document.getElementById(#{idDialogOverviewContent}).textContent = '';
   document.getElementById(#{idDialogOverview}).close();
 });
+
+function markMap (query, icon) {
+
+  markers.forEach(x => { x.remove(); });
+  
+  markers.length = 0;
+  
+  return fetch('https://overpass-api.de/api/interpreter',{
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({
+      data: query
+    })
+  }).then(data => data.json()).then(res => {
+    
+    res.elements.filter(x => 'node' == x.type).forEach(x => {
+      const el = document.createElement('div');
+      el.className = icon;
+
+      el.addEventListener('click', (e) => {
+
+        const name = x.tags['name:kk'] ? x.tags['name:kk']
+              : ( x.tags['name:ru'] ? x.tags['name:ru']
+                  : ( x.tags['name:en'] ? x.tags['name:en']
+                      : x.tags.name
+                    )
+                );
+
+        const descr = x.tags['description:kk'] ? x.tags['description:kk']
+              : ( x.tags['description:ru'] ? x.tags['description:ru']
+                  : ( x.tags['description:en'] ? x.tags['description:en']
+                      : x.tags.description
+                    )
+                );
+
+        document.getElementById(#{idDialogOverviewTitle}).textContent = name;
+        
+        if ('image' in x.tags) {
+
+          const figure = document.createElement('figure');
+          figure.style['text-align'] = 'center';
+          
+          const img = document.createElement('img');
+          img.src = x.tags.image;
+          img.height = 300;
+          img.loading = 'lazy';
+          
+          const figcaption = document.createElement('figcaption');
+          figcaption.textContent = descr ? descr : name;
+          
+          figure.replaceChildren(img,figcaption);
+          document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+          
+        } else if ('wikidata' in x.tags) {
+
+
+          const params = new URLSearchParams({
+            action: 'wbgetclaims',
+            entity: x.tags.wikidata,
+            property: 'P18',
+            format: 'json'
+          });
+
+          const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);        
+          
+          fetch(`@{FetchR}?url=${url}`,{
+            headers: {'Accept': 'application/json'}
+          }).then((res) => res.json()).then(function (res) {
+
+            if (!!res) {
+              
+              const src = `https://commons.wikimedia.org/w/thumb.php?width=300&f=${res.replaceAll(" ", "_")}`;
+
+              const figure = document.createElement('figure');
+              figure.style['text-align'] = 'center';
+              
+              const img = document.createElement('img');
+              img.src = src;
+              img.width = 300;
+              img.loading = 'lazy';
+              
+              const figcaption = document.createElement('figcaption');
+              figcaption.textContent = descr ? descr : name;
+              
+              figure.replaceChildren(img,figcaption);
+              document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+            }
+            
+          }).catch(err => {
+            console.error(err);
+          });
+          
+        } else {
+          
+          document.getElementById(#{idDialogOverviewContent}).textContent = descr ? descr : name;
+          
+        }
+        
+        document.getElementById(#{idDialogOverview}).show();
+      });
+      
+      const marker = new mapboxgl.Marker(el);
+      marker.setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
+      markers.push(marker);
+    });
+  });
+};
