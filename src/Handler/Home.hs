@@ -19,7 +19,7 @@ import Data.Text (unpack)
 import Database.Esqueleto.Experimental
     ( SqlExpr, Value (unValue), selectOne, from, table, countRows, select
     , (^.), (==.), (:&)((:&))
-    , innerJoin, on, where_, val, just, valList, in_
+    , innerJoin, on, where_, val, just, valList
     )
 
 import Foundation

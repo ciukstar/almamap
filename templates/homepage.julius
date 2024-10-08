@@ -11,63 +11,67 @@ const map = new mapboxgl.Map({
 });
 
 const queryTourism = `
-[out:json];
-(
-rel["ISO3166-2"="KZ-75"] -> .rel;
-.rel map_to_area -> .city;
-);
+    [out:json];
 
-(
-node["tourism"]["name"](area.city);
-node["tourism"]["description"](area.city);
-);
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
 
-out body;
+    node["tourism"](area.city) -> .tourism;
+
+    (
+    node.tourism["name"];
+    node.tourism["description"];
+    );
+
+    out body;
 `;
 
-  const queryParks = `
-[out:json];
-(
-rel["ISO3166-2"="KZ-75"] -> .rel;
-.rel map_to_area -> .city;
-);
+const queryParks = `
+    [out:json];
 
-(
-node["leisure"="park"]["name"](area.city);
-node["leisure"="park"]["description"](area.city);
-);
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
 
-out body;
+    node["leisure"="park"](area.city) -> .park;
+
+    (
+    node.park["name"];
+    node.park["description"];
+    );
+
+    out body;
 `;
 
-  const queryRestaurant = `
-[out:json];
-(
-rel["ISO3166-2"="KZ-75"] -> .rel;
-.rel map_to_area -> .city;
-);
+const queryRestaurant = `
+    [out:json];
 
-(
-node["amenity"="restaurant"]["name"](area.city);
-node["amenity"="restaurant"]["description"](area.city);
-);
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
 
-out body;
+    node["amenity"="restaurant"](area.city) -> .restaurant;
+
+    (
+    node.restaurant["name"];
+    node.restaurant["description"](area.city);
+    );
+
+    out body;
 `;
 
-  const queryGovernment = `
-[out:json];
-(
-rel["ISO3166-2"="KZ-75"] -> .rel;
-.rel map_to_area -> .city;
-);
+const queryGovernment = `
+    [out:json];
+    
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
 
-(
-node["government"]["name"](area.city);
-node["government"]["description"](area.city);
-);
+    node["government"](area.city) -> .government;
+    
+    (
+    node.government["name"];
+    node.government["description"];
+    );
 
-out body;
+    out body;
 `;
 
 
