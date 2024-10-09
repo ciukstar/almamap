@@ -12,10 +12,8 @@ module Handler.Docs
 import Foundation
     ( Handler
     , widgetSnackbar, widgetTopbar
-    , Route (StaticR)
     , AppMessage
-      ( MsgAppName, MsgDocumentation, MsgEntityRelationshipDiagram
-      , MsgBasicEntities, MsgTaskStatusStateTransition, MsgStateMachineDiagram
+      ( MsgAppName, MsgDocumentation
       )
     )
     

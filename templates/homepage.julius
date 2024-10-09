@@ -10,6 +10,7 @@ const map = new mapboxgl.Map({
   style: "mapbox://styles/mapbox/dark-v11"
 });
 
+
 const queryTourism = `
     [out:json];
 
@@ -17,11 +18,7 @@ const queryTourism = `
     .rel map_to_area -> .city;
 
     node["tourism"](area.city) -> .tourism;
-
-    (
-    node.tourism["name"];
-    node.tourism["description"];
-    );
+    node.tourism[~"^(name|description)$"~".*"];
 
     out body;
 `;
@@ -33,11 +30,7 @@ const queryParks = `
     .rel map_to_area -> .city;
 
     node["leisure"="park"](area.city) -> .park;
-
-    (
-    node.park["name"];
-    node.park["description"];
-    );
+    node.park[~"^(name|description)$"~".*"];
 
     out body;
 `;
@@ -49,11 +42,7 @@ const queryRestaurant = `
     .rel map_to_area -> .city;
 
     node["amenity"="restaurant"](area.city) -> .restaurant;
-
-    (
-    node.restaurant["name"];
-    node.restaurant["description"](area.city);
-    );
+    node.restaurant[~"^(name|description)$"~".*"];
 
     out body;
 `;
@@ -109,6 +98,71 @@ document.getElementById(#{idButttonCloseDialog}).addEventListener('click', e => 
   document.getElementById(#{idDialogOverviewContent}).textContent = '';
   document.getElementById(#{idDialogOverview}).close();
 });
+
+
+document.getElementById(#{idButtonZoomIn}).addEventListener('click', e => {
+  map.zoomIn();
+});
+
+document.getElementById(#{idButtonZoomOut}).addEventListener('click', e => {
+  map.zoomOut();
+});
+
+var myLocationMarker;
+var myLocationWatchID;
+
+document.getElementById(#{idButtonMyLocation}).addEventListener('click', function (e) {
+  if (!myLocationMarker) {
+    
+    const watchOptions = {
+      enableHighAccuracy: true,
+      maximumAge: 10000,
+      timeout: 5000
+    };
+
+    const onError = () => { console.error(#{msgr MsgCouldNotGetPosition}); };
+    
+    navigator.geolocation.getCurrentPosition(p => {
+      
+      map.flyTo({
+        center: [p.coords.longitude, p.coords.latitude],
+        essential: true
+      });
+
+      const elemMarker = document.createElement('div');
+      elemMarker.className = 'marker-my-location circle one';
+      myLocationMarker = new mapboxgl.Marker(elemMarker,{rotation: p.coords.heading});
+      myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]).addTo(map);
+
+      const waveOne = document.createElement('div');
+      waveOne.className = 'wave one';
+      const waveTwo = document.createElement('div');
+      waveTwo.className = 'wave two';
+
+      waveOne.appendChild(waveTwo);
+      elemMarker.appendChild(waveOne);
+      
+      myLocationWatchID = navigator.geolocation.watchPosition(p => {
+        myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]);
+        if (!!p.coords.heading) {
+          myLocationMarker.setRotation(p.coords.heading);
+        }
+      }, onError, watchOptions);
+
+      map.once('moveend', () => {
+        elemMarker.style.transition = 'transform 1s ease-out';
+      });
+            
+    }, onError, watchOptions);
+    
+  } else {
+    navigator.geolocation.clearWatch(myLocationWatchID);
+    myLocationWatchID = null;
+    myLocationMarker.remove();
+    myLocationMarker = null;
+  }
+});
+
 
 function markMap (query, icon) {
 

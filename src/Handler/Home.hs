@@ -26,7 +26,7 @@ import Foundation
     ( App (appSettings), Handler, widgetSnackbar
     , Route(StaticR, FetchR)
     , AppMessage
-      ( MsgHome, MsgClose
+      ( MsgHome, MsgClose, MsgCouldNotGetPosition
       )
     )
 
@@ -39,35 +39,35 @@ import Settings.StaticFiles
     , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    , img_assistant_navigation_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     )
 
 import Text.Hamlet (Html)
 
 import Yesod.Core
     ( Yesod(defaultLayout), newIdent, getMessages, addStylesheetRemote
-    , addScriptRemote, getYesod, TypedContent, selectRep, provideJson
-    )
-import Yesod.Core.Handler
-    ( getMessageRender
+    , addScriptRemote, getYesod, TypedContent, selectRep, provideJson, getMessageRender
     )
 import Yesod.Core.Widget (setTitleI)
-import Yesod.Persist.Core (YesodPersist(runDB))
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
-
-
 
 
 getHomeR :: Handler Html
 getHomeR = do
 
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
-    
+
+    msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgHome
         
         idMap <- newIdent
+        idControlButtons <- newIdent
+        idButtonZoomIn <- newIdent
+        idButtonZoomOut <- newIdent
+        idButtonMyLocation <- newIdent
         idButtonSwitch <- newIdent
         idDialogOverview <- newIdent
         idDialogOverviewTitle <- newIdent

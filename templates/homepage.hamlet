@@ -2,6 +2,16 @@
 
 <main.responsive.no-padding>
 
+  <nav.transparent ##{idControlButtons}>
+    <button.circle.large.small-blur ##{idButtonZoomIn}>
+      <i>add
+      
+    <button.circle.large.small-blur ##{idButtonZoomOut}>
+      <i>remove
+      
+    <button.circle.large.small-blur ##{idButtonMyLocation}>
+      <i>my_location
+
   <div ##{idMap}>
     
 

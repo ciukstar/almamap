@@ -8,30 +8,66 @@
     .marker-tourism
         width: 24px
         height: 24px
-        backgroundSize: 100%
+        background-size: 100%
         background-image: url('@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
 
     .marker-parks
         width: 24px
         height: 24px
-        backgroundSize: 100%
+        background-size: 100%
         background-image: url('@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
 
     .marker-restaurant
         width: 24px
         height: 24px
-        backgroundSize: 100%
+        background-size: 100%
         background-image: url('@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
         
     .marker-government
         width: 24px
         height: 24px
-        backgroundSize: 100%
+        background-size: 100%
         background-image: url('@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
+        
+    .marker-my-location
+        width: 32px
+        height: 32px
+        background-size: 100%
+        background-image: url('@{StaticR img_assistant_navigation_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
+        filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(180deg) brightness(118%) contrast(119%)
+
+        .wave
+            width: 32px
+            height: 32px
+            
+        .wave.one
+            animation: 6s 2s infinite linear waves
+            background: rgba(34,139,34,0.3)
+
+        .wave.two
+            animation: 6s 0s infinite linear waves
+            background: rgba(30,144,255,0.3)
+
+
+##{idControlButtons}
+    position: absolute
+    right: 1rem
+    top: 35%
+    z-index: 1
+    display: flex
+    flex-direction: column
+    row-gap: 1rem
+    
+    button
+        background-color: rgba(255,255, 255, 0.2)
+
+    ##{idButtonMyLocation}
+        margin-top: 3rem
+
 
 footer
     position: fixed
@@ -43,3 +79,13 @@ footer
         justify-content: space-around
         button.square.round.large
             background-color: rgba(255,255, 255, 0.2)
+
+
+
+@keyframes waves
+    from
+        transform: scale(1)
+        opacity: 1
+    to
+        transform: scale(1.5)
+        opacity: 0
