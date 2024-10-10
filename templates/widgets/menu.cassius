@@ -1,4 +1,7 @@
 
+ ##{idOverlay}
+     z-index: 1
+
 ##{idDialogMainMenu}
     header
         nav

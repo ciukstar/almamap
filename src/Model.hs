@@ -87,6 +87,12 @@ paramLang = "lang"
 paramBacklink :: Text
 paramBacklink = "backlink"
 
+keyThemeLight :: Text
+keyThemeLight = "light"
+
+keyThemeDark :: Text
+keyThemeDark = "dark"
+
 paramTheme :: Text
 paramTheme = "theme"
 

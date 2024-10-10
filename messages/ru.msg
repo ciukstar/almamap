@@ -1,3 +1,14 @@
+Shops: Магазины
+Restaurants: Рестораны
+Search: Поиск
+StyleNavigationNight: Ночь навигация
+StyleNavigationDay: Навигация день
+StyleSatelliteStreets: Улицы-спутник
+StyleSatellite: Спутник
+StyleDark: Темный
+StyleLight: Светлый
+StyleOutdoors: На улице
+StyleStreets: Улицы
 CouldNotGetPosition: Не удалось получить позицию
 Landmark: Достопримечательность
 Close: Закрыть

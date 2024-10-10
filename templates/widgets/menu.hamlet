@@ -1,11 +1,11 @@
 
 <div.overlay ##{idOverlay}>
 
-<dialog.left.no-padding.primary ##{idDialogMainMenu}>
+<dialog.right.no-padding.primary ##{idDialogMainMenu}>
 
   <header.fixed.max>
     <nav.margin>
-      <i.large>event_note
+      <img.large src=@{StaticR img_logo_svg} loading=lazy alt=_{MsgLogo}>
       <div.max>
         <h6>_{MsgAppName}
       <button.transparent.circle.large ##{idButtonMainMenuClose}>
@@ -18,6 +18,10 @@
       <i>home
       <span>_{MsgHome}
 
+    <a href=#>
+      <i>settings
+      <span>_{MsgSettings}
+
     <a href=@{DataR UsersR} :curr == Just (DataR UsersR):.active>
       <i>group
       <span>_{MsgUsers}
@@ -28,7 +32,7 @@
       <i>quick_reference
       <span>_{MsgDocumentation}
 
-    <a href="https://github.com/ciukstar/openplan" target=_blank>
+    <a href="https://github.com/ciukstar/almamap" target=_blank>
       <i>
         <img src=@{StaticR img_github_mark_white_svg}>
       <span>_{MsgSourceCode}

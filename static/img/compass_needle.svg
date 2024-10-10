@@ -31,12 +31,12 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="svg5" />
   <path
-     d="M 6.8895405,13.028555 24.324408,1.2569981 24.293678,13.028555 Z"
+     d="M10.5 14l4-8 4 8h-8z"
      id="path2"
-     style="fill:#2a7fff;stroke-width:1.78917" />
+     style="fill:#2a7fff" />
   <path
      id="south"
-     d="M 4.706341,15.971446 4.6755921,27.743002 22.110459,15.971446 Z"
+     d="M10.5 16l4 8 4-8h-8z"
      fill="#ccc"
-     style="fill:#c83737;stroke-width:1.78917" />
+     style="fill:#c83737" />
 </svg>

@@ -10,6 +10,21 @@ const map = new mapboxgl.Map({
   style: "mapbox://styles/mapbox/dark-v11"
 });
 
+map.addControl(new mapboxgl.ScaleControl(),'bottom-left');
+
+const nav = new mapboxgl.NavigationControl({
+  showCompass: true,
+  showZoom: false,
+  visualizePitch: true
+});
+
+map.addControl(nav);
+
+Array.from(
+  document.body.querySelectorAll('.mapboxgl-ctrl-compass')
+).forEach(x => {
+  x.classList.add('circle','large','small-blur');
+});
 
 const queryTourism = `
     [out:json];
@@ -91,8 +106,41 @@ document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e
     currentSwitch = 'attractions';
   }
 });
-  
 
+
+document.getElementById(#{idButtonSearchTrigger}).addEventListener('click', e => {
+  document.getElementById(#{idDialogSearch}).show();
+});
+
+document.getElementById(#{idButtonCloseSearchDialog}).addEventListener('click', e => {
+  document.getElementById(#{idDialogSearch}).close();
+});
+
+
+document.getElementById(#{idButtonSearchByCategoryTrigger}).addEventListener('click', e => {
+  document.getElementById(#{idDialogSearchByCategory}).show();
+});
+
+document.getElementById(#{idButtonCloseSearchByCategoryDialog}).addEventListener('click', e => {
+  document.getElementById(#{idDialogSearchByCategory}).close();
+});
+
+document.getElementById(#{idButtonMainMenu}).addEventListener('click', e => {
+  document.getElementById(#{idDialogMainMenu}).show();
+});
+
+
+
+Array.from(
+  document.getElementById(#{idMenuLayers}).querySelectorAll('li')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    ui('mode', e.target.dataset.theme);
+    map.setStyle(e.target.dataset.style);
+  });
+});
+
+  
 document.getElementById(#{idButttonCloseDialog}).addEventListener('click', e => {
   document.getElementById(#{idDialogOverviewTitle}).textContent = '';
   document.getElementById(#{idDialogOverviewContent}).textContent = '';
@@ -130,8 +178,8 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
       });
 
       const elemMarker = document.createElement('div');
-      elemMarker.className = 'marker-my-location circle one';
-      myLocationMarker = new mapboxgl.Marker(elemMarker,{rotation: p.coords.heading});
+      elemMarker.className = 'marker marker-my-location circle one';
+      myLocationMarker = new mapboxgl.Marker(elemMarker, {rotation: p.coords.heading});
       myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]).addTo(map);
 
       const waveOne = document.createElement('div');
@@ -180,7 +228,7 @@ function markMap (query, icon) {
     
     res.elements.filter(x => 'node' == x.type).forEach(x => {
       const el = document.createElement('div');
-      el.className = icon;
+      el.className = `marker ${icon}`;
 
       el.addEventListener('click', (e) => {
 

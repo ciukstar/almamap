@@ -2,6 +2,16 @@
 
 <main.responsive.no-padding>
 
+  <nav.transparent ##{idControlsTopLeft}>
+    <button.circle.large.small-blur ##{idButtonLayers} data-ui=##{idMenuLayers}>
+      <i>layers
+      <menu.right.no-wrap ##{idMenuLayers}>
+        $forall (i,(label,(style,theme))) <- styles
+          <li.row data-style=#{style} data-theme=#{theme} #idMenuLayersItem#{i}>
+            <label.radio.row onclick="document.getElementById('idMenuLayersItem#{i}').click()">
+              <input type=radio name=style>
+              <span>_{label}
+
   <nav.transparent ##{idControlButtons}>
     <button.circle.large.small-blur ##{idButtonZoomIn}>
       <i>add
@@ -23,14 +33,55 @@
     <button.square.round.large.small-blur ##{idButtonSwitch}>
       <i>park
       
-    <button.square.round.large.small-blur>
+    <button.square.round.large.small-blur ##{idButtonSearchTrigger}>
       <i>search
       
-    <button.square.round.large.small-blur>
+    <button.square.round.large.small-blur ##{idButtonSearchByCategoryTrigger}>
       <i>checklist
       
-    <button.square.round.large.small-blur>
+    <button.square.round.large.small-blur ##{idButtonMainMenu}>
       <i>menu
+
+
+<dialog.bottom ##{idDialogSearch}>
+  <div.center-align>
+    <i>drag_handle
+  
+  <div>
+    <div.field.large.prefix.round.fill.active>
+      <i.front>search
+      <input>
+    
+  <nav.right-align>
+    <button.transparent.round ##{idButtonCloseSearchDialog}>
+      _{MsgCancel}
+    <button>_{MsgSearch}
+
+
+<dialog.bottom ##{idDialogSearchByCategory}>
+  <div.center-align>
+    <i>drag_handle
+  
+  <div>
+    <a.row.paddingsurface-container>
+      <i.large.circle>restaurant
+      <div.max>
+        <h6.small>_{MsgRestaurants}
+      <label>6
+      
+    <a.row.paddingsurface-container>
+      <i.large.circle>shopping_cart
+      <div.max>
+        <h6.small>_{MsgShops}
+      <label>27
+    
+  <nav.right-align>
+    <button.transparent.round ##{idButtonCloseSearchByCategoryDialog}>
+      _{MsgCancel}
+
+
+^{widgetMainMenu idOverlay idDialogMainMenu}
+  
 
 
 <dialog ##{idDialogOverview}>

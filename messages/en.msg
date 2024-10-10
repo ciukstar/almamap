@@ -1,3 +1,14 @@
+Shops: Shops
+Restaurants: Restaurants
+Search: Search
+StyleNavigationNight: Navigation night
+StyleNavigationDay: Navigation day
+StyleSatelliteStreets: Satellite streets
+StyleSatellite: Satellite
+StyleDark: Dark
+StyleLight: Light
+StyleOutdoors: Outdoors
+StyleStreets: Streets
 CouldNotGetPosition: Could not get position
 Landmark: Landmark
 Close: Close
