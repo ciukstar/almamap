@@ -59,9 +59,11 @@ Empty: Пустой
 Copy: Копировать
 Settings: Настройки
 Country: Страна
+CountryKZ: Казахстан
 CountryRU: Россия
 CountryUS: США
 Language: Язык
+LangKz: Казахский
 LangRu: Русский
 LangEn: Английский
 Create: Создать

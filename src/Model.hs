@@ -64,7 +64,7 @@ mediae :: [(Text,Text)]
 mediae = [("s","small"),("m","medium"),("l","large")] :: [(Text,Text)]
 
 langs :: [(Text,Text)]
-langs = [("ru","RU"),("en","EN")]
+langs = [("kk","KZ"),("ru","RU"),("en","EN")]
 
 msgSuccess :: Text
 msgSuccess = "success"

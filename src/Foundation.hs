@@ -118,7 +118,7 @@ widgetTheme = $(widgetFile "widgets/theme")
 widgetLang :: Route App -> Text -> Widget
 widgetLang action backlink  = do
     
-    lang <- fromMaybe "en" . LS.head <$> languages
+    language <- fromMaybe "en" . LS.head <$> languages
     
     idMenuLang <- newIdent
     idHiddenSelect <- newIdent
@@ -126,6 +126,11 @@ widgetLang action backlink  = do
     idInputBacklink <- newIdent
     
     $(widgetFile "widgets/lang")
+  where
+      resolveLang :: Lang -> AppMessage
+      resolveLang "kk" = MsgLangKz
+      resolveLang "ru" = MsgLangRu
+      resolveLang _ = MsgLangEn
 
 
 postLangR :: Handler ()

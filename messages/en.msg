@@ -60,9 +60,11 @@ Empty: Empty
 Copy: Copy
 Settings: Settings
 Country: Country
+CountryKZ: KZ
 CountryRU: RU
 CountryUS: US
 Language: Language
+LangKz: Kazakh
 LangRu: Russian
 LangEn: English
 Create: Create
