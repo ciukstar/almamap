@@ -1,0 +1,10 @@
+
+^{widgetTopbar (Just (HomeR,[])) (msgr MsgShops) idOverlay Nothing Nothing}
+
+<main.responsive.no-padding>
+
+  <div.field.large.prefix.round.fill.active.margin>
+    <i.front>search
+    <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops}>
+
+  ^{widgetSnackbar msgs}

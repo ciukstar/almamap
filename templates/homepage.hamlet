@@ -1,5 +1,4 @@
 
-
 <main.responsive.no-padding>
 
   <nav.transparent ##{idControlsTopLeft}>
@@ -43,41 +42,40 @@
       <i>menu
 
 
-<dialog.bottom ##{idDialogSearch}>
-  <div.center-align>
+<dialog.bottom.no-padding ##{idDialogSearch}>
+  <div.padding.center-align draggable=true>
     <i>drag_handle
-  
-  <div>
-    <div.field.large.prefix.round.fill.active>
-      <i.front>search
-      <input>
+  <button.transparent.circle ##{idButtonCloseSearchDialog}>
+    <i>close
     
-  <nav.right-align>
-    <button.transparent.round ##{idButtonCloseSearchDialog}>
-      _{MsgCancel}
-    <button>_{MsgSearch}
+  <div ##{idListSearchResults}>
+
+  <div.field.large.prefix.round.fill.active>
+    <i.front>search
+    <input type=search ##{idInputSearch} placeholder=_{MsgSearchByNameOrAddress}>
 
 
-<dialog.bottom ##{idDialogSearchByCategory}>
-  <div.center-align>
+<dialog.bottom.no-padding ##{idDialogSearchByCategory}>
+  <div.padding.center-align draggable=true>
     <i>drag_handle
+  <button.transparent.circle ##{idButtonCloseSearchByCategoryDialog}>
+    <i>close
   
   <div>
-    <a.row.paddingsurface-container>
+    <a.row.padding.wave href=@{RestaurantsR}>
       <i.large.circle>restaurant
       <div.max>
         <h6.small>_{MsgRestaurants}
-      <label>6
+      <label ##{idLabelRestaurants}>
+      <i>arrow_forward_ios
+        
       
-    <a.row.paddingsurface-container>
+    <a.row.padding.wave href=@{ShopsR}>
       <i.large.circle>shopping_cart
       <div.max>
         <h6.small>_{MsgShops}
-      <label>27
-    
-  <nav.right-align>
-    <button.transparent.round ##{idButtonCloseSearchByCategoryDialog}>
-      _{MsgCancel}
+      <label ##{idLabelShops}>
+      <i>arrow_forward_ios
 
 
 ^{widgetMainMenu idOverlay idDialogMainMenu}

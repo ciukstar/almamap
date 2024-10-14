@@ -1,3 +1,10 @@
+SearchForShops: Дүкендерді іздеңіз
+SearchForRestaurants: Мейрамханаларды іздеңіз
+SearchByNameOrAddress: Аты немесе мекенжайы бойынша іздеңіз
+SearchPlacesByNameOrAddress: Орындарды аты немесе мекенжайы бойынша іздеңіз
+SearchPlacesByName: Орындарды аты бойынша іздеу
+SearchByStreetNamesAndPoi: Көше атаулары мен көрікті жерлер бойынша іздеңіз
+NoLocationsWereFound: Іздеуіңізге сәйкес орын табылмады
 Shops: Дүкендер
 Restaurants: Мейрамханалар
 Search: Іздеу

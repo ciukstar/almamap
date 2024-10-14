@@ -1,3 +1,10 @@
+SearchForShops: Search for shops
+SearchForRestaurants: Search for restaurants
+SearchByNameOrAddress: Search by name or address
+SearchPlacesByNameOrAddress: Search for places by name or address
+SearchPlacesByName: Search places by name
+SearchByStreetNamesAndPoi: Search by street names and places of interest
+NoLocationsWereFound: No locations were found matching your search
 Shops: Shops
 Restaurants: Restaurants
 Search: Search

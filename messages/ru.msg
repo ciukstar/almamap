@@ -1,3 +1,10 @@
+SearchForShops: Поиск магазинов
+SearchForRestaurants: Поиск ресторанов
+SearchByNameOrAddress: Поиск по названию или адресу
+SearchPlacesByNameOrAddress: Поиск мест по названию или адресу
+SearchPlacesByName: Поиск мест по названию
+SearchByStreetNamesAndPoi: Поиск по названиям улиц и интересующих мест
+NoLocationsWereFound: Не найдено ни одного местоположения, соответствующего вашему запросу
 Shops: Магазины
 Restaurants: Рестораны
 Search: Поиск

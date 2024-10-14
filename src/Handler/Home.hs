@@ -7,29 +7,35 @@
 
 module Handler.Home
   ( getHomeR
+  , getShopsR
+  , getRestaurantsR
   , getFetchR
+  , getFetchP18PhotoR
   ) where
 
 import qualified Control.Lens as L ( (^?) )
 import Control.Monad.IO.Class (liftIO)
 
+import Data.Aeson (decode)
+import qualified Data.Aeson as A (Value) 
 import Data.Aeson.Lens (key, AsValue (_String), nth)
+import Data.Bifunctor (Bifunctor(second, first))
 import Data.Text (Text, unpack)
 
 import Database.Esqueleto.Experimental
     ( SqlExpr, Value (unValue), selectOne, from, table, countRows, select
     , (^.), (==.), (:&)((:&))
-    , innerJoin, on, where_, val, just
     )
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu
-    , Route(StaticR, FetchR)
+    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, widgetTopbar
+    , Route(ShopsR, RestaurantsR, HomeR, StaticR, FetchR, FetchP18PhotoR)
     , AppMessage
       ( MsgClose, MsgCouldNotGetPosition, MsgAppName, MsgStyleStreets
       , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite
       , MsgStyleSatelliteStreets, MsgStyleNavigationDay, MsgStyleNavigationNight
-      , MsgCancel, MsgSearch, MsgRestaurants, MsgShops
+      , MsgRestaurants, MsgShops, MsgNoLocationsWereFound
+      , MsgSearchByNameOrAddress, MsgSearchForRestaurants, MsgSearchForShops
       )
     )
 
@@ -49,6 +55,8 @@ import Settings.StaticFiles
     )
 
 import Text.Hamlet (Html)
+import Text.Julius (rawJS)
+import Text.Shakespeare.Text (st)
 
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
@@ -58,7 +66,34 @@ import Yesod.Core
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
-import Data.Bifunctor (Bifunctor(second, first))
+
+
+getShopsR :: Handler Html
+getShopsR = do
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgShops
+        
+        idOverlay <- newIdent
+        idInputSearch <- newIdent
+        
+        $(widgetFile "shops/shops")
+
+
+getRestaurantsR :: Handler Html
+getRestaurantsR = do
+    
+    msgr <- getMessageRender
+    msgs <- getMessages
+    defaultLayout $ do
+        setTitleI MsgRestaurants
+        
+        idOverlay <- newIdent
+        idInputSearch <- newIdent
+        
+        $(widgetFile "restaurants/restaurants")
 
 
 getHomeR :: Handler Html
@@ -78,7 +113,7 @@ getHomeR = do
             , (MsgStyleNavigationDay, ("navigation-day-v1",keyThemeLight))
             , (MsgStyleNavigationNight, ("navigation-night-v1",keyThemeDark))
             ]
-
+    
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
@@ -98,10 +133,14 @@ getHomeR = do
         idButtonSearchTrigger <- newIdent
         idDialogSearch <- newIdent
         idButtonCloseSearchDialog <- newIdent
+        idListSearchResults <- newIdent
+        idInputSearch <- newIdent
 
         idButtonSearchByCategoryTrigger <- newIdent
         idDialogSearchByCategory <- newIdent
         idButtonCloseSearchByCategoryDialog <- newIdent
+        idLabelRestaurants <- newIdent
+        idLabelShops <- newIdent
         
         
         idButtonMainMenu <- newIdent
@@ -123,7 +162,75 @@ getFetchR = do
     r <- liftIO $ get (unpack url)
     
     selectRep $ do
+        provideJson (decode =<< (r L.^? WL.responseBody) :: Maybe A.Value)
+        
+
+
+getFetchP18PhotoR :: Handler TypedContent
+getFetchP18PhotoR = do
+    url <- runInputGet $ ireq urlField "url"
+    r <- liftIO $ get (unpack url)
+    
+    selectRep $ do
         provideJson $
             r L.^? WL.responseBody . key "claims" . key "P18"
             . nth 0 . key "mainsnak" . key "datavalue" . key "value"
             . _String
+
+
+queryTagCount :: Text -> Text
+queryTagCount tag = [st|
+    [out:json];
+
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
+
+    node["#{tag}"](area.city);
+
+    out count;
+|]
+
+
+queryAmenityCount :: Text -> Text
+queryAmenityCount typ = [st|
+    [out:json];
+
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
+
+    node["amenity"="#{typ}"](area.city);
+
+    out count;
+|]
+
+
+query :: Text -> Maybe Text -> Text
+query tag val = [st|
+    [out:json];
+
+    rel["ISO3166-2"="KZ-75"] -> .rel;
+    .rel map_to_area -> .city;
+|] <> case val of
+       Just v -> [st|node["#{tag}"="#{v}"](area.city) -> .tags;|]
+       Nothing -> [st|node["#{tag}"](area.city) -> .tags;|]
+   <> [st|
+    node.tags[~"^(name|description)$"~".*"];
+
+    out body;
+|]
+
+
+countrycodes :: Text
+countrycodes = "kz"
+
+         
+bbox :: Text
+bbox = "76.738277,43.032844,77.166754,43.403766"
+
+    
+nominatim :: Text
+nominatim = "https://nominatim.openstreetmap.org/search"
+         
+         
+overpass :: Text
+overpass = "https://overpass-api.de/api/interpreter"

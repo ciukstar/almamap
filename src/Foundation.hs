@@ -39,6 +39,7 @@ import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Form.I18n.English (englishFormMessage)
 import Yesod.Form.I18n.Russian (russianFormMessage)
 
+
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -198,6 +199,11 @@ instance Yesod App where
     -- Routes not requiring authentication.
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = setUltDestCurrent >> return Authorized
+    isAuthorized RestaurantsR _ = return Authorized
+    isAuthorized ShopsR _ = return Authorized
+    
+    
+    
     isAuthorized DocsR _ = setUltDestCurrent >> return Authorized
     
     isAuthorized PwdResetR _ = return Authorized
@@ -206,8 +212,10 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
+
     
     isAuthorized FetchR _ = setUltDestCurrent >> return Authorized
+    isAuthorized FetchP18PhotoR _ = setUltDestCurrent >> return Authorized
 
     
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin

@@ -2,11 +2,17 @@
 -- Syntax for this file here: https://www.yesodweb.com/book/routing-and-handlers
 
 
+/shops ShopsR GET
+
+/restaurants RestaurantsR GET
+
 / HomeR GET
 
 /docs DocsR GET
 
 /fetch FetchR GET
+
+/fetch/p18/photo FetchP18PhotoR GET
 
 /restore PwdResetR  GET 
 /lang    LangR      POST

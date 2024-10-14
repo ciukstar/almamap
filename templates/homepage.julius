@@ -26,58 +26,10 @@ Array.from(
   x.classList.add('circle','large','small-blur');
 });
 
-const queryTourism = `
-    [out:json];
-
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["tourism"](area.city) -> .tourism;
-    node.tourism[~"^(name|description)$"~".*"];
-
-    out body;
-`;
-
-const queryParks = `
-    [out:json];
-
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["leisure"="park"](area.city) -> .park;
-    node.park[~"^(name|description)$"~".*"];
-
-    out body;
-`;
-
-const queryRestaurant = `
-    [out:json];
-
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["amenity"="restaurant"](area.city) -> .restaurant;
-    node.restaurant[~"^(name|description)$"~".*"];
-
-    out body;
-`;
-
-const queryGovernment = `
-    [out:json];
-    
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["government"](area.city) -> .government;
-    
-    (
-    node.government["name"];
-    node.government["description"];
-    );
-
-    out body;
-`;
-
+const queryTourism = #{query "tourism" Nothing};
+const queryParks = #{query "leisure" (Just "park")};
+const queryRestaurant = #{query "amenity" (Just "restaurant")};
+const queryGovernment = #{query "government" Nothing};
 
 markMap(queryTourism,'marker-tourism');
 
@@ -108,12 +60,14 @@ document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e
 });
 
 
+const searchSheet = document.getElementById(#{idDialogSearch});
+
 document.getElementById(#{idButtonSearchTrigger}).addEventListener('click', e => {
-  document.getElementById(#{idDialogSearch}).show();
+  searchSheet.show();
 });
 
 document.getElementById(#{idButtonCloseSearchDialog}).addEventListener('click', e => {
-  document.getElementById(#{idDialogSearch}).close();
+  searchSheet.close();
 });
 
 
@@ -129,6 +83,140 @@ document.getElementById(#{idButtonMainMenu}).addEventListener('click', e => {
   document.getElementById(#{idDialogMainMenu}).show();
 });
 
+document.getElementById(#{idListSearchResults}).addEventListener('scroll', e => {
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+
+[ [#{idDialogSearch}, #{idListSearchResults}]
+].map(
+  xs => xs.map(x => document.getElementById(x))
+).map(
+  ([dlg,list]) => [dlg,list,dlg.querySelector('[draggable=true]')]
+).forEach(([sheet,list,draggable]) => {
+  
+  draggable.addEventListener('dragstart', e => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  
+  draggable.addEventListener('drag', e => {
+    const h = `${window.innerHeight - e.clientY + 32}px`;
+    list.style.height = `calc(${h}  - (3.5rem + 6rem))`;
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  
+  draggable.addEventListener('dragend', e => {
+    const h = `${window.innerHeight - e.clientY + 32}px`;
+    list.style.height = `calc(${h} - (3.5rem + 6rem))`;
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  draggable.addEventListener('touchstart', e => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  draggable.addEventListener('touchmove', e => {
+    const h = `${window.innerHeight - e.touches.item(0).clientY + 32}px`;
+    list.style.height = `calc(${h} - (3.5rem + 6rem))`;
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  
+});
+
+
+const listSearch = document.getElementById(#{idListSearchResults});
+const pois = [];
+
+document.getElementById(#{idInputSearch}).addEventListener('input', debounce( function (e) {
+
+  if (!!e.target.value) {
+
+    listSearch.replaceChildren(progress());
+    
+    const query = new URLSearchParams({
+      q: e.target.value,
+      countrycodes: #{countrycodes},
+      viewbox: #{bbox},
+      format: 'json'
+    });
+    
+    const url = encodeURIComponent(new URL(`#{rawJS nominatim}?${query}`).href);
+    
+    fetch(`@{FetchR}?url=${url}`,{
+      headers: {'Accept': 'application/json'}
+    }).then(data => data.json()).then(function (res) {
+
+      if (res.length > 0) {
+        
+        listSearch.replaceChildren( ... res.map(x => {
+          const item = document.createElement('a');
+          item.className = 'row padding surface-container wave';
+
+          const start = document.createElement('i');
+          start.textContent = 'explore_nearby';      
+          
+          const content = document.createElement('div');
+          content.className = 'max';
+          
+          const primaryText = document.createElement('div');
+          primaryText.className = 'max';
+          primaryText.textContent = x['display_name'];
+
+          const end = document.createElement('i');
+          end.textContent = 'arrow_forward_ios';
+          
+          content.appendChild(primaryText);
+          
+          item.appendChild(start);
+          item.appendChild(content);
+          item.appendChild(end);
+
+          item.addEventListener('click', e => {
+            
+            searchSheet.close();
+            setTimeout(() => {
+              const poi = new mapboxgl.Marker().setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
+              pois.push(poi);
+              map.flyTo({
+                center: poi.getLngLat().toArray(),
+                essential: true
+              });
+            },300);
+            
+          });
+          
+          return item;
+          
+        }));
+
+      } else {
+        
+        listSearch.replaceChildren((() => {
+          const msg = document.createElement('div');
+          msg.className = 'italic padding';
+          msg.textContent = #{msgr MsgNoLocationsWereFound};
+          return msg; 
+        })());
+        
+      }
+      
+    });
+
+  } else {
+    
+    pois.forEach(x => { x.remove(); });
+    pois.lenngth = 0;
+    listSearch.replaceChildren();
+    
+  }
+  
+}, 500 ));
 
 
 Array.from(
@@ -212,13 +300,29 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
 });
 
 
+
+[ [#{queryAmenityCount "restaurant"}, #{idLabelRestaurants}],
+  [#{queryTagCount "shop"}, #{idLabelShops}]
+].map(([x,y]) => [x,document.getElementById(y)]).forEach(([q,e]) => {
+
+  fetch(#{overpass},{
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({ data: q })
+  }).then(data => data.json()).then(res => {
+    e.textContent = res.elements[0].tags.total;
+  });
+  
+});
+
+
 function markMap (query, icon) {
 
   markers.forEach(x => { x.remove(); });
   
   markers.length = 0;
   
-  return fetch('https://overpass-api.de/api/interpreter',{
+  return fetch(#{overpass},{
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
     body: new URLSearchParams({
@@ -274,9 +378,9 @@ function markMap (query, icon) {
             format: 'json'
           });
 
-          const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);        
+          const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);
           
-          fetch(`@{FetchR}?url=${url}`,{
+          fetch(`@{FetchP18PhotoR}?url=${url}`,{
             headers: {'Accept': 'application/json'}
           }).then((res) => res.json()).then(function (res) {
 
@@ -318,3 +422,21 @@ function markMap (query, icon) {
     });
   });
 };
+
+
+function progress() {
+  const p = document.createElement('progress');
+  p.className = 'circle small';
+  return p;
+}
+
+
+function debounce(f,t) {
+  let timeoutId = null;
+  return (...args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      f.apply(null, args);
+    }, t);
+  };
+}

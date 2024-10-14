@@ -149,6 +149,24 @@ footer
             background-color: rgba(255,255, 255, 0.2)
 
 
+##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}
+    position: absolute
+    top: 0.5rem
+    right: 0.5rem
+
+##{idDialogSearch}
+    overflow: hidden
+    
+    div[draggable]
+        height: calc(3.5rem)
+
+    ##{idListSearchResults}
+        max-height: calc(100dvh - (3.5rem + 6rem))
+        overflow-y: auto
+
+    div.field
+        margin: 1rem
+
 
 @keyframes waves
     from
