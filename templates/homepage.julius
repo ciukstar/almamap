@@ -70,6 +70,18 @@ document.getElementById(#{idButtonCloseSearchDialog}).addEventListener('click', 
   searchSheet.close();
 });
 
+Array.from(
+  document.getElementById(#{idDialogSearchByCategory}).querySelectorAll('a')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    e.target.querySelector('i.end-icon').replaceChildren((() => {
+      const p = document.createElement('progress');
+      p.className = 'circle small';
+      return p;
+    }) ());
+  });
+});
+
 
 document.getElementById(#{idButtonSearchByCategoryTrigger}).addEventListener('click', e => {
   document.getElementById(#{idDialogSearchByCategory}).show();
@@ -422,21 +434,3 @@ function markMap (query, icon) {
     });
   });
 };
-
-
-function progress() {
-  const p = document.createElement('progress');
-  p.className = 'circle small';
-  return p;
-}
-
-
-function debounce(f,t) {
-  let timeoutId = null;
-  return (...args) => {
-    window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(() => {
-      f.apply(null, args);
-    }, t);
-  };
-}

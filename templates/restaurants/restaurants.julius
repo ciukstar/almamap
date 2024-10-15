@@ -1,94 +1,103 @@
 
-fetch(#{overpass},{
-  method: 'POST',
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-  body: new URLSearchParams({ data: #{queryDefault} })
-}).then(data => data.json()).then(res => {
-  document.getElementById(#{idListSearchResults}).replaceChildren(... res.elements.map(x => {
-    const item = document.createElement('a');
-    item.className = 'row padding surface-container wave';
-
-    const start = document.createElement('i');
-    start.textContent = 'restaurant';      
+document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
+  
+  const listSearchResults = document.getElementById(#{idListSearchResults});
+  listSearchResults.replaceChildren(progress());
+  
+  fetch(`@{RestaurantsR}?q=${e.target.value}`,{
+    method: 'GET',
+    headers: { 'Accept': 'application/json'}
+  }).then(data => data.json()).then(res => {
     
-    const content = document.createElement('div');
-    content.className = 'max';
-    
-    const headline = document.createElement('div');
-    headline.textContent = x.tags.name;
-    
-    const supportingText = document.createElement('label');
-    if (!!x.tags.description || !!x.tags.cuisine || !!x.tags['opening_hours']) {
-      supportingText.style.display = 'inline-block';
-      supportingText.style['max-width'] = '70vw';
-    }
-    supportingText.textContent = x.tags.description
-      ? x.tags.description
-      : ( x.tags.cuisine
-          ? x.tags.cuisine
-          : x.tags['opening_hours']
-        );
+    listSearchResults.replaceChildren(... res.map(x => {
+      const item = document.createElement('a');
+      item.className = 'row padding surface-container wave';
 
-    const end = document.createElement('i');
-    end.textContent = 'arrow_forward_ios';
-    
-    content.appendChild(headline);
-    content.appendChild(supportingText);
-    
-    item.appendChild(start);
-    item.appendChild(content);
-    item.appendChild(end);
-
-    item.addEventListener('click', e => {
-
-      document.getElementById(#{idDialogDetailsTitle}).textContent = x.tags.name;
-
-      let info =
-          [ ['cuisine', #{msgr MsgCuisine}, x => x.tags.cuisine],
-            ['description', #{msgr MsgDescription}, x => x.tags.description],
-            ['opening_hours', #{msgr MsgOpeningHours}, x => x.tags['opening_hours']],
-            ['addr', #{msgr MsgAddress}, x =>
-              [x.tags['addr:street'],x.tags['addr:housenumber'],x.tags['addr:city']].filter(x => !!x).join(', ')
-            ],
-            ['phone', #{msgr MsgPhone}, x => x.tags.phone ? x.tags.phone : x.tags['contact:phone']],
-          ];
+      const start = document.createElement('i');
+      start.textContent = 'restaurant';      
       
-      document.getElementById(#{idDialogDetailsContent}).replaceChildren(info.map(
-        ([tag,term,df]) => [tag,term,df(x)]
-      ).filter(
-        ([tag,term,data]) => !!data
-      ).map(([tag,term,data]) => {
-        
-        const dt = document.createElement('dt');
-        const dtLabel = document.createElement('label');
-        dtLabel.className = 'bold large-text';
-        dtLabel.textContent = term;
+      const content = document.createElement('div');
+      content.className = 'max';
+      
+      const headline = document.createElement('div');
+      headline.textContent = x.name;
+      
+      const supportingText = document.createElement('label');
+      if (!!x.descr || !!x.cuisine || !!x.openingHours) {
+        supportingText.style.display = 'inline-block';
+        supportingText.style['max-width'] = '70vw';
+      }
+      supportingText.textContent = x.descr
+        ? x.descr
+        : ( x.cuisine
+            ? x.cuisine
+            : x.openingHours
+          );
 
-        const dd = document.createElement('dd');
-        dd.className = 'margin';
-        dd.textContent = data;
+      const end = document.createElement('i');
+      end.textContent = 'arrow_forward_ios';
+      
+      content.appendChild(headline);
+      content.appendChild(supportingText);
+      
+      item.appendChild(start);
+      item.appendChild(content);
+      item.appendChild(end);
 
-        dt.appendChild(dtLabel);
-        
-        return [dt,dd];
-        
-      }).reduce((dl,[dt,dd]) => {
-        dl.appendChild(dt);
-        dl.appendChild(dd);
-        return dl;
-      }, document.createElement('dl')));
+      item.addEventListener('click', e => showDialogDetails(x));
 
-      document.getElementById(#{idDialogDetails}).show();
-    });
+      return item;
+      
+    }));
+  });
+}, 300));
 
-    return item;
+[#{idButttonCloseDialogDetails},#{idButttonCancelDialogDetails}].map(
+  x => document.getElementById(x)
+).forEach(x => {
+  x.addEventListener('click', e => {
+    document.getElementById(#{idDialogDetailsContent}).replaceChildren();
+    document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
+    document.getElementById(#{idDialogDetails}).close();
+  });
+});
+
+
+function showDialogDetails (x) {
+
+  document.getElementById(#{idDialogDetailsTitle}).textContent = x.name;
+
+  let info =
+      [ [#{msgr MsgCuisine}, x => x.cuisine],
+        [#{msgr MsgDescription}, x => x.descr],
+        [#{msgr MsgOpeningHours}, x => x.openingHours],
+        [#{msgr MsgAddress}, x => x.addr],
+        [#{msgr MsgPhone}, x => x.phone],
+      ];
+  
+  document.getElementById(#{idDialogDetailsContent}).replaceChildren(info.map(
+    ([term,df]) => [term,df(x)]
+  ).filter(([term,data]) => !!data).map(([term,data]) => {
     
-  }));
-});
+    const dt = document.createElement('dt');
+    const dtLabel = document.createElement('label');
+    dtLabel.className = 'bold large-text';
+    dtLabel.textContent = term;
 
+    const dd = document.createElement('dd');
+    dd.className = 'margin';
+    dd.textContent = data;
 
-document.getElementById(#{idButttonCloseDialogDetails}).addEventListener('click', e => {
-  document.getElementById(#{idDialogDetailsContent}).replaceChildren();
-  document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
-  document.getElementById(#{idDialogDetails}).close();
-});
+    dt.appendChild(dtLabel);
+    
+    return [dt,dd];
+    
+  }).reduce((dl,[dt,dd]) => {
+    dl.appendChild(dt);
+    dl.appendChild(dd);
+    return dl;
+  }, document.createElement('dl')));
+
+  document.getElementById(#{idDialogDetails}).show();
+  
+};

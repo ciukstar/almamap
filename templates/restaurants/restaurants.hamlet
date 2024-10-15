@@ -11,15 +11,35 @@
 <main.responsive.no-padding>
 
   <div ##{idListSearchResults}>
-    <progress.circle.absolute.center.middle>
+    $forall r@(Restaurant rid lat lon name descr cuisine openingHours addr phone) <- restaurants
+      <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode r})">
+        <i>restaurant
+        <div.max>
+          <div>#{name}
+          <label :isJust ((descr <|> cuisine) <|> openingHours):style="display:inline-block;max-width:70vw">
+            $maybe descr <- descr
+              #{descr}
+            $nothing
+              $maybe cuisine <- cuisine
+                #{cuisine}
+              $nothing
+                $maybe openingHours <- openingHours
+                  #{openingHours}
+                  
+        <i>arrow_forward_ios
 
   ^{widgetSnackbar msgs}
 
 
 
 <dialog.max ##{idDialogDetails}>
-  <h6 ##{idDialogDetailsTitle}>
+  <div.row.baseline>
+    <h6.max ##{idDialogDetailsTitle}>
+    <button.transparent.circle ##{idButttonCloseDialogDetails} title=_{MsgClose}>
+      <i>close
+    
   <p ##{idDialogDetailsContent}>
+    
   <details>
     <summary>
       _{MsgShowOnMap}
@@ -29,5 +49,5 @@
     <div ##{idMap}>
     
   <nav.right-align.no-space>
-    <button.transparent.link ##{idButttonCloseDialogDetails}>
+    <button ##{idButttonCancelDialogDetails}>
       _{MsgClose}

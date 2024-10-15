@@ -1,1 +1,18 @@
 
+
+function progress() {
+  const p = document.createElement('progress');
+  p.className = 'circle small center';
+  return p;
+}
+
+
+function debounce(f,t) {
+  let timeoutId = null;
+  return (...args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      f.apply(null, args);
+    }, t);
+  };
+}

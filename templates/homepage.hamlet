@@ -67,7 +67,7 @@
       <div.max>
         <h6.small>_{MsgRestaurants}
       <label ##{idLabelRestaurants}>
-      <i>arrow_forward_ios
+      <i.end-icon>arrow_forward_ios
         
       
     <a.row.padding.wave href=@{ShopsR}>

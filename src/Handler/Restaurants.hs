@@ -12,19 +12,20 @@ module Handler.Restaurants
   ) where
 
 import Control.Applicative ((<|>))
-import qualified Control.Lens as L ( (^?) )
+import qualified Control.Lens as L ( (^?), (^.) )
 import Control.Monad.IO.Class (liftIO)
 
 import Data.Aeson
-    ( FromJSON (parseJSON), (.:), (.:?)
-    , withObject
+    ( FromJSON (parseJSON), withObject, ToJSON (toJSON), object, encode
+    , (.:), (.:?), (.=)
     )
 import qualified Data.Aeson as A (Value) 
 import Data.Aeson.Lens (key, AsValue (_String), nth)
 import Data.Aeson.Types (Parser, parseMaybe)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Data.Text (Text, unpack, intercalate)
 import Data.Text as T (null)
+import Data.Text.Lazy.Encoding (decodeUtf8)
 
 import Foundation
     ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, widgetTopbar
@@ -60,11 +61,12 @@ import Text.Shakespeare.Text (st)
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
     , addScriptRemote, getYesod, selectRep, provideJson, getMessageRender
-    , newIdent
+    , newIdent, provideRep, MonadHandler (liftHandler)
     )
 import Yesod.Core.Widget (setTitleI)
-import Yesod.Form.Input (runInputGet, ireq)
-import Yesod.Form.Fields (intField)
+import Yesod.Form.Input (runInputGet, ireq, iopt)
+import Yesod.Form.Fields (intField, textField)
+import Data.List (sortBy)
 
 
 getRestaurantR :: Handler Html
@@ -98,37 +100,78 @@ getRestaurantR = do
         $(widgetFile "restaurants/restaurant")
 
 
-getRestaurantsR :: Handler Html
+getRestaurantsR :: Handler TypedContent
 getRestaurantsR = do
 
-    let queryDefault :: Text
-        queryDefault = [st|
-                            [out:json];
+    q <- runInputGet $ iopt textField "q"
+    
+    let queryDefault = case q of
+          Nothing -> [st|
+                       [out:json];
 
-                            rel["ISO3166-2"="KZ-75"] -> .rel;
-                            .rel map_to_area -> .city;
+                       rel["ISO3166-2"="KZ-75"] -> .rel;
+                       .rel map_to_area -> .city;
 
-                            node["amenity"="restaurant"]["name"](area.city);
+                       node["amenity"="restaurant"]["name"](area.city);
 
-                            out body;
-                        |]
+                       out body;
+                   |]
+          
+          Just x -> [st|
+                       [out:json];
+
+                       rel["ISO3166-2"="KZ-75"] -> .rel;
+                       .rel map_to_area -> .city;
+
+                       node["amenity"="restaurant"]["name"](area.city) -> .named;
+                       node.named["name"~"#{x}",i];
+
+                       out body;
+                   |]
 
     msgr <- getMessageRender
     msgs <- getMessages
-    defaultLayout $ do
-        setTitleI MsgRestaurants
-        
-        idFieldSearch <- newIdent
-        idInputSearch <- newIdent
-        idListSearchResults <- newIdent
 
-        idDialogDetails <- newIdent
-        idDialogDetailsTitle <- newIdent
-        idDialogDetailsContent <- newIdent
-        idMap <- newIdent 
-        idButttonCloseDialogDetails <- newIdent
-        
-        $(widgetFile "restaurants/restaurants")
+    r <- liftIO $ post (unpack overpass) ["data" := queryDefault]
+            
+    let restaurants :: [Restaurant]
+        restaurants = sortBy (\a b -> compare (name a) (name b)) . fromMaybe []
+            $ parseMaybe parseJSON =<< (r L.^? WL.responseBody . key "elements")
+    
+    selectRep $ do
+            
+        provideRep $ defaultLayout $ do
+            setTitleI MsgRestaurants
+
+            idFieldSearch <- newIdent
+            idInputSearch <- newIdent
+            idListSearchResults <- newIdent
+
+            idDialogDetails <- newIdent
+            idDialogDetailsTitle <- newIdent
+            idDialogDetailsContent <- newIdent
+            idMap <- newIdent 
+            idButttonCloseDialogDetails <- newIdent
+            idButttonCancelDialogDetails <- newIdent
+
+            $(widgetFile "restaurants/restaurants")
+            
+        provideJson restaurants
+
+
+instance ToJSON Restaurant where
+    toJSON :: Restaurant -> A.Value
+    toJSON (Restaurant rid lat lon name descr cuisine openingHours addr phone) =
+        object [ "id" .= rid
+               , "lat" .= lat
+               , "lon" .= lon
+               , "name" .= name
+               , "descr" .= descr
+               , "cuisine" .= cuisine
+               , "openingHours" .= openingHours
+               , "addr" .= addr
+               , "phone" .= phone
+               ]
 
 
 instance FromJSON Restaurant where
@@ -160,4 +203,4 @@ data Restaurant = Restaurant
     , openingHours :: Maybe Text
     , addr :: Text
     , phone :: Maybe Text
-    }
+    } deriving Show
