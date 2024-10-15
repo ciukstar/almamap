@@ -1,10 +1,33 @@
 
-^{widgetTopbar (Just (HomeR,[])) (msgr MsgRestaurants) idOverlay Nothing Nothing}
+<header.fixed>
+
+  <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
+    <a.front.transparent.round.circle.wave href=@{HomeR}>
+      <i>arrow_back
+    <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants}>
+    <i>search
+
 
 <main.responsive.no-padding>
 
-  <div.field.large.prefix.round.fill.active.margin>
-    <i.front>search
-    <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants}>
+  <div ##{idListSearchResults}>
+    <progress.circle.absolute.center.middle>
 
   ^{widgetSnackbar msgs}
+
+
+
+<dialog.max ##{idDialogDetails}>
+  <h6 ##{idDialogDetailsTitle}>
+  <p ##{idDialogDetailsContent}>
+  <details>
+    <summary>
+      _{MsgShowOnMap}
+      <i>
+        pin_drop
+        
+    <div ##{idMap}>
+    
+  <nav.right-align.no-space>
+    <button.transparent.link ##{idButttonCloseDialogDetails}>
+      _{MsgClose}

@@ -60,6 +60,11 @@ instance HashDBUser User where
     setPasswordHash h u = u { userPassword = Just h }
 
 
+
+overpass :: Text
+overpass = "https://overpass-api.de/api/interpreter"
+
+
 mediae :: [(Text,Text)]
 mediae = [("s","small"),("m","medium"),("l","large")] :: [(Text,Text)]
 

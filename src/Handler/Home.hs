@@ -8,7 +8,6 @@
 module Handler.Home
   ( getHomeR
   , getShopsR
-  , getRestaurantsR
   , getFetchR
   , getFetchP18PhotoR
   ) where
@@ -22,24 +21,24 @@ import Data.Aeson.Lens (key, AsValue (_String), nth)
 import Data.Bifunctor (Bifunctor(second, first))
 import Data.Text (Text, unpack)
 
-import Database.Esqueleto.Experimental
-    ( SqlExpr, Value (unValue), selectOne, from, table, countRows, select
-    , (^.), (==.), (:&)((:&))
-    )
 
 import Foundation
     ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, widgetTopbar
-    , Route(ShopsR, RestaurantsR, HomeR, StaticR, FetchR, FetchP18PhotoR)
+    , Route
+      ( ShopsR
+      , RestaurantsR
+      , HomeR, StaticR, FetchR, FetchP18PhotoR
+      )
     , AppMessage
       ( MsgClose, MsgCouldNotGetPosition, MsgAppName, MsgStyleStreets
       , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite
       , MsgStyleSatelliteStreets, MsgStyleNavigationDay, MsgStyleNavigationNight
       , MsgRestaurants, MsgShops, MsgNoLocationsWereFound
-      , MsgSearchByNameOrAddress, MsgSearchForRestaurants, MsgSearchForShops
+      , MsgSearchByNameOrAddress, MsgSearchForShops
       )
     )
 
-import Model (keyThemeLight, keyThemeDark)
+import Model (keyThemeLight, keyThemeDark, overpass)
 
 import Network.Wreq (get)
 import qualified Network.Wreq as WL (responseBody)
@@ -80,20 +79,6 @@ getShopsR = do
         idInputSearch <- newIdent
         
         $(widgetFile "shops/shops")
-
-
-getRestaurantsR :: Handler Html
-getRestaurantsR = do
-    
-    msgr <- getMessageRender
-    msgs <- getMessages
-    defaultLayout $ do
-        setTitleI MsgRestaurants
-        
-        idOverlay <- newIdent
-        idInputSearch <- newIdent
-        
-        $(widgetFile "restaurants/restaurants")
 
 
 getHomeR :: Handler Html
@@ -230,7 +215,3 @@ bbox = "76.738277,43.032844,77.166754,43.403766"
     
 nominatim :: Text
 nominatim = "https://nominatim.openstreetmap.org/search"
-         
-         
-overpass :: Text
-overpass = "https://overpass-api.de/api/interpreter"

@@ -1,0 +1,94 @@
+
+fetch(#{overpass},{
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
+  body: new URLSearchParams({ data: #{queryDefault} })
+}).then(data => data.json()).then(res => {
+  document.getElementById(#{idListSearchResults}).replaceChildren(... res.elements.map(x => {
+    const item = document.createElement('a');
+    item.className = 'row padding surface-container wave';
+
+    const start = document.createElement('i');
+    start.textContent = 'restaurant';      
+    
+    const content = document.createElement('div');
+    content.className = 'max';
+    
+    const headline = document.createElement('div');
+    headline.textContent = x.tags.name;
+    
+    const supportingText = document.createElement('label');
+    if (!!x.tags.description || !!x.tags.cuisine || !!x.tags['opening_hours']) {
+      supportingText.style.display = 'inline-block';
+      supportingText.style['max-width'] = '70vw';
+    }
+    supportingText.textContent = x.tags.description
+      ? x.tags.description
+      : ( x.tags.cuisine
+          ? x.tags.cuisine
+          : x.tags['opening_hours']
+        );
+
+    const end = document.createElement('i');
+    end.textContent = 'arrow_forward_ios';
+    
+    content.appendChild(headline);
+    content.appendChild(supportingText);
+    
+    item.appendChild(start);
+    item.appendChild(content);
+    item.appendChild(end);
+
+    item.addEventListener('click', e => {
+
+      document.getElementById(#{idDialogDetailsTitle}).textContent = x.tags.name;
+
+      let info =
+          [ ['cuisine', #{msgr MsgCuisine}, x => x.tags.cuisine],
+            ['description', #{msgr MsgDescription}, x => x.tags.description],
+            ['opening_hours', #{msgr MsgOpeningHours}, x => x.tags['opening_hours']],
+            ['addr', #{msgr MsgAddress}, x =>
+              [x.tags['addr:street'],x.tags['addr:housenumber'],x.tags['addr:city']].filter(x => !!x).join(', ')
+            ],
+            ['phone', #{msgr MsgPhone}, x => x.tags.phone ? x.tags.phone : x.tags['contact:phone']],
+          ];
+      
+      document.getElementById(#{idDialogDetailsContent}).replaceChildren(info.map(
+        ([tag,term,df]) => [tag,term,df(x)]
+      ).filter(
+        ([tag,term,data]) => !!data
+      ).map(([tag,term,data]) => {
+        
+        const dt = document.createElement('dt');
+        const dtLabel = document.createElement('label');
+        dtLabel.className = 'bold large-text';
+        dtLabel.textContent = term;
+
+        const dd = document.createElement('dd');
+        dd.className = 'margin';
+        dd.textContent = data;
+
+        dt.appendChild(dtLabel);
+        
+        return [dt,dd];
+        
+      }).reduce((dl,[dt,dd]) => {
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+        return dl;
+      }, document.createElement('dl')));
+
+      document.getElementById(#{idDialogDetails}).show();
+    });
+
+    return item;
+    
+  }));
+});
+
+
+document.getElementById(#{idButttonCloseDialogDetails}).addEventListener('click', e => {
+  document.getElementById(#{idDialogDetailsContent}).replaceChildren();
+  document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
+  document.getElementById(#{idDialogDetails}).close();
+});

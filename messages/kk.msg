@@ -1,3 +1,9 @@
+ShowOnMap: Картада көрсету
+Phone: Телефон
+OpeningHours: Жұмыс уақыты
+Address: Мекенжай
+Cuisine: Асхана
+Restaurant: Мейрамхана
 SearchForShops: Дүкендерді іздеңіз
 SearchForRestaurants: Мейрамханаларды іздеңіз
 SearchByNameOrAddress: Аты немесе мекенжайы бойынша іздеңіз

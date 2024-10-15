@@ -1,3 +1,9 @@
+ShowOnMap: Показать на карте
+Phone: Телефон
+OpeningHours: Часы работы
+Address: Адрес
+Cuisine: Кухня
+Restaurant: Ресторан
 SearchForShops: Поиск магазинов
 SearchForRestaurants: Поиск ресторанов
 SearchByNameOrAddress: Поиск по названию или адресу

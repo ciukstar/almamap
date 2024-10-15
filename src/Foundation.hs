@@ -199,7 +199,11 @@ instance Yesod App where
     -- Routes not requiring authentication.
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = setUltDestCurrent >> return Authorized
+
     isAuthorized RestaurantsR _ = return Authorized
+    isAuthorized RestaurantR _ = return Authorized
+    
+    
     isAuthorized ShopsR _ = return Authorized
     
     

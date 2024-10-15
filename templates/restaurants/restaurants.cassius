@@ -1,0 +1,20 @@
+
+##{idFieldSearch}
+    margin: 0.5rem
+    display: flex
+    align-items: center
+    
+    a.front
+        inset: 50% auto auto 0.5rem
+        padding: 1.2rem
+
+##{idListSearchResults}
+    a div.max label
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
+
+##{idDialogDetails}>
+    details
+        summary i
+            float: right

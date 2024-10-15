@@ -1,3 +1,9 @@
+ShowOnMap: Show on map
+Phone: Phone
+OpeningHours: Opening hours
+Address: Address
+Cuisine: Cuisine
+Restaurant: Restaurant
 SearchForShops: Search for shops
 SearchForRestaurants: Search for restaurants
 SearchByNameOrAddress: Search by name or address
