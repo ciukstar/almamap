@@ -1,10 +1,135 @@
+  
+<header.fixed>
+  <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
+    <a.front.transparent.round.circle.wave href=@{HomeR}>
+      <i>arrow_back
+      
+    $maybe v <- q
+      <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops} form=#{idFormSearch}
+             name=q value=#{v} autofocus>
+    $nothing
+      <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops} form=#{idFormSearch}
+             name=q autofocus>
+      
+    <i.icon-end>search
 
-^{widgetTopbar (Just (HomeR,[])) (msgr MsgShops) idOverlay Nothing Nothing}
 
-<main.responsive.no-padding>
+<main.responsive.no-padding ##{idMainSection}>
 
-  <div.field.large.prefix.round.fill.active.margin>
-    <i.front>search
-    <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops}>
+  <details ##{idDetailsType} :isJust typ:open>
+    <summary.none>
+      <article.transparent.no-round.no-elevate>
+        <nav>
+          <div.max>_{MsgType}
+          <label>#{S.size types}
+          <i>
+            $maybe _ <- typ
+              expand_less
+            $nothing
+              expand_more
+    $forall c <- types
+      $if pure c == typ
+        <button.chip.fill.round.small-margin type=submit form=#{idFormSearch}>
+          <i>done
+          <span>#{c}
+      $else
+        <button.chip.round.small-margin type=submit name=type value=#{c} form=#{idFormSearch}>
+          <span>#{c}
+
+  <details ##{idDetailsBrand} :isJust brand:open>
+    <summary.none>
+      <article.transparent.no-round.no-elevate>
+        <nav>
+          <div.max>_{MsgBrand}
+          <label>#{S.size brands}
+          <i>
+            $maybe _ <- brand
+              expand_less
+            $nothing
+              expand_more
+    $forall c <- brands
+      $if pure c == brand
+        <button.chip.fill.round.small-margin type=submit form=#{idFormSearch}>
+          <i>done
+          <span>#{c}
+      $else
+        <button.chip.round.small-margin type=submit name=brand value=#{c} form=#{idFormSearch}>
+          <span>#{c}
+      
+
+  <div ##{idListSearchResults}>
+    $forall s@(Shop _ _ _ name descr typ _ amenity _ openingHours addr _) <- shops
+      <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode s})">
+        <i>
+          $if typ == (Just "alcohol")
+            liquor
+          $elseif typ == (Just "sports")
+            sports_tennis
+          $elseif typ == (Just "books")
+            auto_stories
+          $elseif typ == (Just "bicycle")
+            pedal_bike
+          $elseif typ == (Just "beverages")
+            emoji_food_beverage
+          $elseif typ == (Just "bed")
+            bed
+          $elseif typ == (Just "beauty")
+            health_and_beauty
+          $elseif typ == (Just "bakery")
+            bakery_dining
+          $elseif typ == (Just "baby_goods")
+            bedroom_baby
+          $elseif typ == (Just "appliance")
+            iron
+          $elseif typ == (Just "anime")
+            comic_bubble
+          $elseif typ == (Just "computer")
+            computer
+          $elseif typ == (Just "hairdresser")
+            styler
+          $elseif amenity == (Just "fuel")
+            local_gas_station
+          $else
+            shopping_cart
+            
+        <div.max>
+          <div>#{name}
+          <label :isJust ((descr <|> addr) <|> openingHours):style="display:inline-block;max-width:70vw">
+            $maybe descr <- descr
+              #{descr}
+            $nothing
+              $maybe addr <- addr
+                #{addr}
+              $nothing
+                $maybe openingHours <- openingHours
+                  #{openingHours}
+                  
+        <i>arrow_forward_ios
 
   ^{widgetSnackbar msgs}
+
+
+<form method=get action=@{ShopsR} ##{idFormSearch}>
+
+
+<dialog.max.no-padding ##{idDialogDetails}>
+  <div.row.padding.baseline>
+    <h6.max ##{idDialogDetailsTitle}>
+    <button.transparent.circle ##{idButttonCloseDialogDetails} title=_{MsgClose}>
+      <i>close
+    
+  <p.padding ##{idDialogDetailsContent}>
+    
+  <details ##{idDetailsMap}>
+    <summary.none>
+      <article.transparent.no-round.no-elevate>
+        <nav>
+          <i>pin_drop
+          <div.max>_{MsgShowOnMap}
+          <i>expand_more
+        
+    <div.max ##{idMap}>
+    
+  <nav.padding.right-align.no-space>
+    <button ##{idButttonCancelDialogDetails}>
+      _{MsgClose}

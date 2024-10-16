@@ -1,3 +1,5 @@
+Type: Type
+Brand: Brand
 ShowOnMap: Show on map
 Phone: Phone
 OpeningHours: Opening hours

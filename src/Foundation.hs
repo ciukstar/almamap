@@ -200,11 +200,9 @@ instance Yesod App where
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = setUltDestCurrent >> return Authorized
 
-    isAuthorized RestaurantsR _ = return Authorized
+    isAuthorized RestaurantsR _ = return Authorized    
     
-    
-    isAuthorized ShopsR _ = return Authorized
-    
+    isAuthorized ShopsR _ = return Authorized    
     
     
     isAuthorized DocsR _ = setUltDestCurrent >> return Authorized

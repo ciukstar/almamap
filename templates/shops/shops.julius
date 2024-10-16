@@ -1,0 +1,111 @@
+
+const formSearch = document.getElementById(#{idFormSearch});
+const listSearchResults = document.getElementById(#{idListSearchResults}); 
+
+var map;
+var poi;
+
+document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
+  listSearchResults.replaceChildren(progress());
+  formSearch.submit();
+}, 300));
+
+Array.from(
+  document.querySelectorAll('button.chip[type=submit]')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    listSearchResults.replaceChildren(progress());
+  });
+});
+
+
+document.getElementById(#{idDetailsBrand}).addEventListener('toggle', e => {
+  e.target.querySelector('summary article nav i').textContent = e.target.open ? 'expand_less' : 'expand_more';
+});
+
+[#{idDetailsType},#{idDetailsBrand}].map(x => document.getElementById(x)).forEach(x => {
+  x.addEventListener('toggle', e => {
+    e.target.querySelector('summary article nav i').textContent = e.target.open ? 'expand_less' : 'expand_more';
+  });
+});
+
+
+[#{idButttonCloseDialogDetails},#{idButttonCancelDialogDetails}].map(
+  x => document.getElementById(x)
+).forEach(x => {
+  x.addEventListener('click', e => {
+    document.getElementById(#{idMap}).replaceChildren();
+    document.getElementById(#{idDetailsMap}).open = false;
+    document.getElementById(#{idDialogDetailsContent}).replaceChildren();
+    document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
+    document.getElementById(#{idDialogDetails}).close();
+  });
+});
+
+
+document.getElementById(#{idDetailsMap}).addEventListener('toggle', function (e) {
+  
+  map.flyTo({
+    center: poi.getLngLat().toArray(),
+    essential: true
+  });
+  
+});
+
+
+function showDialogDetails (x) {
+
+  document.getElementById(#{idDialogDetailsTitle}).textContent = x.name;
+
+  let info =
+      [ [#{msgr MsgCuisine}, x => x.cuisine],
+        [#{msgr MsgDescription}, x => x.descr],
+        [#{msgr MsgOpeningHours}, x => x.openingHours],
+        [#{msgr MsgAddress}, x => x.addr],
+        [#{msgr MsgPhone}, x => x.phone]
+      ];
+  
+  document.getElementById(#{idDialogDetailsContent}).replaceChildren(info.map(
+    ([term,df]) => [term,df(x)]
+  ).filter(([term,data]) => !!data).map(([term,data]) => {
+    
+    const dt = document.createElement('dt');
+    const dtLabel = document.createElement('label');
+    dtLabel.className = 'bold large-text';
+    dtLabel.textContent = term;
+
+    const dd = document.createElement('dd');
+    dd.className = 'margin';
+    dd.textContent = data;
+
+    dt.appendChild(dtLabel);
+    
+    return [dt,dd];
+    
+  }).reduce((dl,[dt,dd]) => {
+    dl.appendChild(dt);
+    dl.appendChild(dd);
+    return dl;
+  }, document.createElement('dl')));
+
+  document.getElementById(#{idDialogDetails}).show();
+
+  loadPoi(x);
+  
+};
+
+
+async function loadPoi (x) {
+  
+  mapboxgl.accessToken = #{mapboxPk};
+  
+  map = new mapboxgl.Map({
+    container: #{idMap},
+    center: [76.9406462, 43.2239423],
+    zoom: 9,
+    style: "mapbox://styles/mapbox/dark-v11"
+  });
+
+  poi = new mapboxgl.Marker().setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
+  
+}

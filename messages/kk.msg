@@ -1,3 +1,5 @@
+Type: Түр
+Brand: Бренд
 ShowOnMap: Картада көрсету
 Phone: Телефон
 OpeningHours: Жұмыс уақыты

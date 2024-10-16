@@ -7,7 +7,6 @@
 
 module Handler.Home
   ( getHomeR
-  , getShopsR
   , getFetchR
   , getFetchP18PhotoR
   ) where
@@ -21,20 +20,17 @@ import Data.Aeson.Lens (key, AsValue (_String), nth)
 import Data.Bifunctor (Bifunctor(second, first))
 import Data.Text (Text, unpack)
 
-
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, widgetTopbar
+    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu
     , Route
-      ( ShopsR
-      , RestaurantsR
-      , HomeR, StaticR, FetchR, FetchP18PhotoR
+      ( ShopsR, RestaurantsR, StaticR, FetchR, FetchP18PhotoR
       )
     , AppMessage
       ( MsgClose, MsgCouldNotGetPosition, MsgAppName, MsgStyleStreets
       , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite
       , MsgStyleSatelliteStreets, MsgStyleNavigationDay, MsgStyleNavigationNight
       , MsgRestaurants, MsgShops, MsgNoLocationsWereFound
-      , MsgSearchByNameOrAddress, MsgSearchForShops
+      , MsgSearchByNameOrAddress
       )
     )
 
@@ -65,20 +61,6 @@ import Yesod.Core
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
-
-
-getShopsR :: Handler Html
-getShopsR = do
-    
-    msgr <- getMessageRender
-    msgs <- getMessages
-    defaultLayout $ do
-        setTitleI MsgShops
-        
-        idOverlay <- newIdent
-        idInputSearch <- newIdent
-        
-        $(widgetFile "shops/shops")
 
 
 getHomeR :: Handler Html

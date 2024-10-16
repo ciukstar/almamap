@@ -75,7 +75,7 @@
       <div.max>
         <h6.small>_{MsgShops}
       <label ##{idLabelShops}>
-      <i>arrow_forward_ios
+      <i.end-icon>arrow_forward_ios
 
 
 ^{widgetMainMenu idOverlay idDialogMainMenu}

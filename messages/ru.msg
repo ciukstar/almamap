@@ -1,3 +1,5 @@
+Type: Тип
+Brand: Бренд
 ShowOnMap: Показать на карте
 Phone: Телефон
 OpeningHours: Часы работы
