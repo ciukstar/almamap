@@ -51,7 +51,7 @@ import System.Log.FastLogger
 import Handler.Common (getFaviconR, getRobotsR)
 import Handler.Docs ( getDocsR )
 import Handler.Home ( getHomeR, getShopsR, getFetchR, getFetchP18PhotoR )
-import Handler.Restaurants (getRestaurantR, getRestaurantsR )
+import Handler.Restaurants (getRestaurantsR )
 
 
 import Handler.Users

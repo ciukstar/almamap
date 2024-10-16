@@ -38,7 +38,7 @@
       
 
   <div ##{idListSearchResults}>
-    $forall r@(Restaurant rid lat lon name descr cuisine openingHours addr phone) <- restaurants
+    $forall r@(Restaurant _ _ _ name descr cuisine openingHours _ _) <- restaurants
       <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode r})">
         <i>restaurant
         <div.max>
@@ -57,24 +57,28 @@
 
   ^{widgetSnackbar msgs}
 
+
 <form method=get action=@{RestaurantsR} ##{idFormSearch}>
 
-<dialog.max ##{idDialogDetails}>
-  <div.row.baseline>
+
+<dialog.max.no-padding ##{idDialogDetails}>
+  <div.row.padding.baseline>
     <h6.max ##{idDialogDetailsTitle}>
     <button.transparent.circle ##{idButttonCloseDialogDetails} title=_{MsgClose}>
       <i>close
     
-  <p ##{idDialogDetailsContent}>
+  <p.padding ##{idDialogDetailsContent}>
     
-  <details>
-    <summary>
-      _{MsgShowOnMap}
-      <i>
-        pin_drop
+  <details ##{idDetailsMap}>
+    <summary.none>
+      <article.transparent.no-round.no-elevate>
+        <nav>
+          <i>pin_drop
+          <div.max>_{MsgShowOnMap}
+          <i>expand_more
         
-    <div ##{idMap}>
+    <div.max ##{idMap}>
     
-  <nav.right-align.no-space>
+  <nav.padding.right-align.no-space>
     <button ##{idButttonCancelDialogDetails}>
       _{MsgClose}

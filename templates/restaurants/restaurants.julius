@@ -1,6 +1,9 @@
 
 const formSearch = document.getElementById(#{idFormSearch});
-const listSearchResults = document.getElementById(#{idListSearchResults});
+const listSearchResults = document.getElementById(#{idListSearchResults}); 
+
+var map;
+var poi;
 
 document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
   listSearchResults.replaceChildren(progress());
@@ -25,10 +28,22 @@ document.getElementById(#{idDetailsCuisine}).addEventListener('toggle', e => {
   x => document.getElementById(x)
 ).forEach(x => {
   x.addEventListener('click', e => {
+    document.getElementById(#{idMap}).replaceChildren();
+    document.getElementById(#{idDetailsMap}).open = false;
     document.getElementById(#{idDialogDetailsContent}).replaceChildren();
     document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
     document.getElementById(#{idDialogDetails}).close();
   });
+});
+
+
+document.getElementById(#{idDetailsMap}).addEventListener('toggle', function (e) {
+  
+  map.flyTo({
+    center: poi.getLngLat().toArray(),
+    essential: true
+  });
+  
 });
 
 
@@ -41,7 +56,7 @@ function showDialogDetails (x) {
         [#{msgr MsgDescription}, x => x.descr],
         [#{msgr MsgOpeningHours}, x => x.openingHours],
         [#{msgr MsgAddress}, x => x.addr],
-        [#{msgr MsgPhone}, x => x.phone],
+        [#{msgr MsgPhone}, x => x.phone]
       ];
   
   document.getElementById(#{idDialogDetailsContent}).replaceChildren(info.map(
@@ -68,5 +83,23 @@ function showDialogDetails (x) {
   }, document.createElement('dl')));
 
   document.getElementById(#{idDialogDetails}).show();
+
+  loadPoi(x);
   
 };
+
+
+async function loadPoi (x) {
+  
+  mapboxgl.accessToken = #{mapboxPk};
+  
+  map = new mapboxgl.Map({
+    container: #{idMap},
+    center: [76.9406462, 43.2239423],
+    zoom: 9,
+    style: "mapbox://styles/mapbox/dark-v11"
+  });
+
+  poi = new mapboxgl.Marker().setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
+  
+}

@@ -4,7 +4,6 @@
 
 /shops ShopsR GET
 
-/restaurant  RestaurantR  GET
 /restaurants RestaurantsR GET
 
 / HomeR GET

@@ -8,7 +8,6 @@
 
 module Handler.Restaurants
   ( getRestaurantsR
-  , getRestaurantR
   ) where
 
 import Control.Applicative ((<|>))
@@ -31,76 +30,32 @@ import Data.Text as T (splitOn)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, widgetTopbar
-    , Route(ShopsR, RestaurantR, RestaurantsR, HomeR, StaticR, FetchR, FetchP18PhotoR)
+    ( App (appSettings), Handler, widgetSnackbar
+    , Route(RestaurantsR, HomeR)
     , AppMessage
-      ( MsgClose, MsgCouldNotGetPosition, MsgAppName, MsgStyleStreets
-      , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite
-      , MsgStyleSatelliteStreets, MsgStyleNavigationDay, MsgStyleNavigationNight
-      , MsgRestaurants, MsgShops, MsgNoLocationsWereFound, MsgRestaurant
-      , MsgSearchByNameOrAddress, MsgSearchForRestaurants, MsgSearchForShops
-      , MsgCuisine, MsgDescription, MsgAddress, MsgOpeningHours, MsgPhone, MsgShowOnMap
+      ( MsgClose, MsgRestaurants, MsgSearchForRestaurants, MsgCuisine
+      , MsgDescription, MsgAddress, MsgOpeningHours, MsgPhone, MsgShowOnMap
       )
     )
 
-import Model (overpass, keyThemeLight, keyThemeDark)
+import Model (overpass)
 
 import Network.Wreq (post, FormParam((:=)))
 import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
-import Settings.StaticFiles
-    ( img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_assistant_navigation_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_compass_needle_svg
-    )
 
-import Text.Hamlet (Html, shamlet)
-import Text.Shakespeare.Text (st)
+import Text.Hamlet (shamlet)
 
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
     , addScriptRemote, getYesod, selectRep, provideJson, getMessageRender
-    , newIdent, provideRep, MonadHandler (liftHandler)
+    , newIdent, provideRep
     )
 import Yesod.Core.Widget (setTitleI)
-import Yesod.Form.Input (runInputGet, ireq, iopt)
-import Yesod.Form.Fields (intField, textField)
+import Yesod.Form.Input (runInputGet, iopt)
+import Yesod.Form.Fields (textField)
 import Text.Blaze.Renderer.Text (renderMarkup)
-
-
-getRestaurantR :: Handler Html
-getRestaurantR = undefined {-- do
-
-    rid <- runInputGet $ ireq intField "rid" :: Handler Int
-    
-    let query :: Text
-        query = [st|
-                   [out:json];
-
-                   rel["ISO3166-2"="KZ-75"] -> .rel;
-                   .rel map_to_area -> .city;
-
-                   node(#{rid})(area.city);
-
-                   out body;
-                   |]
-
-    r <- liftIO $ post (unpack overpass) ["data" := query]
-
-    let restaurant = parseMaybe parseJSON =<< (r L.^? WL.responseBody . key "elements" . nth 0)
-          
-
-    liftIO $ print $ r L.^? WL.responseBody
-            
-    msgs <- getMessages
-    defaultLayout $ do
-        setTitleI MsgRestaurant
-        
-        $(widgetFile "restaurants/restaurant") --}
 
 
 getRestaurantsR :: Handler TypedContent
@@ -138,7 +93,7 @@ getRestaurantsR = do
 
     let cuisines :: S.Set Text
         cuisines = S.fromList $ concat $ mapMaybe restaurantCuisine restaurants
-    
+
     selectRep $ do
             
         provideRep $ defaultLayout $ do
@@ -156,9 +111,15 @@ getRestaurantsR = do
             idDialogDetails <- newIdent
             idDialogDetailsTitle <- newIdent
             idDialogDetailsContent <- newIdent
+            idDetailsMap <- newIdent
             idMap <- newIdent 
             idButttonCloseDialogDetails <- newIdent
             idButttonCancelDialogDetails <- newIdent
+
+            mapboxPk <- appMapboxPk . appSettings <$> getYesod
+
+            addStylesheetRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css"
+            addScriptRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"
 
             $(widgetFile "restaurants/restaurants")
             
