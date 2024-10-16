@@ -1,56 +1,25 @@
 
+const formSearch = document.getElementById(#{idFormSearch});
+const listSearchResults = document.getElementById(#{idListSearchResults});
+
 document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
-  
-  const listSearchResults = document.getElementById(#{idListSearchResults});
   listSearchResults.replaceChildren(progress());
-  
-  fetch(`@{RestaurantsR}?q=${e.target.value}`,{
-    method: 'GET',
-    headers: { 'Accept': 'application/json'}
-  }).then(data => data.json()).then(res => {
-    
-    listSearchResults.replaceChildren(... res.map(x => {
-      const item = document.createElement('a');
-      item.className = 'row padding surface-container wave';
-
-      const start = document.createElement('i');
-      start.textContent = 'restaurant';      
-      
-      const content = document.createElement('div');
-      content.className = 'max';
-      
-      const headline = document.createElement('div');
-      headline.textContent = x.name;
-      
-      const supportingText = document.createElement('label');
-      if (!!x.descr || !!x.cuisine || !!x.openingHours) {
-        supportingText.style.display = 'inline-block';
-        supportingText.style['max-width'] = '70vw';
-      }
-      supportingText.textContent = x.descr
-        ? x.descr
-        : ( x.cuisine
-            ? x.cuisine
-            : x.openingHours
-          );
-
-      const end = document.createElement('i');
-      end.textContent = 'arrow_forward_ios';
-      
-      content.appendChild(headline);
-      content.appendChild(supportingText);
-      
-      item.appendChild(start);
-      item.appendChild(content);
-      item.appendChild(end);
-
-      item.addEventListener('click', e => showDialogDetails(x));
-
-      return item;
-      
-    }));
-  });
+  formSearch.submit();
 }, 300));
+
+Array.from(
+  document.querySelectorAll('button.chip[type=submit]')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    listSearchResults.replaceChildren(progress());
+  });
+});
+
+
+document.getElementById(#{idDetailsCuisine}).addEventListener('toggle', e => {
+  e.target.querySelector('summary article nav i').textContent = e.target.open ? 'expand_less' : 'expand_more';
+});
+
 
 [#{idButttonCloseDialogDetails},#{idButttonCancelDialogDetails}].map(
   x => document.getElementById(x)

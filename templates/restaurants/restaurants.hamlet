@@ -1,14 +1,41 @@
-
+  
 <header.fixed>
-
   <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
     <a.front.transparent.round.circle.wave href=@{HomeR}>
       <i>arrow_back
-    <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants}>
-    <i>search
+      
+    $maybe v <- q
+      <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants} form=#{idFormSearch}
+             name=q value=#{v} autofocus>
+    $nothing
+      <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants} form=#{idFormSearch}
+             name=q autofocus>
+      
+    <i.icon-end>search
 
 
-<main.responsive.no-padding>
+<main.responsive.no-padding ##{idMainSection}>
+
+  <details ##{idDetailsCuisine} :isJust cuisine:open>
+    <summary.none>
+      <article.transparent.no-round.no-elevate>
+        <nav>
+          <div.max>_{MsgCuisine}
+          <label>#{S.size cuisines}
+          <i>
+            $maybe _ <- cuisine
+              expand_less
+            $nothing
+              expand_more
+    $forall c <- cuisines
+      $if pure c == cuisine
+        <button.chip.fill.round.small-margin type=submit form=#{idFormSearch}>
+          <i>done
+          <span>#{c}
+      $else
+        <button.chip.round.small-margin type=submit name=cuisine value=#{c} form=#{idFormSearch}>
+          <span>#{c}
+      
 
   <div ##{idListSearchResults}>
     $forall r@(Restaurant rid lat lon name descr cuisine openingHours addr phone) <- restaurants
@@ -16,12 +43,12 @@
         <i>restaurant
         <div.max>
           <div>#{name}
-          <label :isJust ((descr <|> cuisine) <|> openingHours):style="display:inline-block;max-width:70vw">
+          <label :isJust ((descr <|> (LS.head =<< cuisine)) <|> openingHours):style="display:inline-block;max-width:70vw">
             $maybe descr <- descr
               #{descr}
             $nothing
-              $maybe cuisine <- cuisine
-                #{cuisine}
+              $maybe cuisines <- cuisine
+                #{intercalate ", " cuisines}
               $nothing
                 $maybe openingHours <- openingHours
                   #{openingHours}
@@ -30,7 +57,7 @@
 
   ^{widgetSnackbar msgs}
 
-
+<form method=get action=@{RestaurantsR} ##{idFormSearch}>
 
 <dialog.max ##{idDialogDetails}>
   <div.row.baseline>
