@@ -6,9 +6,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Handler.Shops
-  ( getShopsR
-  ) where
+module Handler.Shops (getShopsR) where
 
 import Control.Applicative ((<|>))
 import qualified Control.Lens as L ( (^?) )
@@ -34,6 +32,7 @@ import Foundation
     , AppMessage
       ( MsgClose, MsgSearchForShops, MsgCuisine, MsgDescription, MsgAddress
       , MsgOpeningHours, MsgPhone, MsgShowOnMap, MsgBrand, MsgShops, MsgType
+      , MsgLoadMore, MsgThatIsAll
       )
     )
 
@@ -45,6 +44,7 @@ import qualified Network.Wreq as WL (responseBody)
 import Settings (widgetFile, AppSettings (appMapboxPk))
 
 import Text.Hamlet (shamlet)
+import Text.Julius (rawJS)
 
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
@@ -53,13 +53,18 @@ import Yesod.Core
     )
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, iopt)
-import Yesod.Form.Fields (textField)
+import Yesod.Form.Fields (textField, intField)
 import Text.Blaze.Renderer.Text (renderMarkup)
 
 
-getShopsR :: Handler TypedContent
-getShopsR = do
+page :: Int
+page = 100
 
+
+getShopsR :: Handler TypedContent
+getShopsR = do 
+    
+    offset <- fromMaybe @Int 0 <$> runInputGet (iopt intField "offset")
     q <- runInputGet $ iopt textField "q"
     typ <- runInputGet $ iopt textField "type"
     brand <- runInputGet $ iopt textField "brand"
@@ -81,24 +86,24 @@ getShopsR = do
 
                 ._ out body;
             |]
-
-    liftIO $ print query
             
     msgr <- getMessageRender
     msgs <- getMessages
 
     r <- liftIO $ post (unpack overpass) ["data" := query]
             
-    let shops :: [Shop]
-        shops = sortBy (\a b -> compare (shopName a) (shopName b)) . fromMaybe []
+    let allShops :: [Shop]
+        allShops = sortBy (\a b -> compare (shopName a) (shopName b)) . fromMaybe []
             $ parseMaybe parseJSON =<< (r L.^? WL.responseBody . key "elements")
 
     let types :: S.Set Text
-        types = S.fromList $ mapMaybe shopType shops
+        types = S.fromList $ concat $ mapMaybe shopType allShops
 
     let brands :: S.Set Text
-        brands = S.fromList $ mapMaybe shopBrand shops
+        brands = S.fromList $ mapMaybe shopBrand allShops
 
+    let shops = (\s -> (icon s, label s, s)) <$> take page (drop offset allShops)
+    
     selectRep $ do
             
         provideRep $ defaultLayout $ do
@@ -107,9 +112,11 @@ getShopsR = do
             idFormSearch <- newIdent
             idFieldSearch <- newIdent
             idInputSearch <- newIdent
-            idListSearchResults <- newIdent
 
             idMainSection <- newIdent
+            
+            idListSearchResults <- newIdent
+            idDivLoadMore <- newIdent
 
             idDetailsType <- newIdent
             idDetailsBrand <- newIdent
@@ -130,6 +137,30 @@ getShopsR = do
             $(widgetFile "shops/shops")
             
         provideJson shops
+
+  where
+
+      label :: Shop -> Maybe Text
+      label (Shop _ _ _ _ descr _ _ _ _ openingHours addr _) =
+          (descr <|> addr) <|> openingHours
+      
+      icon :: Shop -> Text
+      icon (Shop _ _ _ _ _ (Just ["alcohol"]) _ _ _ _ _ _) = "liquor"
+      icon (Shop _ _ _ _ _ (Just ["sports"]) _ _ _ _ _ _) = "sports_tennis"
+      icon (Shop _ _ _ _ _ (Just ["books"]) _ _ _ _ _ _) = "auto_stories"
+      icon (Shop _ _ _ _ _ (Just ["bicycle"]) _ _ _ _ _ _) = "pedal_bike"
+      icon (Shop _ _ _ _ _ (Just ["beverages"]) _ _ _ _ _ _) = "emoji_food_beverage"
+      icon (Shop _ _ _ _ _ (Just ["bed"]) _ _ _ _ _ _) = "bed"
+      icon (Shop _ _ _ _ _ (Just ["beauty"]) _ _ _ _ _ _) = "health_and_beauty"
+      icon (Shop _ _ _ _ _ (Just ["bakery"]) _ _ _ _ _ _) = "bakery_dining"
+      icon (Shop _ _ _ _ _ (Just ["baby_goods"]) _ _ _ _ _ _) = "bedroom_baby"
+      icon (Shop _ _ _ _ _ (Just ["appliance"]) _ _ _ _ _ _) = "iron"
+      icon (Shop _ _ _ _ _ (Just ["anime"]) _ _ _ _ _ _) = "comic_bubble"
+      icon (Shop _ _ _ _ _ (Just ["computer"]) _ _ _ _ _ _) = "computer"
+      icon (Shop _ _ _ _ _ (Just ["hairdresser"]) _ _ _ _ _ _) = "styler"
+      icon (Shop _ _ _ _ _ (Just ["fuel"]) _ _ _ _ _ _) = "local_gas_station"
+      icon (Shop _ _ _ _ _ _ _(Just "fuel") _ _ _ _) = "local_gas_station"
+      icon _ = "shopping_cart"
 
 
 instance ToJSON Shop where
@@ -159,10 +190,10 @@ instance FromJSON Shop where
             <*> e .: "lon"
             <*> t .: "name"
             <*> t .:? "description"
-            <*> t .:? "shop"
+            <*> ( (splitOn ";" <$>) <$> (t .:? "shop") )
             <*> t .:? "brand"
             <*> t .:? "amenity"
-            <*> ( (splitOn ";" <$>) <$> (t .:? "cuisine"))
+            <*> ( (splitOn ";" <$>) <$> (t .:? "cuisine") )
             <*> t .:? "opening_hours"
             <*> ( (\a b c -> joinMaybeText (joinMaybeText a b) c)
                   <$> t .:? "addr:street"
@@ -178,14 +209,14 @@ data Shop = Shop
     , shopLon :: Double
     , shopName :: Text
     , shopDescr :: Maybe Text
-    , shopType :: Maybe Text
+    , shopType :: Maybe [Text]
     , shopBrand :: Maybe Text
     , shopAmenity :: Maybe Text
     , shopCuisine :: Maybe [Text]
     , shopOpeningHours :: Maybe Text
     , shopAddr :: Maybe Text
     , shopPhone :: Maybe Text
-    } deriving Show
+    }
 
 
 joinMaybeText :: Maybe Text -> Maybe Text -> Maybe Text

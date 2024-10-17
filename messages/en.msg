@@ -1,3 +1,5 @@
+ThatIsAll: That's all
+LoadMore: Load more
 Type: Type
 Brand: Brand
 ShowOnMap: Show on map

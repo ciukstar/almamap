@@ -1,3 +1,5 @@
+ThatIsAll: Бар болғаны
+LoadMore: Көбірек көрсету
 Type: Түр
 Brand: Бренд
 ShowOnMap: Картада көрсету

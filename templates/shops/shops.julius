@@ -52,6 +52,71 @@ document.getElementById(#{idDetailsMap}).addEventListener('toggle', function (e)
   
 });
 
+var offset = #{rawJS $ show $ offset + page};
+
+function loadMore() {
+
+  const params = new window.URL(window.location.href).searchParams;
+  params.set('offset', offset);
+
+  document.getElementById(#{idDivLoadMore}).querySelector('button').appendChild((() => {
+    const loading = document.createElement('i');
+    loading.className = 'loading';
+    const indicator = document.createElement('progress');
+    indicator.className = 'circle small secondary';
+    loading.appendChild(indicator);
+    return loading;
+  }) ());
+  
+  fetch(`@{ShopsR}?${params}`,{
+    headers: {'Accept': 'application/json'}
+  }).then(res => res.json()).then(function (data) {
+    data.map(([icon, label,x]) => (() => {
+      const item = document.createElement('a');
+      item.className = 'row padding surface-container wave';
+
+      const start = document.createElement('i');
+      start.textContent = icon;
+
+      const content = document.createElement('div');
+      content.className = 'max';
+
+      const headline = document.createElement('div');
+      headline.textContent = x.name;
+
+      const supportingText = document.createElement('label');
+      supportingText.textContent = label;
+
+      const end = document.createElement('i');
+      end.textContent = 'arrow_forward_ios';
+
+      content.appendChild(headline);
+      content.appendChild(supportingText);
+      item.appendChild(start);
+      item.appendChild(content);
+      item.appendChild(end);
+
+      item.addEventListener('click', e => showDialogDetails(x));
+      
+      return item;
+    }) ()).forEach(x => {
+      listSearchResults.appendChild(x);
+    });
+    
+    return data.length;
+    
+  }).then(n => {
+    offset = offset + #{rawJS $ show page};
+    
+    const divLoadMore = document.getElementById(#{idDivLoadMore})
+    divLoadMore.querySelector('button i.loading').remove();
+
+    if (n < 1) {
+      divLoadMore.replaceChildren();
+    }
+  });
+}
+
 
 function showDialogDetails (x) {
 

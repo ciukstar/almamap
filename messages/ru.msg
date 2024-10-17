@@ -1,3 +1,5 @@
+ThatIsAll: Вот и всё
+LoadMore: Показать ещё
 Type: Тип
 Brand: Бренд
 ShowOnMap: Показать на карте

@@ -1,4 +1,4 @@
-  
+
 <header.fixed>
   <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
     <a.front.transparent.round.circle.wave href=@{HomeR}>
@@ -13,6 +13,7 @@
       
     <i.icon-end>search
 
+<form method=get action=@{ShopsR} ##{idFormSearch}>
 
 <main.responsive.no-padding ##{idMainSection}>
 
@@ -27,14 +28,14 @@
               expand_less
             $nothing
               expand_more
-    $forall c <- types
-      $if pure c == typ
+    $forall t <- types
+      $if pure t == typ
         <button.chip.fill.round.small-margin type=submit form=#{idFormSearch}>
           <i>done
-          <span>#{c}
+          <span>#{t}
       $else
-        <button.chip.round.small-margin type=submit name=type value=#{c} form=#{idFormSearch}>
-          <span>#{c}
+        <button.chip.round.small-margin type=submit name=type value=#{t} form=#{idFormSearch}>
+          <span>#{t}
 
   <details ##{idDetailsBrand} :isJust brand:open>
     <summary.none>
@@ -47,54 +48,24 @@
               expand_less
             $nothing
               expand_more
-    $forall c <- brands
-      $if pure c == brand
+    $forall b <- brands
+      $if pure b == brand
         <button.chip.fill.round.small-margin type=submit form=#{idFormSearch}>
           <i>done
-          <span>#{c}
+          <span>#{b}
       $else
-        <button.chip.round.small-margin type=submit name=brand value=#{c} form=#{idFormSearch}>
-          <span>#{c}
+        <button.chip.round.small-margin type=submit name=brand value=#{b} form=#{idFormSearch}>
+          <span>#{b}
       
 
   <div ##{idListSearchResults}>
-    $forall s@(Shop _ _ _ name descr typ _ amenity _ openingHours addr _) <- shops
+    $forall (icon, label, s@(Shop _ _ _ name descr _ _ _ _ openingHours addr _)) <- shops
       <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode s})">
-        <i>
-          $if typ == (Just "alcohol")
-            liquor
-          $elseif typ == (Just "sports")
-            sports_tennis
-          $elseif typ == (Just "books")
-            auto_stories
-          $elseif typ == (Just "bicycle")
-            pedal_bike
-          $elseif typ == (Just "beverages")
-            emoji_food_beverage
-          $elseif typ == (Just "bed")
-            bed
-          $elseif typ == (Just "beauty")
-            health_and_beauty
-          $elseif typ == (Just "bakery")
-            bakery_dining
-          $elseif typ == (Just "baby_goods")
-            bedroom_baby
-          $elseif typ == (Just "appliance")
-            iron
-          $elseif typ == (Just "anime")
-            comic_bubble
-          $elseif typ == (Just "computer")
-            computer
-          $elseif typ == (Just "hairdresser")
-            styler
-          $elseif amenity == (Just "fuel")
-            local_gas_station
-          $else
-            shopping_cart
+        <i>#{icon}
             
         <div.max>
           <div>#{name}
-          <label :isJust ((descr <|> addr) <|> openingHours):style="display:inline-block;max-width:70vw">
+          <label :isJust label:style="display:inline-block;max-width:70vw">
             $maybe descr <- descr
               #{descr}
             $nothing
@@ -106,10 +77,12 @@
                   
         <i>arrow_forward_ios
 
+  $if length allShops > (offset + page)
+    <div ##{idDivLoadMore}>
+      <button.responsive.primary.margin.center-align onclick="loadMore()">
+        <span>_{MsgLoadMore}
+
   ^{widgetSnackbar msgs}
-
-
-<form method=get action=@{ShopsR} ##{idFormSearch}>
 
 
 <dialog.max.no-padding ##{idDialogDetails}>
