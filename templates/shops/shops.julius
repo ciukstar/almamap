@@ -1,20 +1,23 @@
 
 const formSearch = document.getElementById(#{idFormSearch});
+const searchResultsArea = document.getElementById(#{idSearchResultsArea});
 const listSearchResults = document.getElementById(#{idListSearchResults}); 
 
 var map;
 var poi;
 
 document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
-  listSearchResults.replaceChildren(progress());
+  searchResultsArea.replaceChildren(progress());
   formSearch.submit();
-}, 300));
+}, 1000));
 
-Array.from(
-  document.querySelectorAll('button.chip[type=submit]')
-).forEach(x => {
+[ document.getElementById(#{idButtonSearch}),
+  ... Array.from(
+    document.querySelectorAll('button.chip[type=submit]')
+  )
+].forEach(x => {
   x.addEventListener('click', e => {
-    listSearchResults.replaceChildren(progress());
+    searchResultsArea.replaceChildren(progress());
   });
 });
 

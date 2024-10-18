@@ -1,3 +1,7 @@
+NoShops: Дүкендер жоқ
+NoShopsWereFoundForSearchTerms: Барлық іздеу сөздеріңізді қамтитын дүкендер табылмады
+NoRestaurants: Мейрамханалар жоқ
+NoRestaurantsWereFoundForSearchTerms: Барлық іздеу сөздеріңізді қамтитын мейрамханалар табылмады
 ThatIsAll: Бар болғаны
 LoadMore: Көбірек көрсету
 Type: Түр

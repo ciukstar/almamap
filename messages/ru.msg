@@ -1,3 +1,7 @@
+NoShops: Магазинов нет
+NoShopsWereFoundForSearchTerms: Не найдено ни одного магазина, соответствующего всем условиям поиска
+NoRestaurants: Ресторанов нет
+NoRestaurantsWereFoundForSearchTerms: Не найдено ни одного ресторана, соответствующего всем условиям поиска
 ThatIsAll: Вот и всё
 LoadMore: Показать ещё
 Type: Тип

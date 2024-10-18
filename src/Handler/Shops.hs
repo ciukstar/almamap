@@ -32,7 +32,7 @@ import Foundation
     , AppMessage
       ( MsgClose, MsgSearchForShops, MsgCuisine, MsgDescription, MsgAddress
       , MsgOpeningHours, MsgPhone, MsgShowOnMap, MsgBrand, MsgShops, MsgType
-      , MsgLoadMore, MsgThatIsAll
+      , MsgLoadMore, MsgNoShopsWereFoundForSearchTerms, MsgNoShops
       )
     )
 
@@ -86,9 +86,6 @@ getShopsR = do
 
                 ._ out body;
             |]
-            
-    msgr <- getMessageRender
-    msgs <- getMessages
 
     r <- liftIO $ post (unpack overpass) ["data" := query]
             
@@ -103,6 +100,9 @@ getShopsR = do
         brands = S.fromList $ mapMaybe shopBrand allShops
 
     let shops = (\s -> (icon s, label s, s)) <$> take page (drop offset allShops)
+            
+    msgr <- getMessageRender
+    msgs <- getMessages
     
     selectRep $ do
             
@@ -112,9 +112,10 @@ getShopsR = do
             idFormSearch <- newIdent
             idFieldSearch <- newIdent
             idInputSearch <- newIdent
+            idButtonSearch <- newIdent
 
             idMainSection <- newIdent
-            
+            idSearchResultsArea <- newIdent
             idListSearchResults <- newIdent
             idDivLoadMore <- newIdent
 
@@ -144,7 +145,8 @@ getShopsR = do
       label (Shop _ _ _ _ descr _ _ _ _ openingHours addr _) =
           (descr <|> addr) <|> openingHours
       
-      icon :: Shop -> Text
+      icon :: Shop -> Text      
+      icon (Shop _ _ _ _ _ (Just ["electronics"]) _ _ _ _ _ _) = "cable"
       icon (Shop _ _ _ _ _ (Just ["alcohol"]) _ _ _ _ _ _) = "liquor"
       icon (Shop _ _ _ _ _ (Just ["sports"]) _ _ _ _ _ _) = "sports_tennis"
       icon (Shop _ _ _ _ _ (Just ["books"]) _ _ _ _ _ _) = "auto_stories"

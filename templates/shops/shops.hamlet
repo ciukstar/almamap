@@ -1,17 +1,18 @@
 
 <header.fixed>
   <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
-    <a.front.transparent.round.circle.wave href=@{HomeR}>
+    <a.start.transparent.round.circle.wave href=@{HomeR}>
       <i>arrow_back
       
     $maybe v <- q
       <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops} form=#{idFormSearch}
-             name=q value=#{v} autofocus>
+             name=q value=#{v} autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
     $nothing
       <input type=search ##{idInputSearch} placeholder=_{MsgSearchForShops} form=#{idFormSearch}
              name=q autofocus>
-      
-    <i.icon-end>search
+
+    <button.end.small.circle.transparent.no-margin type=submit form=#{idFormSearch} ##{idButtonSearch}>
+      <i>search
 
 <form method=get action=@{ShopsR} ##{idFormSearch}>
 
@@ -22,7 +23,7 @@
       <article.transparent.no-round.no-elevate>
         <nav>
           <div.max>_{MsgType}
-          <label>#{S.size types}
+          <span.supporting-text>#{S.size types}
           <i>
             $maybe _ <- typ
               expand_less
@@ -42,7 +43,7 @@
       <article.transparent.no-round.no-elevate>
         <nav>
           <div.max>_{MsgBrand}
-          <label>#{S.size brands}
+          <span.supporting-text>#{S.size brands}
           <i>
             $maybe _ <- brand
               expand_less
@@ -57,30 +58,39 @@
         <button.chip.round.small-margin type=submit name=brand value=#{b} form=#{idFormSearch}>
           <span>#{b}
       
+  
+  <div ##{idSearchResultsArea}>
+    <div ##{idListSearchResults}>
+      $if null allShops
+        $maybe _ <- (q <|> typ) <|> brand
+          <figure style="text-align:center">
+            <i.extra>search_off
+            <figcaption>
+              <p.padding.italic>
+                _{MsgNoShopsWereFoundForSearchTerms}.
+        $nothing 
+          <figure style="text-align:center">
+            <i.extra>folder_open
+            <figcaption>
+              <p.padding.italic>
+                _{MsgNoShops}.
+      $else
+        $forall (icon, label, s@(Shop _ _ _ name descr _ _ _ _ openingHours addr _)) <- shops
+          <div.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode s})">
+            <i>#{icon}
 
-  <div ##{idListSearchResults}>
-    $forall (icon, label, s@(Shop _ _ _ name descr _ _ _ _ openingHours addr _)) <- shops
-      <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode s})">
-        <i>#{icon}
-            
-        <div.max>
-          <div>#{name}
-          <label :isJust label:style="display:inline-block;max-width:70vw">
-            $maybe descr <- descr
-              #{descr}
-            $nothing
-              $maybe addr <- addr
-                #{addr}
-              $nothing
-                $maybe openingHours <- openingHours
-                  #{openingHours}
-                  
-        <i>arrow_forward_ios
+            <div.max>
+              <div>#{name}
+              $maybe label <- label
+                <span.supporting-text>
+                  #{label}
 
-  $if length allShops > (offset + page)
-    <div ##{idDivLoadMore}>
-      <button.responsive.primary.margin.center-align onclick="loadMore()">
-        <span>_{MsgLoadMore}
+            <i>arrow_forward_ios
+
+    $if length allShops > (offset + page)
+      <div ##{idDivLoadMore}>
+        <button.responsive.primary.margin.center-align onclick="loadMore()">
+          <span>_{MsgLoadMore}
 
   ^{widgetSnackbar msgs}
 

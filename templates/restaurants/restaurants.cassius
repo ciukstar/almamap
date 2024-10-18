@@ -1,18 +1,37 @@
 
+span.supporting-text
+    display: inline-block
+    max-width: 70vw
+    white-space: nowrap
+    overflow: hidden
+    text-overflow: ellipsis
+    font-size: 0.75rem
+    vertical-align: baseline
+
 ##{idFieldSearch}
     margin: 0.5rem
     display: flex
     align-items: center
     
-    a.front
+    a.start
         inset: 50% auto auto 0.5rem
         padding: 1.2rem
 
+    ##{idButtonSearch}
+        position: absolute
+        inset: 50% 1rem auto auto
+        transform: translateY(-50%)
+        cursor: pointer
+        z-index: 1
+        inline-size: 1.5rem
+        block-size: 2rem
+        
+
 ##{idListSearchResults}
-    a div.max label
-        white-space: nowrap
-        overflow: hidden
-        text-overflow: ellipsis
+    div.row
+        margin: 0
+        padding: var(--padding)
+        font-size: inherit
 
 ##{idDialogDetails}
     .row.baseline

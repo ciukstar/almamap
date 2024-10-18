@@ -35,6 +35,7 @@ import Foundation
     , AppMessage
       ( MsgClose, MsgRestaurants, MsgSearchForRestaurants, MsgCuisine
       , MsgDescription, MsgAddress, MsgOpeningHours, MsgPhone, MsgShowOnMap
+      , MsgLoadMore, MsgNoRestaurantsWereFoundForSearchTerms, MsgNoRestaurants
       )
     )
 
@@ -45,7 +46,9 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 
+import Text.Blaze.Renderer.Text (renderMarkup)
 import Text.Hamlet (shamlet)
+import Text.Julius (rawJS)
 
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
@@ -54,13 +57,17 @@ import Yesod.Core
     )
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, iopt)
-import Yesod.Form.Fields (textField)
-import Text.Blaze.Renderer.Text (renderMarkup)
+import Yesod.Form.Fields (textField, intField)
+
+
+page :: Int
+page = 100
 
 
 getRestaurantsR :: Handler TypedContent
 getRestaurantsR = do
 
+    offset <- fromMaybe @Int 0 <$> runInputGet (iopt intField "offset")
     q <- runInputGet $ iopt textField "q"
     cuisine <- runInputGet $ iopt textField "cuisine"
     
@@ -80,19 +87,19 @@ getRestaurantsR = do
                 ._ out body;
             |]
 
-    liftIO $ print query
-            
-    msgr <- getMessageRender
-    msgs <- getMessages
-
     r <- liftIO $ post (unpack overpass) ["data" := query]
             
-    let restaurants :: [Restaurant]
-        restaurants = sortBy (\a b -> compare (restaurantName a) (restaurantName b)) . fromMaybe []
+    let allRestaurants :: [Restaurant]
+        allRestaurants = sortBy (\a b -> compare (restaurantName a) (restaurantName b)) . fromMaybe []
             $ parseMaybe parseJSON =<< (r L.^? WL.responseBody . key "elements")
 
     let cuisines :: S.Set Text
-        cuisines = S.fromList $ concat $ mapMaybe restaurantCuisine restaurants
+        cuisines = S.fromList $ concat $ mapMaybe restaurantCuisine allRestaurants
+        
+    let restaurants = (\s -> (label s, s)) <$> take page (drop offset allRestaurants)
+            
+    msgr <- getMessageRender
+    msgs <- getMessages
 
     selectRep $ do
             
@@ -102,9 +109,12 @@ getRestaurantsR = do
             idFormSearch <- newIdent
             idFieldSearch <- newIdent
             idInputSearch <- newIdent
-            idListSearchResults <- newIdent
+            idButtonSearch <- newIdent
 
             idMainSection <- newIdent
+            idSearchResultsArea <- newIdent
+            idListSearchResults <- newIdent
+            idDivLoadMore <- newIdent
 
             idDetailsCuisine <- newIdent
 
@@ -124,6 +134,12 @@ getRestaurantsR = do
             $(widgetFile "restaurants/restaurants")
             
         provideJson restaurants
+
+  where
+
+      label :: Restaurant -> Maybe Text
+      label (Restaurant _ _ _ _ descr cuisine openingHours _ _) =
+          (descr <|> (LS.head =<< cuisine)) <|> openingHours
 
 
 instance ToJSON Restaurant where

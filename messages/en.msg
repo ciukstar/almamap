@@ -1,3 +1,7 @@
+NoShops: There are no shops
+NoShopsWereFoundForSearchTerms: No shops were found containing all your search terms
+NoRestaurants: There are no restaurants
+NoRestaurantsWereFoundForSearchTerms: No restaurants were found containing all your search terms
 ThatIsAll: That's all
 LoadMore: Load more
 Type: Type

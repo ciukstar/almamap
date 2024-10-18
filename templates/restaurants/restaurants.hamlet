@@ -1,17 +1,18 @@
   
 <header.fixed>
   <div.field.large.prefix.suffix.round.fill.active.max ##{idFieldSearch}>
-    <a.front.transparent.round.circle.wave href=@{HomeR}>
+    <a.start.transparent.round.circle.wave href=@{HomeR}>
       <i>arrow_back
       
     $maybe v <- q
       <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants} form=#{idFormSearch}
-             name=q value=#{v} autofocus>
+             name=q value=#{v} autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
     $nothing
       <input type=search ##{idInputSearch} placeholder=_{MsgSearchForRestaurants} form=#{idFormSearch}
              name=q autofocus>
-      
-    <i.icon-end>search
+
+    <button.end.small.circle.transparent.no-margin type=submit form=#{idFormSearch} ##{idButtonSearch}>
+      <i>search
 
 
 <main.responsive.no-padding ##{idMainSection}>
@@ -20,8 +21,8 @@
     <summary.none>
       <article.transparent.no-round.no-elevate>
         <nav>
-          <div.max>_{MsgCuisine}
-          <label>#{S.size cuisines}
+          <div.max #idCuisine>_{MsgCuisine}
+          <span.supporting-text>#{S.size cuisines}
           <i>
             $maybe _ <- cuisine
               expand_less
@@ -37,23 +38,37 @@
           <span>#{c}
       
 
-  <div ##{idListSearchResults}>
-    $forall r@(Restaurant _ _ _ name descr cuisine openingHours _ _) <- restaurants
-      <a.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode r})">
-        <i>restaurant
-        <div.max>
-          <div>#{name}
-          <label :isJust ((descr <|> (LS.head =<< cuisine)) <|> openingHours):style="display:inline-block;max-width:70vw">
-            $maybe descr <- descr
-              #{descr}
-            $nothing
-              $maybe cuisines <- cuisine
-                #{intercalate ", " cuisines}
-              $nothing
-                $maybe openingHours <- openingHours
-                  #{openingHours}
-                  
-        <i>arrow_forward_ios
+  <div ##{idSearchResultsArea}>
+    <div ##{idListSearchResults}>
+      $if null allRestaurants
+        $maybe _ <- q <|> cuisine 
+          <figure style="text-align:center">
+            <i.extra>search_off
+            <figcaption>
+              <p.padding.italic>
+                _{MsgNoRestaurantsWereFoundForSearchTerms}.
+        $nothing 
+          <figure style="text-align:center">
+            <i.extra>folder_open
+            <figcaption>
+              <p.padding.italic>
+                _{MsgNoRestaurants}.
+      $else
+        $forall (label, r@(Restaurant _ _ _ name _ _ _ _ _)) <- restaurants
+          <div.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode r})">
+            <i>restaurant
+            <div.max>
+              <div>#{name}
+              $maybe label <- label
+                <span.supporting-text>
+                  #{label}
+
+            <i>arrow_forward_ios
+
+    $if length allRestaurants > (offset + page)
+      <div ##{idDivLoadMore}>
+        <button.responsive.primary.margin.center-align onclick="loadMore()">
+          <span>_{MsgLoadMore}
 
   ^{widgetSnackbar msgs}
 
