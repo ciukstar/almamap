@@ -157,8 +157,14 @@ footer
 
 
 ##{idDialogExploreNearby}
-    ##{idFieldRadius}
-        margin: 0 1rem 2rem 1rem
+    ##{idFormExploreNearby}
+        ##{idFieldRadius}
+            margin: 0 1rem 2rem 1rem
+            .helper
+                text-transform: lowercase
+        ul
+            max-height: 40svh
+            overflow-y: auto
 
 
 ##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}

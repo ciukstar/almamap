@@ -1,5 +1,5 @@
 
-<main.responsive.no-padding>
+<main.responsive.no-padding ##{idMain}>
 
   <nav.transparent ##{idControlsTopLeft}>
     <button.circle.large.small-blur ##{idButtonLayers} data-ui=##{idMenuLayers} title=_{MsgMapStyleOptions}>
@@ -13,7 +13,7 @@
 
       
   <nav.transparent ##{idControlButtons}>
-    <button.circle.large.small-blur ##{idButtonExploreNearby} title=_{MsgExploreNearby}>
+    <button.circle.large.small-blur ##{idButtonExploreNearby} title=_{MsgExploreNearby} data-ui=##{idOverlay}>
       <i>explore_nearby
       
     <button.circle.large.small-blur ##{idButtonZoomIn} title=_{MsgZoomIn}>
@@ -42,7 +42,7 @@
     <button.square.round.large.small-blur ##{idButtonSearchByCategoryTrigger} title=_{MsgRestaurantsShopsAndMore}>
       <i>checklist
       
-    <button.square.round.large.small-blur ##{idButtonMainMenu} title=_{MsgMainMenu}>
+    <button.square.round.large.small-blur ##{idButtonMainMenu} title=_{MsgMainMenu} data-ui=##{idOverlay}>
       <i>menu
 
 
@@ -82,8 +82,7 @@
       <i.end-icon>arrow_forward_ios
 
 
-^{widgetMainMenu idOverlay idDialogMainMenu}
-  
+^{widgetMainMenu idOverlay idDialogMainMenu}  
 
 
 <dialog ##{idDialogOverview}>
@@ -92,27 +91,30 @@
   <nav.right-align.no-space>
     <button.transparent.link ##{idButttonCloseDialogOverview}>
       _{MsgClose}
-      
 
 <dialog.no-padding ##{idDialogExploreNearby}>
   <div.row.padding>
     <h6.max>_{MsgNearby}
-    <button.circle.transparent ##{idButttonCloseDialogExploreNearby}>
+    <button.circle.transparent ##{idButttonCloseDialogExploreNearby} data-ui=##{idOverlay}>
       <i>close
-  <div>
+  
+  <form method=dialog ##{idFormExploreNearby}>
     <div.field.border.round.suffix ##{idFieldRadius}>
-      <input type=number name=radius value=1.5 placeholder=_{MsgRadius}>
+      <input type=number step=any name=radius value=1.5 required placeholder=_{MsgRadius} ##{idInputRadius}>
       <div.helper>_{MsgRadius}, _{MsgInKilometers}
 
-    $forall (marker,label,query) <- nearbyItems
-      <div.row.padding.no-margin.wave onclick="mapNearbyItems(event,'#{marker}',#{show $ unpack query});">
-        <label.radio.max onclick="event.stopPropagation()">
-          <input type=radio name=item value=_{label}>
-          <span style="padding-left:1rem">_{label}
-          
-        <i>
-          arrow_forward_ios
+    <ul.no-margin.no-padding onscroll="event.preventDefault();event.stopPropagation();">
+      $forall item@(Object o) <- nearbyItems
+        <li.none.row.no-margin.padding.wave>
+
+          <label.radio.max style="z-index:2">
+            <input type=radio name=item value=#{decodeUtf8 $ encode item} required>
+            <span style="padding-left:1rem">
+              $maybe String label <- AKM.lookup "label" o
+                #{label}
       
   <nav.right-align.padding>
-    <button.transparent.link ##{idButttonCancelDialogExploreNearby}>
+    <button.transparent.link ##{idButttonCancelDialogExploreNearby} data-ui=##{idOverlay}>
       _{MsgClose}
+    <button ##{idButttonExploreNearby} type=submit form=#{idFormExploreNearby} data-ui=##{idOverlay}>
+      _{MsgFind}

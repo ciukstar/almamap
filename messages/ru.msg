@@ -1,3 +1,4 @@
+Find: Найти
 PublicInstitutions: Общественные учреждения
 Parks: Парки
 Nearby: Поблизости

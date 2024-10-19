@@ -1,3 +1,4 @@
+Find: Find
 PublicInstitutions: Public institutions
 Parks: Parks
 Nearby: Nearby

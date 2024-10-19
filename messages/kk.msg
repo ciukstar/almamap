@@ -1,3 +1,4 @@
+Find: Табу
 PublicInstitutions: Мемлекеттік мекемелер
 Parks: Саябақтар
 Nearby: Жақын жерде

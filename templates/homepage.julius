@@ -32,48 +32,144 @@ const queryParks = #{query "leisure" (Just "park")};
 const queryRestaurant = #{query "amenity" (Just "restaurant")};
 const queryGovernment = #{query "government" Nothing};
 
-markMap(queryTourism,'marker-tourism');
+markMap(fetchQuery(queryTourism),'marker-tourism');
 
 
 function fillTemplate (template, vars) {
   return new Function("return `" + template +"`").call(vars);
 }
 
-function mapNearbyItems (e,marker,query) {
+
+document.getElementById(#{idFormExploreNearby}).addEventListener('submit', function (e) {
+  e.preventDefault();
   
-  e.target.querySelector('label.radio').click();
-
-  const disk = "1500,43.2239423,76.9406462";
-
-  const q = fillTemplate(query,{myloc: disk});
-
-  markMap(q,marker);
-
-  document.getElementById(#{idDialogExploreNearby}).close();
+  const data = new FormData(e.target);
   
-}
+  const radius = 1000 * data.get('radius');
+  const item = JSON.parse(data.get('item'));
+  const marker = item.marker;
+  const query = item.query;
+  
+  navigator.geolocation.clearWatch(myLocationWatchID);
+  myLocationWatchID = null;
+  myLocationMarker?.remove();
+  myLocationMarker = null;
+  
+  const watchOptions = {
+    enableHighAccuracy: true,
+    maximumAge: 10000,
+    timeout: 5000
+  };
+
+  const onError = () => { console.error(#{msgr MsgCouldNotGetPosition}); };
+  
+  navigator.geolocation.getCurrentPosition(p => {
+    const radius = 1000 * Number( document.getElementById(#{idInputRadius}).value );
+    const disk = `${radius},${p.coords.latitude},${p.coords.longitude}`;
+
+    const q = fillTemplate(query,{myloc: disk});
+
+    const data = fetchQuery(q).then(function (data) {
+      
+      if (data.elements.length > 0) {
+        
+        const pool = [ [ p.coords.longitude, p.coords.latitude ],
+                       ... data.elements.map(x => [x.lon,x.lat])
+                     ];
+
+        const pad = 0.005;
+        const bbox = new mapboxgl.LngLatBounds(
+          new mapboxgl.LngLat(Math.min(... pool.map(([x,_]) => x)) - pad, Math.min(... pool.map(([_,y]) => y)) - pad),
+          new mapboxgl.LngLat(Math.max(... pool.map(([x,_]) => x)) + pad, Math.max(... pool.map(([_,y]) => y)) + pad)
+        );
+
+        map.fitBounds(bbox);
+
+        const elemMarker = document.createElement('div');
+        elemMarker.className = 'marker marker-my-location circle one';
+        myLocationMarker = new mapboxgl.Marker(elemMarker, {rotation: p.coords.heading});
+        myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]).addTo(map);
+
+        const waveOne = document.createElement('div');
+        waveOne.className = 'wave one';
+        const waveTwo = document.createElement('div');
+        waveTwo.className = 'wave two';
+
+        waveOne.appendChild(waveTwo);
+        elemMarker.appendChild(waveOne);
+        
+        myLocationWatchID = navigator.geolocation.watchPosition(p => {
+          myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]);
+          if (!!p.coords.heading) {
+            myLocationMarker.setRotation(p.coords.heading);
+          }
+        }, onError, watchOptions);
+
+        map.once('moveend', () => {
+          elemMarker.style.transition = 'transform 1s ease-out';
+        });
+        
+      } else {
+        document.getElementById(#{idMain}).appendChild((() => {
+          const snackbar = document.createElement('div');
+          snackbar.className = 'snackbar active';
+          
+          const content = document.createElement('div');
+          content.className = 'max';
+          content.textContent = #{msgr MsgNoLocationsWereFound};
+
+          const buttonClose = document.createElement('button');
+          buttonClose.type = 'button';
+          buttonClose.className = 'close transparent circle';
+          buttonClose.addEventListener('click', e => { snackbar.remove(); });
+          
+          const buttonIcon = document.createElement('i');
+          buttonIcon.textContent = 'close';
+          
+          buttonClose.appendChild(buttonIcon);
+          snackbar.appendChild(content);
+          snackbar.appendChild(buttonClose);
+
+          setTimeout(() => { snackbar.remove(); }, 6000);
+          
+          return snackbar;
+          
+        }) ());
+      }
+      
+      return data;
+      
+    });
+    
+    markMap(data,marker);
+
+    document.getElementById(#{idDialogExploreNearby}).close();
+    
+  }, onError, watchOptions);
+  
+});
 
 
 var currentSwitch = 'attractions';
 
 document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e) {
   if (currentSwitch === 'attractions') {
-    markMap(queryParks,'marker-parks').then(_ => {
+    markMap(fetchQuery(queryParks),'marker-parks').then(_ => {
       e.target.querySelector('i').textContent = 'restaurant';
     });
     currentSwitch = 'park';
   } else if (currentSwitch === 'park') {
-    markMap(queryRestaurant,'marker-restaurant').then(_ => {
+    markMap(fetchQuery(queryRestaurant),'marker-restaurant').then(_ => {
       e.target.querySelector('i').textContent = 'account_balance';
     });
     currentSwitch = 'restaurant';
   } else if (currentSwitch === 'restaurant') {
-    markMap(queryGovernment,'marker-government').then(_ => {
+    markMap(fetchQuery(queryGovernment),'marker-government').then(_ => {
       e.target.querySelector('i').textContent = 'attractions';
     });
     currentSwitch = 'government';
   } else if (currentSwitch === 'government') {
-    markMap(queryTourism,'marker-tourism').then(_ => {
+    markMap(fetchQuery(queryTourism),'marker-tourism').then(_ => {
       e.target.querySelector('i').textContent = 'park';
     });
     currentSwitch = 'attractions';
@@ -361,19 +457,25 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
 });
 
 
-function markMap (query, icon) {
-
-  markers.forEach(x => { x.remove(); });
+function fetchQuery (query) {
   
-  markers.length = 0;
-  
-  return fetch(#{overpass},{
+  return fetch(#{overpass}, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
     body: new URLSearchParams({
       data: query
     })
-  }).then(data => data.json()).then(res => {
+  }).then(data => data.json());
+  
+};
+
+
+function markMap (data, icon) {
+
+  markers.forEach(x => { x.remove(); });
+  markers.length = 0;
+  
+  return data.then(res => {
     
     res.elements.filter(x => 'node' == x.type).forEach(x => {
       const el = document.createElement('div');
@@ -464,6 +566,7 @@ function markMap (query, icon) {
       const marker = new mapboxgl.Marker(el);
       marker.setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
       markers.push(marker);
+      
     });
   });
 };

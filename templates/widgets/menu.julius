@@ -1,6 +1,6 @@
 
 document.getElementById(#{idOverlay}).addEventListener('click', function (e) {
-  document.getElementById(#{idDialogMainMenu}).close();
+  Array.from(document.body.querySelectorAll('dialog')).forEach(x => { x.close(); });
   document.getElementById(#{idOverlay}).classList.remove('active');
 });
 

@@ -14,11 +14,13 @@ module Handler.Home
 import qualified Control.Lens as L ( (^?) )
 import Control.Monad.IO.Class (liftIO)
 
-import Data.Aeson (decode, toJSON)
+import Data.Aeson (decode, encode, toJSON, object, (.=), Value (Object, String))
 import qualified Data.Aeson as A (Value)
+import qualified Data.Aeson.KeyMap as AKM (lookup)
 import Data.Aeson.Lens (key, AsValue (_String), nth)
 import Data.Bifunctor (Bifunctor(second, first))
 import Data.Text (Text, unpack)
+import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
 
 import Foundation
@@ -33,7 +35,8 @@ import Foundation
       , MsgRestaurants, MsgShops, MsgNoLocationsWereFound, MsgExploreNearby
       , MsgSearchByNameOrAddress, MsgZoomIn, MsgZoomOut, MsgMyLocation, MsgParks
       , MsgMainMenu, MsgCompass, MsgMapStyleOptions, MsgRestaurantsShopsAndMore
-      , MsgAttractions, MsgRadius, MsgInKilometers, MsgNearby, MsgPublicInstitutions
+      , MsgAttractions, MsgRadius, MsgInKilometers, MsgNearby, MsgFind
+      , MsgPublicInstitutions
       )
     )
 
@@ -80,7 +83,6 @@ getHomeR = do
 
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
-
     let styles :: [(Int,(AppMessage, (Text,Text)))]
         styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
             [ (MsgStyleStreets, ("streets-v12",keyThemeLight))
@@ -92,22 +94,39 @@ getHomeR = do
             , (MsgStyleNavigationDay, ("navigation-day-v1",keyThemeLight))
             , (MsgStyleNavigationNight, ("navigation-night-v1",keyThemeDark))
             ]
-    
-    let nearbyItems :: [(Text, AppMessage, Text)]
-        nearbyItems = [ ("marker-tourism", MsgAttractions, queryAround "[tourism]")
-                      , ("marker-parks", MsgParks, queryAround "[leisure=park]")
-                      , ("marker-restaurant", MsgRestaurants, queryAround "[amenity=restaurant]")
-                      , ("marker-government", MsgPublicInstitutions, queryAround "[government]")
-                      , ("marker-shop", MsgShops, queryAround "[shop]")
-                      ]
-    
+
     msgr <- getMessageRender
+
+    let nearbyItems :: [A.Value]
+        nearbyItems = [ object [ "marker" .= String "marker-tourism"
+                               , "label" .= msgr MsgAttractions
+                               , "query" .= queryAround "[tourism]"
+                               ]
+                      , object [ "marker" .= String "marker-parks"
+                               , "label" .= msgr MsgParks
+                               , "query" .= queryAround "[leisure=park]"
+                               ]
+                      , object [ "marker" .= String "marker-restaurant"
+                               , "label" .= msgr MsgRestaurants
+                               , "query" .= queryAround "[amenity=restaurant]"
+                               ]
+                      , object [ "marker" .= String "marker-government"
+                               , "label" .= msgr MsgPublicInstitutions
+                               , "query" .= queryAround "[government]"
+                               ]
+                      , object [ "marker" .= String "marker-shop"
+                               , "label" .= msgr MsgShops
+                               , "query" .= queryAround "[shop]"
+                               ]
+                      ]
+
     msgs <- getMessages
-    
+
     defaultLayout $ do
         setTitleI MsgAppName
 
         idOverlay <- newIdent
+        idMain <- newIdent
         idMap <- newIdent
         idControlsTopLeft <- newIdent
         idButtonLayers <- newIdent
@@ -131,7 +150,6 @@ getHomeR = do
         idLabelRestaurants <- newIdent
         idLabelShops <- newIdent
 
-
         idButtonMainMenu <- newIdent
         idDialogMainMenu <- newIdent
         idDialogOverview <- newIdent
@@ -141,8 +159,11 @@ getHomeR = do
 
         idDialogExploreNearby <- newIdent
         idButttonCloseDialogExploreNearby <- newIdent
+        idFormExploreNearby <- newIdent
         idFieldRadius <- newIdent
+        idInputRadius <- newIdent
         idButttonCancelDialogExploreNearby <- newIdent
+        idButttonExploreNearby <- newIdent
 
         addStylesheetRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css"
         addScriptRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"
@@ -203,16 +224,13 @@ queryAround args =
             [st|
                 [out:json];
 
-                rel["ISO3166-2"="KZ-75"] -> .rel;
-                .rel map_to_area -> .city;
-
-                node#{args}(area.city)(around:${this.myloc}) -> .tags;
+                node#{args}(around:${this.myloc}) -> .tags;
 
                 node.tags[~"^(name|description)$"~".*"];
 
                 out body;
             |]
-    
+
 
 query :: Text -> Maybe Text -> Text
 query tag val = toStrict $ renderMarkup [shamlet|
@@ -221,11 +239,11 @@ query tag val = toStrict $ renderMarkup [shamlet|
     rel["ISO3166-2"="KZ-75"] -> .rel;
     .rel map_to_area -> .city;
 
-    $maybe v <- val 
+    $maybe v <- val
       node["#{tag}"="#{v}"](area.city) -> .tags;
     $nothing
       node["#{tag}"](area.city) -> .tags;
-      
+
     node.tags[~"^(name|description)$"~".*"];
 
     out body;
