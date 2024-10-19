@@ -5,9 +5,9 @@ mapboxgl.accessToken = #{mapboxPk};
 
 const map = new mapboxgl.Map({
   container: #{idMap},
-  center: [76.9406462, 43.2239423],
+  center: #{toJSON center},
   zoom: 9,
-  style: "mapbox://styles/mapbox/dark-v11"
+  style: #{style}
 });
 
 map.addControl(new mapboxgl.ScaleControl(),'bottom-left');
@@ -24,6 +24,7 @@ Array.from(
   document.body.querySelectorAll('.mapboxgl-ctrl-compass')
 ).forEach(x => {
   x.classList.add('circle','large','small-blur');
+  x.title = #{msgr MsgCompass};
 });
 
 const queryTourism = #{query "tourism" Nothing};
@@ -32,6 +33,26 @@ const queryRestaurant = #{query "amenity" (Just "restaurant")};
 const queryGovernment = #{query "government" Nothing};
 
 markMap(queryTourism,'marker-tourism');
+
+
+function fillTemplate (template, vars) {
+  return new Function("return `" + template +"`").call(vars);
+}
+
+function mapNearbyItems (e,marker,query) {
+  
+  e.target.querySelector('label.radio').click();
+
+  const disk = "1500,43.2239423,76.9406462";
+
+  const q = fillTemplate(query,{myloc: disk});
+
+  markMap(q,marker);
+
+  document.getElementById(#{idDialogExploreNearby}).close();
+  
+}
+
 
 var currentSwitch = 'attractions';
 
@@ -241,12 +262,24 @@ Array.from(
 });
 
   
-document.getElementById(#{idButttonCloseDialog}).addEventListener('click', e => {
+document.getElementById(#{idButttonCloseDialogOverview}).addEventListener('click', e => {
   document.getElementById(#{idDialogOverviewTitle}).textContent = '';
   document.getElementById(#{idDialogOverviewContent}).textContent = '';
   document.getElementById(#{idDialogOverview}).close();
 });
 
+
+document.getElementById(#{idButtonExploreNearby}).addEventListener('click', e => {
+  document.getElementById(#{idDialogExploreNearby}).show();
+});
+
+[ #{idButttonCloseDialogExploreNearby},
+  #{idButttonCancelDialogExploreNearby}
+].forEach(x => {
+  document.getElementById(x).addEventListener('click', e => {
+    document.getElementById(#{idDialogExploreNearby}).close();
+  });
+});
 
 document.getElementById(#{idButtonZoomIn}).addEventListener('click', e => {
   map.zoomIn();

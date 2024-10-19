@@ -2,7 +2,7 @@
 <main.responsive.no-padding>
 
   <nav.transparent ##{idControlsTopLeft}>
-    <button.circle.large.small-blur ##{idButtonLayers} data-ui=##{idMenuLayers}>
+    <button.circle.large.small-blur ##{idButtonLayers} data-ui=##{idMenuLayers} title=_{MsgMapStyleOptions}>
       <i>layers
       <menu.right.no-wrap ##{idMenuLayers}>
         $forall (i,(label,(style,theme))) <- styles
@@ -11,14 +11,18 @@
               <input type=radio name=style>
               <span>_{label}
 
+      
   <nav.transparent ##{idControlButtons}>
-    <button.circle.large.small-blur ##{idButtonZoomIn}>
+    <button.circle.large.small-blur ##{idButtonExploreNearby} title=_{MsgExploreNearby}>
+      <i>explore_nearby
+      
+    <button.circle.large.small-blur ##{idButtonZoomIn} title=_{MsgZoomIn}>
       <i>add
       
-    <button.circle.large.small-blur ##{idButtonZoomOut}>
+    <button.circle.large.small-blur ##{idButtonZoomOut} title=_{MsgZoomOut}>
       <i>remove
       
-    <button.circle.large.small-blur ##{idButtonMyLocation}>
+    <button.circle.large.small-blur ##{idButtonMyLocation} title=_{MsgMyLocation}>
       <i>my_location
 
   <div ##{idMap}>
@@ -29,16 +33,16 @@
 <footer.transparent>
   <nav.transparent>
       
-    <button.square.round.large.small-blur ##{idButtonSwitch}>
+    <button.square.round.large.small-blur ##{idButtonSwitch} title=_{MsgAttractions}>
       <i>park
       
-    <button.square.round.large.small-blur ##{idButtonSearchTrigger}>
+    <button.square.round.large.small-blur ##{idButtonSearchTrigger} title=_{MsgSearchByNameOrAddress}>
       <i>search
       
-    <button.square.round.large.small-blur ##{idButtonSearchByCategoryTrigger}>
+    <button.square.round.large.small-blur ##{idButtonSearchByCategoryTrigger} title=_{MsgRestaurantsShopsAndMore}>
       <i>checklist
       
-    <button.square.round.large.small-blur ##{idButtonMainMenu}>
+    <button.square.round.large.small-blur ##{idButtonMainMenu} title=_{MsgMainMenu}>
       <i>menu
 
 
@@ -86,5 +90,29 @@
   <h6 ##{idDialogOverviewTitle}>
   <div ##{idDialogOverviewContent}>
   <nav.right-align.no-space>
-    <button.transparent.link ##{idButttonCloseDialog}>
+    <button.transparent.link ##{idButttonCloseDialogOverview}>
+      _{MsgClose}
+      
+
+<dialog.no-padding ##{idDialogExploreNearby}>
+  <div.row.padding>
+    <h6.max>_{MsgNearby}
+    <button.circle.transparent ##{idButttonCloseDialogExploreNearby}>
+      <i>close
+  <div>
+    <div.field.border.round.suffix ##{idFieldRadius}>
+      <input type=number name=radius value=1.5 placeholder=_{MsgRadius}>
+      <div.helper>_{MsgRadius}, _{MsgInKilometers}
+
+    $forall (marker,label,query) <- nearbyItems
+      <div.row.padding.no-margin.wave onclick="mapNearbyItems(event,'#{marker}',#{show $ unpack query});">
+        <label.radio.max onclick="event.stopPropagation()">
+          <input type=radio name=item value=_{label}>
+          <span style="padding-left:1rem">_{label}
+          
+        <i>
+          arrow_forward_ios
+      
+  <nav.right-align.padding>
+    <button.transparent.link ##{idButttonCancelDialogExploreNearby}>
       _{MsgClose}

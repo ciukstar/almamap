@@ -60,6 +60,13 @@ import Yesod.Form.Input (runInputGet, iopt)
 import Yesod.Form.Fields (textField, intField)
 
 
+center :: (Double, Double)
+center = (76.9406462, 43.2239423)
+
+style :: Text
+style = "mapbox://styles/mapbox/dark-v11"
+
+
 page :: Int
 page = 100
 

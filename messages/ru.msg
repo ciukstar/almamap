@@ -1,3 +1,18 @@
+PublicInstitutions: Общественные учреждения
+Parks: Парки
+Nearby: Поблизости
+InKilometers: в километрах
+NearbyRadius: Радиус вблизи моего местоположения
+Radius: Радиус
+MainMenu: Главное меню
+RestaurantsShopsAndMore: Рестораны, магазины и многое другое
+Attractions: Достопримечательности
+MapStyleOptions: Варианты стиля карты
+Compass: Компас
+MyLocation: Мое местоположение
+ZoomOut: Уменьшить масштаб
+ZoomIn: Увеличить масштаб
+ExploreNearby: Исследуйте поблизости
 NoShops: Магазинов нет
 NoShopsWereFoundForSearchTerms: Не найдено ни одного магазина, соответствующего всем условиям поиска
 NoRestaurants: Ресторанов нет

@@ -1,3 +1,18 @@
+PublicInstitutions: Public institutions
+Parks: Parks
+Nearby: Nearby
+InKilometers: in kilometers
+NearbyRadius: Radius close to my location
+Radius: Radius
+MainMenu: Main menu
+RestaurantsShopsAndMore: Restaurants, shops and more
+Attractions: Attractions
+MapStyleOptions: Map style options
+Compass: Compass
+MyLocation: My location
+ZoomOut: Zoom out
+ZoomIn: Zoom in
+ExploreNearby: Explore nearby
 NoShops: There are no shops
 NoShopsWereFoundForSearchTerms: No shops were found containing all your search terms
 NoRestaurants: There are no restaurants

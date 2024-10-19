@@ -21,7 +21,7 @@
     <summary.none>
       <article.transparent.no-round.no-elevate>
         <nav>
-          <div.max #idCuisine>_{MsgCuisine}
+          <div.max>_{MsgCuisine}
           <span.supporting-text>#{S.size cuisines}
           <i>
             $maybe _ <- cuisine

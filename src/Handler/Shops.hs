@@ -30,8 +30,8 @@ import Foundation
     ( App (appSettings), Handler, widgetSnackbar
     , Route(ShopsR, HomeR)
     , AppMessage
-      ( MsgClose, MsgSearchForShops, MsgCuisine, MsgDescription, MsgAddress
-      , MsgOpeningHours, MsgPhone, MsgShowOnMap, MsgBrand, MsgShops, MsgType
+      ( MsgClose, MsgSearchForShops, MsgDescription, MsgAddress, MsgType
+      , MsgOpeningHours, MsgPhone, MsgShowOnMap, MsgBrand, MsgShops
       , MsgLoadMore, MsgNoShopsWereFoundForSearchTerms, MsgNoShops
       )
     )
@@ -43,6 +43,7 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 
+import Text.Blaze.Renderer.Text (renderMarkup)
 import Text.Hamlet (shamlet)
 import Text.Julius (rawJS)
 
@@ -54,7 +55,13 @@ import Yesod.Core
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, iopt)
 import Yesod.Form.Fields (textField, intField)
-import Text.Blaze.Renderer.Text (renderMarkup)
+
+
+center :: (Double, Double)
+center = (76.9406462, 43.2239423)
+
+style :: Text
+style = "mapbox://styles/mapbox/dark-v11"
 
 
 page :: Int
@@ -218,7 +225,7 @@ data Shop = Shop
     , shopOpeningHours :: Maybe Text
     , shopAddr :: Maybe Text
     , shopPhone :: Maybe Text
-    }
+    } deriving Show
 
 
 joinMaybeText :: Maybe Text -> Maybe Text -> Maybe Text

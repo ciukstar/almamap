@@ -23,6 +23,9 @@
     .marker-government
         background-image: url('@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         
+    .marker-shop
+        background-image: url('@{StaticR img_shopping_cart_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
+        
     .marker-my-location
         width: 32px
         height: 32px
@@ -81,9 +84,10 @@ body.dark
 
 
 ##{idControlButtons}
+
     position: absolute
-    right: 1rem
-    top: 35%
+    inset: 50% 1rem auto auto
+    transform: translateY(-50%)
     z-index: 1
     display: flex
     flex-direction: column
@@ -92,8 +96,11 @@ body.dark
     button
         background-color: rgba(255,255, 255, 0.2)
 
+    ##{idButtonExploreNearby}
+        margin-bottom: 2rem
+        
     ##{idButtonMyLocation}
-        margin-top: 3rem
+        margin-top: 2rem
 
 
 .mapboxgl-ctrl.mapboxgl-ctrl-scale
@@ -147,6 +154,11 @@ footer
         justify-content: space-around
         button.square.round.large
             background-color: rgba(255,255, 255, 0.2)
+
+
+##{idDialogExploreNearby}
+    ##{idFieldRadius}
+        margin: 0 1rem 2rem 1rem
 
 
 ##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}

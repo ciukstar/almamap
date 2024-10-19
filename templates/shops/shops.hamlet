@@ -75,7 +75,7 @@
               <p.padding.italic>
                 _{MsgNoShops}.
       $else
-        $forall (icon, label, s@(Shop _ _ _ name descr _ _ _ _ openingHours addr _)) <- shops
+        $forall (icon, label, s@(Shop _ _ _ name _ _ _ _ _ _ _ _)) <- shops
           <div.row.padding.surface-container.wave onclick="showDialogDetails(#{decodeUtf8 $ encode s})">
             <i>#{icon}
 

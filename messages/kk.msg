@@ -1,3 +1,18 @@
+PublicInstitutions: Мемлекеттік мекемелер
+Parks: Саябақтар
+Nearby: Жақын жерде
+InKilometers: километрде
+NearbyRadius: Радиус менің орналасқан жеріме жақын
+Radius: Радиус
+MainMenu: Негізгі мәзір
+RestaurantsShopsAndMore: Мейрамханалар, дүкендер және т.б
+Attractions: Аттракциондар
+MapStyleOptions: Карта стилінің опциялары
+Compass: Компас
+MyLocation: Менің орным
+ZoomOut: Кішірейту
+ZoomIn: Үлкейту
+ExploreNearby: Жақын жерді зерттеңіз
 NoShops: Дүкендер жоқ
 NoShopsWereFoundForSearchTerms: Барлық іздеу сөздеріңізді қамтитын дүкендер табылмады
 NoRestaurants: Мейрамханалар жоқ

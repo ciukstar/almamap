@@ -3,8 +3,6 @@ const formSearch = document.getElementById(#{idFormSearch});
 const searchResultsArea = document.getElementById(#{idSearchResultsArea});
 const listSearchResults = document.getElementById(#{idListSearchResults}); 
 
-var map;
-var poi;
 
 document.getElementById(#{idInputSearch}).addEventListener('input', debounce(function (e) {
   searchResultsArea.replaceChildren(progress());
@@ -37,22 +35,10 @@ document.getElementById(#{idDetailsBrand}).addEventListener('toggle', e => {
   x => document.getElementById(x)
 ).forEach(x => {
   x.addEventListener('click', e => {
-    document.getElementById(#{idMap}).replaceChildren();
-    document.getElementById(#{idDetailsMap}).open = false;
     document.getElementById(#{idDialogDetailsContent}).replaceChildren();
     document.getElementById(#{idDialogDetailsTitle}).replaceChildren();
     document.getElementById(#{idDialogDetails}).close();
   });
-});
-
-
-document.getElementById(#{idDetailsMap}).addEventListener('toggle', function (e) {
-  
-  map.flyTo({
-    center: poi.getLngLat().toArray(),
-    essential: true
-  });
-  
 });
 
 var offset = #{rawJS $ show $ offset + page};
@@ -121,12 +107,15 @@ function loadMore() {
 }
 
 
+var map;
+
 function showDialogDetails (x) {
 
   document.getElementById(#{idDialogDetailsTitle}).textContent = x.name;
 
   let info =
-      [ [#{msgr MsgCuisine}, x => x.cuisine],
+      [ [#{msgr MsgType}, x => x.cuisine],
+        [#{msgr MsgBrand}, x => x.brand],
         [#{msgr MsgDescription}, x => x.descr],
         [#{msgr MsgOpeningHours}, x => x.openingHours],
         [#{msgr MsgAddress}, x => x.addr],
@@ -158,22 +147,33 @@ function showDialogDetails (x) {
 
   document.getElementById(#{idDialogDetails}).show();
 
-  loadPoi(x);
+  (async () => {
+    mapboxgl.accessToken = #{mapboxPk};
+
+    map = !!map ? map : new mapboxgl.Map({
+      container: #{idMap},
+      center: #{toJSON center},
+      zoom: 9,
+      style: #{style}
+    });
+
+    const poi = new mapboxgl.Marker().setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
+
+    document.getElementById(#{idDetailsMap}).addEventListener('toggle', function (e) {
+      if (e.target.open) {
+        map.flyTo({
+          center: poi.getLngLat().toArray(),
+          essential: true
+        });
+      }
+    });
+
+    [#{idButttonCloseDialogDetails},#{idButttonCancelDialogDetails}].map(
+      x => document.getElementById(x)
+    ).forEach(x => {
+      x.addEventListener('click', e => { poi.remove(); });
+    });
+    
+  }) ();
   
 };
-
-
-async function loadPoi (x) {
-  
-  mapboxgl.accessToken = #{mapboxPk};
-  
-  map = new mapboxgl.Map({
-    container: #{idMap},
-    center: [76.9406462, 43.2239423],
-    zoom: 9,
-    style: "mapbox://styles/mapbox/dark-v11"
-  });
-
-  poi = new mapboxgl.Marker().setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
-  
-}
