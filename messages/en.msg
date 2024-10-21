@@ -1,3 +1,19 @@
+GeolocationAlternativesMessageCoordinates: coordinates
+GeolocationAlternativesMessageOrThe: or the
+GeolocationAlternativesMessageAddress: address
+GeolocationAlternativesMessageSuffix: of your location
+GeolocationAlternativesMessagePrefix: Alternatively, you can specify an
+
+GeolocationStatusUserMessage: Your location is determined using browser features.
+GeolocationStatusDisabledUserMessage: It looks like you have geolocation disabled, for it is needed to explore nearby objects. Please enable geolocation for this site in your browser settings.
+AboutYourLocation: About your location
+GeolocationOptions: Geolocation options
+Geolocation: Geolocation
+Latitude: Latitude
+Longitude: Longitude
+GeolocationDisabled: Geolocation is disabled
+Timeout: Timeout
+PositionUnavailable: Position unavailable
 Find: Find
 PublicInstitutions: Public institutions
 Parks: Parks

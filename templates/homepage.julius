@@ -35,16 +35,62 @@ const queryGovernment = #{query "government" Nothing};
 markMap(fetchQuery(queryTourism),'marker-tourism');
 
 
+document.getElementById(#{idSpanAddress}).addEventListener('click', function (e) {
+  
+  const fieldAddress = document.getElementById(#{idFieldAddress});
+  
+  if (fieldAddress.style.display == 'none') {
+    
+    [ [#{idFieldLongitude},#{idInputLongitude}],
+      [#{idFieldLatitude},#{idInputLatitude}]
+    ].forEach(([x,y]) => {
+      document.getElementById(y).value = '';
+      document.getElementById(x).style.display = 'none';
+    });
+    
+    fieldAddress.style.display = 'block';
+    
+  } else {
+    document.getElementById(#{idInputAddress}).value = '';
+    fieldAddress.style.display = 'none';
+  }
+});
+
+document.getElementById(#{idSpanCoordinates}).addEventListener('click', function (e) {
+  [ [#{idFieldLongitude},#{idInputLongitude}],
+    [#{idFieldLatitude},#{idInputLatitude}]
+  ].forEach(([x,y]) => {
+    const field = document.getElementById(x);
+    
+    if (field.style.display == 'none') {
+      
+      document.getElementById(#{idInputAddress}).value = '';
+      document.getElementById(#{idFieldAddress}).style.display = 'none';
+      
+      field.style.display = 'block';
+      
+    } else {
+      document.getElementById(y).value = '';
+      field.style.display = 'none';
+    }
+    
+  });
+});
+
+
 function fillTemplate (template, vars) {
   return new Function("return `" + template +"`").call(vars);
 }
 
-
 document.getElementById(#{idFormExploreNearby}).addEventListener('submit', function (e) {
   e.preventDefault();
+  document.getElementById(#{idOverlay}).classList.remove('active');
   
   const data = new FormData(e.target);
-  
+
+  const address = data.get('address');
+  const longitude = data.get('longitude');
+  const latitude = data.get('latitude');
   const radius = 1000 * data.get('radius');
   const item = JSON.parse(data.get('item'));
   const marker = item.marker;
@@ -55,17 +101,75 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
   myLocationMarker?.remove();
   myLocationMarker = null;
   
+  const onError = function (err) {
+
+    if (err.code == GeolocationPositionError.PERMISSION_DENIED) {
+      
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgPermissionDenied})
+      );
+
+    } else if (err.code == GeolocationPositionError.POSITION_UNAVAILABLE) {
+      
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgPositionUnavailable})
+      );
+
+    } else if (err.code == GeolocationPositionError.TIMEOUT) {
+      
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgTimeout})
+      );
+
+    } else {
+      
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgCouldNotGetPosition})
+      );
+      console.error(err);
+
+    }
+  };
+  
   const watchOptions = {
     enableHighAccuracy: true,
     maximumAge: 10000,
     timeout: 5000
   };
 
-  const onError = () => { console.error(#{msgr MsgCouldNotGetPosition}); };
-  
-  navigator.geolocation.getCurrentPosition(p => {
-    const radius = 1000 * Number( document.getElementById(#{idInputRadius}).value );
-    const disk = `${radius},${p.coords.latitude},${p.coords.longitude}`;
+  let coords = new Promise((resolve, reject) => {
+    if (!!longitude && !!latitude) {
+      resolve ([longitude,latitude]);
+    } else if (!!address) {
+      
+      const query = new URLSearchParams({
+        q: address,
+        // countrycodes: #{countrycodes},
+        // viewbox: #{bbox},
+        format: 'json'
+      });
+      
+      const url = encodeURIComponent(new URL(`#{rawJS nominatim}?${query}`).href);
+      
+      return fetch(`@{FetchR}?url=${url}`,{
+        headers: {'Accept': 'application/json'}
+      }).then(data => data.json()).then(function (res) {
+        
+        if (res.length > 0) {
+          resolve ([Number(res[0].lon),Number(res[0].lat)]);
+        } else {
+          reject ("Address cannot be translated to coorinates");
+        }
+      });
+      
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        p => resolve ([p.coords.longitude, p.coords.latitude]), onError, watchOptions
+      );
+    }
+  }).then(([lng,lat]) => {
+    
+    const disk = `${radius},${lat},${lng}`;
 
     const q = fillTemplate(query,{myloc: disk});
 
@@ -73,9 +177,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
       
       if (data.elements.length > 0) {
         
-        const pool = [ [ p.coords.longitude, p.coords.latitude ],
-                       ... data.elements.map(x => [x.lon,x.lat])
-                     ];
+        const pool = [ [ lng,lat ], ... data.elements.map(x => [x.lon,x.lat]) ];
 
         const pad = 0.005;
         const bbox = new mapboxgl.LngLatBounds(
@@ -87,8 +189,8 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 
         const elemMarker = document.createElement('div');
         elemMarker.className = 'marker marker-my-location circle one';
-        myLocationMarker = new mapboxgl.Marker(elemMarker, {rotation: p.coords.heading});
-        myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]).addTo(map);
+        myLocationMarker = new mapboxgl.Marker(elemMarker);
+        myLocationMarker.setLngLat([lng, lat]).addTo(map);
 
         const waveOne = document.createElement('div');
         waveOne.className = 'wave one';
@@ -110,31 +212,9 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
         });
         
       } else {
-        document.getElementById(#{idMain}).appendChild((() => {
-          const snackbar = document.createElement('div');
-          snackbar.className = 'snackbar active';
-          
-          const content = document.createElement('div');
-          content.className = 'max';
-          content.textContent = #{msgr MsgNoLocationsWereFound};
-
-          const buttonClose = document.createElement('button');
-          buttonClose.type = 'button';
-          buttonClose.className = 'close transparent circle';
-          buttonClose.addEventListener('click', e => { snackbar.remove(); });
-          
-          const buttonIcon = document.createElement('i');
-          buttonIcon.textContent = 'close';
-          
-          buttonClose.appendChild(buttonIcon);
-          snackbar.appendChild(content);
-          snackbar.appendChild(buttonClose);
-
-          setTimeout(() => { snackbar.remove(); }, 6000);
-          
-          return snackbar;
-          
-        }) ());
+        document.getElementById(#{idMain}).appendChild(
+          snackbar(#{msgr MsgNoLocationsWereFound})
+        );
       }
       
       return data;
@@ -145,7 +225,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 
     document.getElementById(#{idDialogExploreNearby}).close();
     
-  }, onError, watchOptions);
+  });
   
 });
 
@@ -366,8 +446,22 @@ document.getElementById(#{idButttonCloseDialogOverview}).addEventListener('click
 
 
 document.getElementById(#{idButtonExploreNearby}).addEventListener('click', e => {
+
+  navigator.permissions.query({name: 'geolocation'}).then(function (x) {
+    if (x.state === 'denied') {
+      document.getElementById(#{idGeolocationStatusIcon}).textContent = 'location_off';
+      document.getElementById(#{idGeolocationStatusLabel}).textContent = #{msgr MsgGeolocationDisabled} + '...';
+      document.getElementById(#{idGeolocationStatusUserMessage}).textContent = #{msgr MsgGeolocationStatusDisabledUserMessage};
+    } else {
+      document.getElementById(#{idGeolocationStatusIcon}).textContent = 'info';
+      document.getElementById(#{idGeolocationStatusLabel}).textContent = #{msgr MsgAboutYourLocation} + '...';
+      document.getElementById(#{idGeolocationStatusUserMessage}).textContent = #{msgr MsgGeolocationStatusUserMessage};
+    }
+  });
+  
   document.getElementById(#{idDialogExploreNearby}).show();
 });
+
 
 [ #{idButttonCloseDialogExploreNearby},
   #{idButttonCancelDialogExploreNearby}

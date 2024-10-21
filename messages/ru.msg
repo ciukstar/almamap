@@ -1,3 +1,19 @@
+GeolocationAlternativesMessageCoordinates: координаты
+GeolocationAlternativesMessageOrThe: или
+GeolocationAlternativesMessageAddress: адрес
+GeolocationAlternativesMessageSuffix: вашего местоположения
+GeolocationAlternativesMessagePrefix: Либо вы можете указать
+
+GeolocationStatusUserMessage: Ваше местоположение определяется с помощью функций браузера.
+GeolocationStatusDisabledUserMessage: Похоже, у вас отключена геолокация, так как она нужна для исследования близлежащих объектов. Включите геолокацию для этого сайта в настройках браузера.
+AboutYourLocation: О вашем местоположении
+GeolocationOptions: Параметры геолокации
+Geolocation: Геолокация
+Latitude: Широта
+Longitude: Долгота
+GeolocationDisabled: Геолокация отключена
+Timeout: Тайм-аут
+PositionUnavailable: Местоположение недоступно
 Find: Найти
 PublicInstitutions: Общественные учреждения
 Parks: Парки

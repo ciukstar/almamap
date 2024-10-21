@@ -1,3 +1,19 @@
+GeolocationAlternativesMessageCoordinates: координаттарын
+GeolocationAlternativesMessageOrThe: немесе
+GeolocationAlternativesMessageAddress: мекенжайын
+GeolocationAlternativesMessageSuffix: көрсете аласыз
+GeolocationAlternativesMessagePrefix: Немесе сіз орналасқан жеріңіздің
+
+GeolocationStatusUserMessage: Орналасқан жеріңіз браузер мүмкіндіктері арқылы анықталады.
+GeolocationStatusDisabledUserMessage: Маңайдағы нысандарды зерттеу үшін қажет болғандықтан, геолокация өшірілген сияқты. Браузер параметрлерінде осы сайт үшін геолокацияны қосыңыз.
+AboutYourLocation: Орналасқан жеріңіз туралы
+GeolocationOptions: Геолокация опциялары
+Geolocation: Геолокация
+Latitude: Ендік
+Longitude: Бойлық
+GeolocationDisabled: Геолокация өшірілген
+Timeout: Тайм-аут
+PositionUnavailable: Орын қолжетімді емес
 Find: Табу
 PublicInstitutions: Мемлекеттік мекемелер
 Parks: Саябақтар

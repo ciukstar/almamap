@@ -36,7 +36,12 @@ import Foundation
       , MsgSearchByNameOrAddress, MsgZoomIn, MsgZoomOut, MsgMyLocation, MsgParks
       , MsgMainMenu, MsgCompass, MsgMapStyleOptions, MsgRestaurantsShopsAndMore
       , MsgAttractions, MsgRadius, MsgInKilometers, MsgNearby, MsgFind
-      , MsgPublicInstitutions
+      , MsgPublicInstitutions, MsgPermissionDenied, MsgPositionUnavailable
+      , MsgTimeout, MsgGeolocationDisabled, MsgAddress, MsgLongitude, MsgLatitude
+      , MsgAboutYourLocation, MsgGeolocationStatusDisabledUserMessage
+      , MsgGeolocationStatusUserMessage, MsgGeolocationAlternativesMessagePrefix
+      , MsgGeolocationAlternativesMessageSuffix, MsgGeolocationAlternativesMessageAddress
+      , MsgGeolocationAlternativesMessageOrThe, MsgGeolocationAlternativesMessageCoordinates
       )
     )
 
@@ -159,7 +164,25 @@ getHomeR = do
 
         idDialogExploreNearby <- newIdent
         idButttonCloseDialogExploreNearby <- newIdent
+        idDialogExploreNearbyContent <- newIdent
+        idPromptPermissions <- newIdent
+        idGeolocationStatusIcon <- newIdent
+        idGeolocationStatusLabel <- newIdent
+        idGeolocationStatusUserMessage <- newIdent
+        idGeolocationAlternativesMessage <- newIdent
         idFormExploreNearby <- newIdent
+        idSpanAddress <- newIdent
+        idSpanCoordinates <- newIdent
+
+        idCoordinates <- newIdent
+        idFieldLongitude <- newIdent
+        idInputLongitude <- newIdent
+        idFieldLatitude <- newIdent
+        idInputLatitude <- newIdent
+
+        idFieldAddress <- newIdent
+        idInputAddress <- newIdent
+
         idFieldRadius <- newIdent
         idInputRadius <- newIdent
         idButttonCancelDialogExploreNearby <- newIdent

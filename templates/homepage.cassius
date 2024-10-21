@@ -157,14 +157,21 @@ footer
 
 
 ##{idDialogExploreNearby}
+
+    ##{idDialogExploreNearbyContent}
+        max-height: 50svh
+        overflow-y: auto
+
+    ##{idSpanAddress}:hover, ##{idSpanCoordinates}:hover
+        cursor: pointer
+        
+
     ##{idFormExploreNearby}
-        ##{idFieldRadius}
+            
+        ##{idFieldLongitude}, ##{idFieldLatitude}, ##{idFieldAddress}, ##{idFieldRadius}
             margin: 0 1rem 2rem 1rem
             .helper
                 text-transform: lowercase
-        ul
-            max-height: 40svh
-            overflow-y: auto
 
 
 ##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}

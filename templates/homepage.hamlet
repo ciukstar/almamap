@@ -92,29 +92,68 @@
     <button.transparent.link ##{idButttonCloseDialogOverview}>
       _{MsgClose}
 
+
 <dialog.no-padding ##{idDialogExploreNearby}>
   <div.row.padding>
     <h6.max>_{MsgNearby}
     <button.circle.transparent ##{idButttonCloseDialogExploreNearby} data-ui=##{idOverlay}>
       <i>close
-  
-  <form method=dialog ##{idFormExploreNearby}>
-    <div.field.border.round.suffix ##{idFieldRadius}>
-      <input type=number step=any name=radius value=1.5 required placeholder=_{MsgRadius} ##{idInputRadius}>
-      <div.helper>_{MsgRadius}, _{MsgInKilometers}
+  <div ##{idDialogExploreNearbyContent}>
+    <div ##{idPromptPermissions}>
+      <details>
+        <summary.none>
+          <article.transparent.no-round.no-elevate>
+            <nav>
+              <i ##{idGeolocationStatusIcon}>
+                info
+              <div.max.link ##{idGeolocationStatusLabel}>
+                _{MsgAboutYourLocation} ...
+        <div>
+          <p.margin ##{idGeolocationStatusUserMessage}>
+            _{MsgGeolocationStatusUserMessage}
+            
+          <p.margin ##{idGeolocationAlternativesMessage}>
+            _{MsgGeolocationAlternativesMessagePrefix} #
+            <span.link ##{idSpanAddress}>
+              _{MsgGeolocationAlternativesMessageAddress}
+            \ _{MsgGeolocationAlternativesMessageOrThe} #
+            <span.link ##{idSpanCoordinates}>
+              _{MsgGeolocationAlternativesMessageCoordinates}
+            _{MsgGeolocationAlternativesMessageSuffix}.
+   
+    <form method=dialog ##{idFormExploreNearby}>
+    
+      <div.field.border.round ##{idFieldAddress} style="display:none">
+        <input type=text name=address placeholder=_{MsgAddress} ##{idInputAddress}>
+        <div.helper>_{MsgAddress}
 
-    <ul.no-margin.no-padding onscroll="event.preventDefault();event.stopPropagation();">
-      $forall item@(Object o) <- nearbyItems
-        <li.none.row.no-margin.padding.wave>
 
-          <label.radio.max style="z-index:2">
-            <input type=radio name=item value=#{decodeUtf8 $ encode item} required>
-            <span style="padding-left:1rem">
-              $maybe String label <- AKM.lookup "label" o
-                #{label}
+      <div ##{idCoordinates}>
+        <div.field.border.round ##{idFieldLongitude} style="display:none">
+          <input type=number step=any name=longitude placeholder=_{MsgLongitude} ##{idInputLongitude}>
+          <div.helper>_{MsgLongitude}
+   
+        <div.field.border.round ##{idFieldLatitude} style="display:none">
+          <input type=number step=any name=latitude placeholder=_{MsgLatitude} ##{idInputLatitude}>
+          <div.helper>_{MsgLatitude}
+
+    
+      <div.field.border.round ##{idFieldRadius}>
+        <input type=number step=any name=radius value=1.5 required placeholder=_{MsgRadius} ##{idInputRadius}>
+        <div.helper>_{MsgRadius}, _{MsgInKilometers}
+
+      <ul.no-margin.no-padding onscroll="event.preventDefault();event.stopPropagation();">
+        $forall item@(Object o) <- nearbyItems
+          <li.none.row.no-margin.padding.wave>
+
+            <label.radio.max style="z-index:2">
+              <input type=radio name=item value=#{decodeUtf8 $ encode item} required>
+              <span style="padding-left:1rem">
+                $maybe String label <- AKM.lookup "label" o
+                  #{label}
       
   <nav.right-align.padding>
     <button.transparent.link ##{idButttonCancelDialogExploreNearby} data-ui=##{idOverlay}>
       _{MsgClose}
-    <button ##{idButttonExploreNearby} type=submit form=#{idFormExploreNearby} data-ui=##{idOverlay}>
+    <button ##{idButttonExploreNearby} type=submit form=#{idFormExploreNearby}>
       _{MsgFind}
