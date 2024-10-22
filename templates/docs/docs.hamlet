@@ -1,9 +1,40 @@
 
-^{widgetTopbar Nothing (msgr MsgDocumentation) idOverlay Nothing Nothing}
+^{widgetTopbar Nothing (m MsgDocumentation) idOverlay Nothing Nothing}
 
 <main.responsive>
 
-  <h1>_{MsgAppName}
+  <h2.small>_{MsgAppName}
+  <p>
+    #{t $ MsgDoc001 (m MsgAppName) (r HomeR)}
+
+  <section>
+    <h3.small>_{MsgDoc005}
+    <ul>
+      <li>
+        OpenStreetMap
+        <ul>
+          <li>
+            <a.link href="https://wiki.openstreetmap.org/wiki/Overpass_API" target=_blank>
+              Overpass API
+          <li>
+            <a.link href="https://nominatim.org" target=_blank>
+              Nominatim
+      <li>
+        Mapbox
+        <ul>
+          <li>
+            <a.link href="https://www.mapbox.com/mapbox-gljs" target=_blank>
+              Mapbox GL JS
+
+  <section>
+    <h3.small>_{MsgSourceCode}
+    <p>
+      #{t $ MsgDoc002 "https://github.com/ciukstar/almamap"}
+
+  <section>
+    <h3.small>_{MsgIssueTracking}
+    <p>
+      #{t $ MsgDoc003 "https://github.com/ciukstar/almamap/issues"}
 
 
   ^{widgetSnackbar msgs}

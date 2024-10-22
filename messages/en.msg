@@ -1,11 +1,14 @@
+IssueTracking: Issue tracking
 GeolocationAlternativesMessageCoordinates: coordinates
 GeolocationAlternativesMessageOrThe: or the
 GeolocationAlternativesMessageAddress: address
 GeolocationAlternativesMessageSuffix: of your location
 GeolocationAlternativesMessagePrefix: Alternatively, you can specify an
-
-GeolocationStatusUserMessage: Your location is determined using browser features.
-GeolocationStatusDisabledUserMessage: It looks like you have geolocation disabled, for it is needed to explore nearby objects. Please enable geolocation for this site in your browser settings.
+GeolocationStatusTimeoutUserMessage: The timeout for determining your location has expired.
+GeolocationStatusUserMessage: Your location is determined using the browser's geolocation capabilities.
+GeolocationNotSupportedUserMessage: It looks like your browser does not support geolocation.
+GeolocationStatusDisabledExploreNearby: It looks like you have geolocation disabled, for it is needed to explore nearby objects. Please enable geolocation for this site in your browser settings.
+GeolocationStatusDisabledUserMessage: It looks like you have geolocation disabled, for it is needed to map your location. Please enable geolocation for this site in your browser settings.
 AboutYourLocation: About your location
 GeolocationOptions: Geolocation options
 Geolocation: Geolocation
@@ -65,7 +68,6 @@ StyleStreets: Streets
 CouldNotGetPosition: Could not get position
 Landmark: Landmark
 Close: Close
-
 Tooltip: Tooltip
 Duration: Duration
 EndDate: End date
@@ -76,22 +78,18 @@ Timestamp: Timestamp
 Hours: Hours
 DurationHours: Duration
 Remarks: Remarks
-
 StateMachineDiagram: State machine diagram
 BasicEntities: Basic entities
-
 NotAuthorized: Not authorized
 LoginToAccessPlease: Please login to access this page
 Statistics: Statistics
 Owner: Owner
 Sequence: Sequence
-
 End: End
 Start: Start
 LoginForMoreDetailsPlease: Please login for more details
 WelcomeTo: Welcome to
 Location: Location
-
 ChangePassword: Change password
 AlreadyExists: Already exists
 No: No
@@ -107,7 +105,6 @@ BackToHomepage: Go back to homepage
 InvalidArguments: Invalid arguments
 PermissionDenied: Permission denied
 PageNotFound: Page not found
-
 PleaseAddIfNecessary: Please add if necessary
 Empty: Empty
 Copy: Copy
@@ -167,3 +164,8 @@ SignOut: Sign out
 SignIn: Sign in
 Home: Home
 AppName: AlmaMap
+
+Doc001 appname@Text href@Text: The <a class="link" href=#{href} target=_blank>#{appname}</a> web application displays points of interest from OpenStreetMap on the Mapbox map.
+Doc002 href@Text: <a class="link" href=#{href} target=_blank>Project repository</a> on GitHub.
+Doc003 href@Text: Please note that the application currently running is a demo application. Any actions are allowed and encouraged. <a class="link" href=#{href} target=_blank>Report issues</a> on GitHub.
+Doc005: Integration with external APIs

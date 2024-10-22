@@ -1,11 +1,14 @@
+IssueTracking: Мәселені қадағалау
 GeolocationAlternativesMessageCoordinates: координаттарын
 GeolocationAlternativesMessageOrThe: немесе
 GeolocationAlternativesMessageAddress: мекенжайын
 GeolocationAlternativesMessageSuffix: көрсете аласыз
 GeolocationAlternativesMessagePrefix: Немесе сіз орналасқан жеріңіздің
-
-GeolocationStatusUserMessage: Орналасқан жеріңіз браузер мүмкіндіктері арқылы анықталады.
-GeolocationStatusDisabledUserMessage: Маңайдағы нысандарды зерттеу үшін қажет болғандықтан, геолокация өшірілген сияқты. Браузер параметрлерінде осы сайт үшін геолокацияны қосыңыз.
+GeolocationStatusTimeoutUserMessage: Орналасқан жеріңізді анықтауға арналған күту уақыты аяқталды.
+GeolocationStatusUserMessage: Орналасқан жеріңіз браузердің геолокация мүмкіндіктері арқылы анықталады.
+GeolocationNotSupportedUserMessage: Браузеріңіз геолокацияны қолдамайтын сияқты.
+GeolocationStatusDisabledExploreNearby: Маңайдағы нысандарды зерттеу үшін қажет болғандықтан, геолокация өшірілген сияқты. Браузер параметрлерінде осы сайт үшін геолокацияны қосыңыз.
+GeolocationStatusDisabledUserMessage: Сізде геолокация өшірілген сияқты, себебі ол орналасқан жеріңізді картаға түсіру үшін қажет. Браузер параметрлерінде осы сайт үшін геолокацияны қосыңыз.
 AboutYourLocation: Орналасқан жеріңіз туралы
 GeolocationOptions: Геолокация опциялары
 Geolocation: Геолокация
@@ -65,7 +68,6 @@ StyleStreets: Көшелер
 CouldNotGetPosition: Позиция ала алмады
 Landmark: Көрнекті белгі
 Close: Жабу
-
 Tooltip: Құрал кеңесі
 Duration: Ұзақтығы
 EndDate: Аяқталу күні
@@ -76,22 +78,18 @@ Timestamp: Уақыт белгісі
 Hours: Сағат
 DurationHours: Ұзақтығы
 Remarks: Ескертулер
-
 StateMachineDiagram: Күй машинасының диаграммасы
 BasicEntities: Негізгі нысандар
-
 NotAuthorized: Рұқсат етілмеген
 LoginToAccessPlease: Бұл бетке кіру үшін жүйеге кіріңіз
 Statistics: Статистика
 Owner: Меншік иесі
 Sequence: Тізбек
-
 End: Соңы
 Start: Бастау
 LoginForMoreDetailsPlease: Қосымша мәліметтер алу үшін жүйеге кіріңіз
 WelcomeTo: қош келдіңіз
 Location: Орналасқан жері
-
 ChangePassword: Құпия сөзді өзгерту
 AlreadyExists: Қазірдің өзінде бар
 No: Жоқ
@@ -107,7 +105,6 @@ BackToHomepage: Негізгі бетке оралу
 InvalidArguments: Жарамсыз аргументтер
 PermissionDenied: Рұқсат қабылданбады
 PageNotFound: Бет табылмады
-
 PleaseAddIfNecessary: Қажет болса қосыңыз
 Empty: Бос
 Copy: Көшіру
@@ -167,3 +164,8 @@ SignOut: Шығу
 SignIn: Кіру
 Home: Үй
 AppName: AlmaMap
+
+Doc001 appname href: <a class="link" href=#{href} target=_blank>#{appname}</a> веб-қосымшасы Mapbox картасында OpenStreetMap қолданбасының қызықты жерлерін көрсетеді.
+Doc002 href: GitHub жүйесіндегі <a class="link" href=#{href} target=_blank>жоба репозиторийі</a>.
+Doc003 href: Ағымдағы жұмыс істеп тұрған қолданбаның демонстрациялық қолданба екенін ескеріңіз. Кез келген әрекеттерге рұқсат етіледі және ынталандырылады. GitHub сайтында <a class="link" href=#{href} target=_blank>Мәселелерді хабарлау</a>.
+Doc005: Сыртқы API интерфейстерімен интеграция

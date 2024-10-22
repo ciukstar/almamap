@@ -28,7 +28,8 @@
   <div ##{idMap}>
     
 
-^{widgetSnackbar msgs}
+$if not (null msgs)
+  ^{widgetSnackbar msgs}
 
 <footer.transparent>
   <nav.transparent>
@@ -93,6 +94,7 @@
       _{MsgClose}
 
 
+
 <dialog.no-padding ##{idDialogExploreNearby}>
   <div.row.padding>
     <h6.max>_{MsgNearby}
@@ -122,11 +124,12 @@
             _{MsgGeolocationAlternativesMessageSuffix}.
    
     <form method=dialog ##{idFormExploreNearby}>
-    
+        
       <div.field.border.round ##{idFieldAddress} style="display:none">
-        <input type=text name=address placeholder=_{MsgAddress} ##{idInputAddress}>
+        <input type=text name=address placeholder=_{MsgAddress} ##{idInputAddress} autocomplete=on list=#{idDatalistAddress}>
         <div.helper>_{MsgAddress}
-
+        
+      <datalist ##{idDatalistAddress}>
 
       <div ##{idCoordinates}>
         <div.field.border.round ##{idFieldLongitude} style="display:none">
@@ -142,15 +145,13 @@
         <input type=number step=any name=radius value=1.5 required placeholder=_{MsgRadius} ##{idInputRadius}>
         <div.helper>_{MsgRadius}, _{MsgInKilometers}
 
-      <ul.no-margin.no-padding onscroll="event.preventDefault();event.stopPropagation();">
-        $forall item@(Object o) <- nearbyItems
-          <li.none.row.no-margin.padding.wave>
-
-            <label.radio.max style="z-index:2">
-              <input type=radio name=item value=#{decodeUtf8 $ encode item} required>
-              <span style="padding-left:1rem">
-                $maybe String label <- AKM.lookup "label" o
-                  #{label}
+      <div.no-margin.no-padding onscroll="event.preventDefault();event.stopPropagation();">
+        $forall (i, item@(Object o)) <- nearbyItems
+          <label.radio.max.none.row.no-margin.padding.wave style="display:block">
+            <input type=radio name=item value=#{decodeUtf8 $ encode item} required :1 == i:checked>
+            <span style="padding-left:1rem">
+              $maybe String label <- AKM.lookup "label" o
+                #{label}
       
   <nav.right-align.padding>
     <button.transparent.link ##{idButttonCancelDialogExploreNearby} data-ui=##{idOverlay}>

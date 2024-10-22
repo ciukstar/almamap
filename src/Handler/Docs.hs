@@ -10,20 +10,21 @@ module Handler.Docs
   ) where
 
 import Foundation
-    ( Handler
-    , widgetSnackbar, widgetTopbar
+    ( Handler, widgetSnackbar, widgetTopbar
+    , Route (HomeR)
     , AppMessage
-      ( MsgAppName, MsgDocumentation
+      ( MsgAppName, MsgDocumentation, MsgIssueTracking, MsgSourceCode
+      , MsgDoc001, MsgDoc002, MsgDoc003, MsgDoc005
       )
     )
     
 import Settings (widgetFile)
 
-
+import Text.Blaze.Html (preEscapedToHtml)
 import Text.Hamlet (Html)
 
 import Yesod
-    ( getMessageRender
+    ( getMessageRender, getUrlRender
     )
 import Yesod.Core
     ( Yesod(defaultLayout), newIdent, getMessages
@@ -33,8 +34,10 @@ import Yesod.Core.Widget (setTitleI)
 
 getDocsR :: Handler Html
 getDocsR = do
-    msgr <- getMessageRender
+    r <- getUrlRender
+    m <- getMessageRender
     msgs <- getMessages
+    let t = preEscapedToHtml . m
     defaultLayout $ do
         setTitleI MsgDocumentation
         idOverlay <- newIdent

@@ -36,12 +36,14 @@ import Foundation
       , MsgSearchByNameOrAddress, MsgZoomIn, MsgZoomOut, MsgMyLocation, MsgParks
       , MsgMainMenu, MsgCompass, MsgMapStyleOptions, MsgRestaurantsShopsAndMore
       , MsgAttractions, MsgRadius, MsgInKilometers, MsgNearby, MsgFind
-      , MsgPublicInstitutions, MsgPermissionDenied, MsgPositionUnavailable
-      , MsgTimeout, MsgGeolocationDisabled, MsgAddress, MsgLongitude, MsgLatitude
-      , MsgAboutYourLocation, MsgGeolocationStatusDisabledUserMessage
+      , MsgPublicInstitutions
+      , MsgGeolocationDisabled, MsgAddress, MsgLongitude, MsgLatitude
+      , MsgAboutYourLocation, MsgGeolocationStatusDisabledExploreNearby
       , MsgGeolocationStatusUserMessage, MsgGeolocationAlternativesMessagePrefix
       , MsgGeolocationAlternativesMessageSuffix, MsgGeolocationAlternativesMessageAddress
       , MsgGeolocationAlternativesMessageOrThe, MsgGeolocationAlternativesMessageCoordinates
+      , MsgGeolocationNotSupportedUserMessage, MsgGeolocationStatusTimeoutUserMessage
+      , MsgGeolocationStatusDisabledUserMessage
       )
     )
 
@@ -102,8 +104,9 @@ getHomeR = do
 
     msgr <- getMessageRender
 
-    let nearbyItems :: [A.Value]
-        nearbyItems = [ object [ "marker" .= String "marker-tourism"
+    let nearbyItems :: [(Int, A.Value)]
+        nearbyItems = zip [1..]
+                      [ object [ "marker" .= String "marker-tourism"
                                , "label" .= msgr MsgAttractions
                                , "query" .= queryAround "[tourism]"
                                ]
@@ -182,6 +185,7 @@ getHomeR = do
 
         idFieldAddress <- newIdent
         idInputAddress <- newIdent
+        idDatalistAddress <- newIdent
 
         idFieldRadius <- newIdent
         idInputRadius <- newIdent

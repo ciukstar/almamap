@@ -1,11 +1,14 @@
+IssueTracking: Отслеживание ошибок
 GeolocationAlternativesMessageCoordinates: координаты
 GeolocationAlternativesMessageOrThe: или
 GeolocationAlternativesMessageAddress: адрес
 GeolocationAlternativesMessageSuffix: вашего местоположения
 GeolocationAlternativesMessagePrefix: Либо вы можете указать
-
-GeolocationStatusUserMessage: Ваше местоположение определяется с помощью функций браузера.
-GeolocationStatusDisabledUserMessage: Похоже, у вас отключена геолокация, так как она нужна для исследования близлежащих объектов. Включите геолокацию для этого сайта в настройках браузера.
+GeolocationStatusTimeoutUserMessage: Время ожидания определения вашего местоположения истекло.
+GeolocationStatusUserMessage: Ваше местоположение определяется с помощью возможностей геолокации браузера.
+GeolocationNotSupportedUserMessage: Похоже, ваш браузер не поддерживает геолокацию.
+GeolocationStatusDisabledExploreNearby: Похоже, у вас отключена геолокация, так как она нужна для исследования близлежащих объектов. Включите геолокацию для этого сайта в настройках браузера.
+GeolocationStatusDisabledUserMessage: Похоже, у вас отключена геолокация, так как она необходима для определения вашего местоположения. Включите геолокацию для этого сайта в настройках браузера.
 AboutYourLocation: О вашем местоположении
 GeolocationOptions: Параметры геолокации
 Geolocation: Геолокация
@@ -65,7 +68,6 @@ StyleStreets: Улицы
 CouldNotGetPosition: Не удалось получить позицию
 Landmark: Достопримечательность
 Close: Закрыть
-
 Tooltip: Подсказка
 Duration: Продолжительность
 EndDate: Дата окончания
@@ -77,7 +79,6 @@ Hours: Часы
 DurationHours: Продолжительность
 Remarks: Замечания
 StateMachineDiagram: Схема машины состояний
-
 BasicEntities: Базовые сущности
 NotAuthorized: Не разрешено
 LoginToAccessPlease: Пожалуйста, войдите в систему, чтобы получить доступ к этой странице
@@ -86,11 +87,9 @@ Owner: Владелец
 Sequence: Последовательность
 End: Конец
 Start: Начало
-
 LoginForMoreDetailsPlease: Пожалуйста, войдите в систему для более подробной информации
 WelcomeTo: Добро пожаловать на
 Location: Локация
-
 ChangePassword: Изменить пароль
 AlreadyExists: Уже существует
 No: Нет
@@ -106,7 +105,6 @@ BackToHomepage: Вернуться на домашнюю страницу
 InvalidArguments: Неверные аргументы
 PermissionDenied: Доступ запрещен
 PageNotFound: Страница не найдена
-
 PleaseAddIfNecessary: Пожалуйста, добавьте, если необходимо
 Empty: Пустой
 Copy: Копировать
@@ -166,3 +164,8 @@ SignOut: Выйти
 SignIn: Войти
 Home: Главная
 AppName: AlmaMap
+
+Doc001 appname href: Веб-приложение <a class="link" href=#{href} target=_blank>#{appname}</a> отображает точки интереса из OpenStreetMap на карте Mapbox.
+Doc002 href: <a class="link" href=#{href} target=_blank>Репозиторий проекта</a> на GitHub.
+Doc003 href: Обратите внимание, что приложение, работающее в данный момент, является демонстрационным. Любые действия разрешены и поощряются. <a class="link" href=#{href} target=_blank>Сообщайте об ошибках</a> на GitHub.
+Doc005: Интеграция с внешними API

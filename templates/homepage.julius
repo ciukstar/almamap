@@ -1,4 +1,7 @@
 
+var myLocationMarker;
+var myLocationWatchID;
+
 const markers = [];
 
 mapboxgl.accessToken = #{mapboxPk};
@@ -33,6 +36,33 @@ const queryRestaurant = #{query "amenity" (Just "restaurant")};
 const queryGovernment = #{query "government" Nothing};
 
 markMap(fetchQuery(queryTourism),'marker-tourism');
+
+
+document.getElementById(#{idInputAddress}).addEventListener('input', debounce(function (e) {
+    
+  const query = new URLSearchParams({
+    q: e.target.value,
+    countrycodes: #{countrycodes},
+    viewbox: #{bbox},
+    format: 'json'
+  });
+  
+  const url = encodeURIComponent(new URL(`#{rawJS nominatim}?${query}`).href);
+  
+  fetch(`@{FetchR}?url=${url}`,{
+    headers: {'Accept': 'application/json'}
+  }).then(data => data.json()).then(function (res) {
+    
+    document.getElementById(#{idDatalistAddress}).replaceChildren(... res.map(x => {
+      const option = document.createElement('option');
+      option.value = x['display_name'];
+      return option;
+      
+    }));
+    
+  });  
+  
+}, 500));
 
 
 document.getElementById(#{idSpanAddress}).addEventListener('click', function (e) {
@@ -77,75 +107,55 @@ document.getElementById(#{idSpanCoordinates}).addEventListener('click', function
   });
 });
 
+  
+const geolocationWatchOptions = {
+  enableHighAccuracy: true,
+  maximumAge: 10000,
+  timeout: 10000
+};
+
 
 function fillTemplate (template, vars) {
   return new Function("return `" + template +"`").call(vars);
 }
 
 document.getElementById(#{idFormExploreNearby}).addEventListener('submit', function (e) {
+  
   e.preventDefault();
   document.getElementById(#{idOverlay}).classList.remove('active');
   
   const data = new FormData(e.target);
 
-  const address = data.get('address');
   const longitude = data.get('longitude');
   const latitude = data.get('latitude');
+  const address = data.get('address');
   const radius = 1000 * data.get('radius');
   const item = JSON.parse(data.get('item'));
   const marker = item.marker;
   const query = item.query;
+
+  if (!!myLocationWatchID) {
+    navigator.geolocation.clearWatch(myLocationWatchID);
+    myLocationWatchID = null;
+  }
+
+  if (!!myLocationMarker) {
+    myLocationMarker.remove();
+    myLocationMarker = null;
+  }
   
-  navigator.geolocation.clearWatch(myLocationWatchID);
-  myLocationWatchID = null;
-  myLocationMarker?.remove();
-  myLocationMarker = null;
-  
-  const onError = function (err) {
-
-    if (err.code == GeolocationPositionError.PERMISSION_DENIED) {
-      
-      document.getElementById(#{idMain}).appendChild(
-        snackbar(#{msgr MsgPermissionDenied})
-      );
-
-    } else if (err.code == GeolocationPositionError.POSITION_UNAVAILABLE) {
-      
-      document.getElementById(#{idMain}).appendChild(
-        snackbar(#{msgr MsgPositionUnavailable})
-      );
-
-    } else if (err.code == GeolocationPositionError.TIMEOUT) {
-      
-      document.getElementById(#{idMain}).appendChild(
-        snackbar(#{msgr MsgTimeout})
-      );
-
-    } else {
-      
-      document.getElementById(#{idMain}).appendChild(
-        snackbar(#{msgr MsgCouldNotGetPosition})
-      );
-      console.error(err);
-
-    }
-  };
-  
-  const watchOptions = {
-    enableHighAccuracy: true,
-    maximumAge: 10000,
-    timeout: 5000
-  };
-
-  let coords = new Promise((resolve, reject) => {
+  new Promise(function (resolve, reject) {
+    
     if (!!longitude && !!latitude) {
-      resolve ([longitude,latitude]);
+      
+      resolve ([longitude,latitude,false]);
+      
     } else if (!!address) {
       
       const query = new URLSearchParams({
         q: address,
-        // countrycodes: #{countrycodes},
-        // viewbox: #{bbox},
+        countrycodes: #{countrycodes},
+        viewbox: #{bbox},
         format: 'json'
       });
       
@@ -156,18 +166,23 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
       }).then(data => data.json()).then(function (res) {
         
         if (res.length > 0) {
-          resolve ([Number(res[0].lon),Number(res[0].lat)]);
+          resolve ([Number(res[0].lon),Number(res[0].lat),false]);
         } else {
           reject ("Address cannot be translated to coorinates");
         }
+        
       });
       
     } else {
+          
       navigator.geolocation.getCurrentPosition(
-        p => resolve ([p.coords.longitude, p.coords.latitude]), onError, watchOptions
+        p => resolve([p.coords.longitude, p.coords.latitude, true]),
+        onGeolocationPositionError(#{msgr MsgGeolocationStatusDisabledExploreNearby}), geolocationWatchOptions
       );
+      
     }
-  }).then(([lng,lat]) => {
+    
+  }).then(function ([lng,lat,watchMyLocation]) {
     
     const disk = `${radius},${lat},${lng}`;
 
@@ -199,13 +214,15 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 
         waveOne.appendChild(waveTwo);
         elemMarker.appendChild(waveOne);
-        
-        myLocationWatchID = navigator.geolocation.watchPosition(p => {
-          myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]);
-          if (!!p.coords.heading) {
-            myLocationMarker.setRotation(p.coords.heading);
-          }
-        }, onError, watchOptions);
+
+        if (watchMyLocation) {
+          myLocationWatchID = navigator.geolocation.watchPosition(p => {
+            myLocationMarker.setLngLat([p.coords.longitude, p.coords.latitude]);
+            if (!!p.coords.heading) {
+              myLocationMarker.setRotation(p.coords.heading);
+            }
+          }, onGeolocationPositionError(#{msgr MsgGeolocationStatusDisabledExploreNearby}), geolocationWatchOptions);
+        }
 
         map.once('moveend', () => {
           elemMarker.style.transition = 'transform 1s ease-out';
@@ -451,7 +468,7 @@ document.getElementById(#{idButtonExploreNearby}).addEventListener('click', e =>
     if (x.state === 'denied') {
       document.getElementById(#{idGeolocationStatusIcon}).textContent = 'location_off';
       document.getElementById(#{idGeolocationStatusLabel}).textContent = #{msgr MsgGeolocationDisabled} + '...';
-      document.getElementById(#{idGeolocationStatusUserMessage}).textContent = #{msgr MsgGeolocationStatusDisabledUserMessage};
+      document.getElementById(#{idGeolocationStatusUserMessage}).textContent = #{msgr MsgGeolocationStatusDisabledExploreNearby};
     } else {
       document.getElementById(#{idGeolocationStatusIcon}).textContent = 'info';
       document.getElementById(#{idGeolocationStatusLabel}).textContent = #{msgr MsgAboutYourLocation} + '...';
@@ -479,19 +496,9 @@ document.getElementById(#{idButtonZoomOut}).addEventListener('click', e => {
   map.zoomOut();
 });
 
-var myLocationMarker;
-var myLocationWatchID;
-
 document.getElementById(#{idButtonMyLocation}).addEventListener('click', function (e) {
+  
   if (!myLocationMarker) {
-    
-    const watchOptions = {
-      enableHighAccuracy: true,
-      maximumAge: 10000,
-      timeout: 5000
-    };
-
-    const onError = () => { console.error(#{msgr MsgCouldNotGetPosition}); };
     
     navigator.geolocation.getCurrentPosition(p => {
       
@@ -518,13 +525,13 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
         if (!!p.coords.heading) {
           myLocationMarker.setRotation(p.coords.heading);
         }
-      }, onError, watchOptions);
+      }, onGeolocationPositionError(#{msgr MsgGeolocationStatusDisabledUserMessage}), geolocationWatchOptions);
 
       map.once('moveend', () => {
         elemMarker.style.transition = 'transform 1s ease-out';
       });
             
-    }, onError, watchOptions);
+    }, onGeolocationPositionError(#{msgr MsgGeolocationStatusDisabledUserMessage}), geolocationWatchOptions);
     
   } else {
     navigator.geolocation.clearWatch(myLocationWatchID);
@@ -532,6 +539,7 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
     myLocationMarker.remove();
     myLocationMarker = null;
   }
+  
 });
 
 
@@ -663,4 +671,35 @@ function markMap (data, icon) {
       
     });
   });
+};
+
+
+function onGeolocationPositionError (message) {
+
+  return function (err) {
+    if (err.code == GeolocationPositionError.PERMISSION_DENIED) {
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(message,'error', 15000)
+      );
+
+    } else if (err.code == GeolocationPositionError.POSITION_UNAVAILABLE) {
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgGeolocationNotSupportedUserMessage},'error', 15000)
+      );
+
+    } else if (err.code == GeolocationPositionError.TIMEOUT) {
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgGeolocationStatusTimeoutUserMessage},'error', 15000)
+      );
+
+    } else {
+      
+      document.getElementById(#{idMain}).appendChild(
+        snackbar(#{msgr MsgCouldNotGetPosition},'error', 15000)
+      );
+      console.error(err);
+
+    }
+  };
+  
 };
