@@ -69,17 +69,15 @@ $if not (null msgs)
   <div>
     <a.row.padding.wave href=@{RestaurantsR}>
       <i.large.circle>restaurant
-      <div.max>
-        <h6.small>_{MsgRestaurants}
-      <label ##{idLabelRestaurants}>
+      <h6.max.small>_{MsgRestaurants}
+      <span.small-text ##{idLabelRestaurants}>
       <i.end-icon>arrow_forward_ios
         
       
     <a.row.padding.wave href=@{ShopsR}>
       <i.large.circle>shopping_cart
-      <div.max>
-        <h6.small>_{MsgShops}
-      <label ##{idLabelShops}>
+      <h6.max.small>_{MsgShops}
+      <span.small-text ##{idLabelShops}>
       <i.end-icon>arrow_forward_ios
 
 

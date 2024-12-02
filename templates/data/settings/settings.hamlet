@@ -1,0 +1,32 @@
+
+^{widgetTopbar Nothing (msgr MsgSettings) idOverlay Nothing Nothing}
+
+<main>
+
+  <div.tabs.min>
+    <a.active href=@{DataR SettingsR}>_{MsgGeoRegion}
+    <a>_{MsgDisplay}
+
+  <div.page.padding.active>
+    <form style="display:flex;flex-direction:column;gap:1rem">
+      <label>
+        <input type=radio name=type value=fixed>
+        MsgFixed
+
+      <details>
+        <summary>
+        <select>
+          <option>Country 1
+          <option>Country 2
+          <option>Country 3
+          
+        <select>
+          <option>City 1
+          <option>City 2
+          <option>City 3
+      
+        
+      <label>
+        <input type=radio name=type value=vicinity>
+        MsgVicinity
+

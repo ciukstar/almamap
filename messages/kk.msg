@@ -1,3 +1,6 @@
+Display: Дисплей
+GeoRegion: Геоаймақ
+GeoArea: Аймақ
 IssueTracking: Мәселені қадағалау
 GeolocationAlternativesMessageCoordinates: координаттарын
 GeolocationAlternativesMessageOrThe: немесе

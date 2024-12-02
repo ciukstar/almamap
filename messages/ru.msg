@@ -1,3 +1,6 @@
+Display: Отображение
+GeoRegion: Гео-регион
+GeoArea: Область
 IssueTracking: Отслеживание ошибок
 GeolocationAlternativesMessageCoordinates: координаты
 GeolocationAlternativesMessageOrThe: или

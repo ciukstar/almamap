@@ -219,6 +219,8 @@ instance Yesod App where
     isAuthorized FetchP18PhotoR _ = setUltDestCurrent >> return Authorized
 
     
+    isAuthorized (DataR SettingsR) _ = setUltDestCurrent >> isAdmin
+    
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin
     isAuthorized (DataR (UserEditR _)) _ = isAdmin
     isAuthorized (DataR UserNewR) _ = isAdmin

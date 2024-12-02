@@ -1,3 +1,6 @@
+Display: Display
+GeoRegion: Geo-region
+GeoArea: Area
 IssueTracking: Issue tracking
 GeolocationAlternativesMessageCoordinates: coordinates
 GeolocationAlternativesMessageOrThe: or the
