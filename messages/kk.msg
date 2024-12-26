@@ -1,3 +1,7 @@
+Next: Келесі
+Region: Аймақ
+City: Қала
+Fixed: Бекітілген
 Display: Дисплей
 GeoRegion: Геоаймақ
 GeoArea: Аймақ

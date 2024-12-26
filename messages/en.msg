@@ -1,3 +1,7 @@
+Next: Next
+Region: Region
+City: City
+Fixed: Fixed
 Display: Display
 GeoRegion: Geo-region
 GeoArea: Area

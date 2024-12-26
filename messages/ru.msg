@@ -1,3 +1,7 @@
+Next: Далее
+Region: Регион
+City: Город
+Fixed: Фиксированный
 Display: Отображение
 GeoRegion: Гео-регион
 GeoArea: Область
@@ -23,7 +27,7 @@ PositionUnavailable: Местоположение недоступно
 Find: Найти
 PublicInstitutions: Общественные учреждения
 Parks: Парки
-Nearby: Поблизости
+Nearby: Близлежащий
 InKilometers: в километрах
 NearbyRadius: Радиус вблизи моего местоположения
 Radius: Радиус
