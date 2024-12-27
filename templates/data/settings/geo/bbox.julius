@@ -1,0 +1,12 @@
+
+(async () => {
+  mapboxgl.accessToken = #{mapboxPk};
+
+  const map = new mapboxgl.Map({
+    container: #{idMap},
+    center: #{toJSON center},
+    zoom: 9,
+    style: #{style}
+  });
+  
+}) ();

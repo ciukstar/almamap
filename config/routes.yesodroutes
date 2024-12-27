@@ -26,8 +26,9 @@
 
 /data DataR:
 
-    -- /settings/geo/#Text SettingsGeoR GET
-    /settings           SettingsR    GET
+    /settings/geo/#Text/#Text/bbox SettingsGeoBboxR GET
+    /settings/geo/#Text/city       SettingsGeoCityR GET POST
+    /settings/geo/country          SettingsR        GET POST
 
     /users/#UserId/dele UserDeleR POST
     /users/#UserId/edit UserEditR GET

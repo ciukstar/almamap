@@ -11,24 +11,25 @@
 
     <nav>
       <div.center-align>
-        <a.button.circle.small href=@{DataR SettingsR}>1
+        <a.button.circle.small href=@{DataR SettingsR}>
+          <i>done
         <div.small-margin>_{MsgCountry}
       
       <hr.max>
       <div.center-align>
-        <button.circle.small type=button disabled>2
+        <a.button.circle.small href=@{DataR $ SettingsGeoCityR country}>
+          <i>done
         <div.small-margin>_{MsgCity}
       
       <hr.max>
       <div.center-align>
-        <button.circle.small type=button disabled>3
+        <a.button.circle.small href=@{DataR $ SettingsGeoBboxR country city}>3
         <div.small-margin>_{MsgRegion}
-      
-  
-    <form method=post action=@{DataR SettingsR} enctype=#{et}>
-      ^{fw}
-      <nav.right-align>
-        <button type=submit>
-          _{MsgNext}
+        
+    <div.max ##{idMap}>
+
+    <nav.right-align>
+      <button type=button>
+        _{MsgSave}
         
 

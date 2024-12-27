@@ -219,6 +219,8 @@ instance Yesod App where
     isAuthorized FetchP18PhotoR _ = setUltDestCurrent >> return Authorized
 
     
+    isAuthorized (DataR (SettingsGeoBboxR _ _)) _ = isAdmin
+    isAuthorized (DataR (SettingsGeoCityR _)) _ = isAdmin
     isAuthorized (DataR SettingsR) _ = setUltDestCurrent >> isAdmin
     
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin

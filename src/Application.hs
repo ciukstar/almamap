@@ -54,7 +54,11 @@ import Handler.Home ( getHomeR, getFetchR, getFetchP18PhotoR )
 import Handler.Restaurants (getRestaurantsR )
 import Handler.Shops (getShopsR )
 
-import Handler.Settings (getSettingsR)
+import Handler.Settings
+    ( getSettingsR, postSettingsR
+    , getSettingsGeoCityR, postSettingsGeoCityR
+    , getSettingsGeoBboxR
+    )
 
 
 import Handler.Users
