@@ -18,6 +18,9 @@ import Model
       ( UserPhoto, userPhotoUser, userPhotoMime, userPhotoAttribution
       , userPhotoPhoto
       )
+    , MapboxParam
+      ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom, mapboxParamStyle
+      )
     )
     
 import Text.Hamlet (shamlet)
@@ -89,6 +92,12 @@ fillDemoRu = do
                         , userPhotoMime = "image/avif"
                         , userPhotoPhoto = bs
                         , userPhotoAttribution = Just freepik
+                        }
+
+    insert_ MapboxParam { mapboxParamLon = 37.6174782
+                        , mapboxParamLat = 55.7505412
+                        , mapboxParamZoom = 9
+                        , mapboxParamStyle = "mapbox://styles/mapbox/dark-v11"
                         }
 
     return ()

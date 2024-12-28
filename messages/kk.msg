@@ -1,3 +1,6 @@
+Style: Стиль
+Center: Орталық
+Zoom: Масштаб
 Next: Келесі
 Region: Аймақ
 City: Қала

@@ -57,7 +57,7 @@ import Handler.Shops (getShopsR )
 import Handler.Settings
     ( getSettingsR, postSettingsR
     , getSettingsGeoCityR, postSettingsGeoCityR
-    , getSettingsGeoBboxR
+    , getSettingsGeoBboxR, postSettingsGeoBboxR
     )
 
 

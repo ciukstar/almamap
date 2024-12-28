@@ -2,11 +2,56 @@
 (async () => {
   mapboxgl.accessToken = #{mapboxPk};
 
+  const center = #{toJSON center};
+
   const map = new mapboxgl.Map({
     container: #{idMap},
-    center: #{toJSON center},
+    center: center,
     zoom: 9,
-    style: #{style}
+    style: #{mapboxStyle}
+  });
+
+  let poi = new mapboxgl.Marker().setLngLat(center).setOffset([0,0]).addTo(map);
+
+  const inputLng = document.getElementById(#{idInputLon});
+  const inputLat = document.getElementById(#{idInputLat});
+  const inputZoom = document.getElementById(#{idInputZoom});
+  const inputStyle = document.getElementById(#{idInputStyle});
+
+  map.on('click', function (e) {
+    poi.remove();
+    poi = new mapboxgl.Marker().setLngLat(e.lngLat).setOffset([0,0]).addTo(map);
+
+    inputLng.value = e.lngLat.lng;
+    inputLat.value = e.lngLat.lat;
+  });
+
+  inputLng.addEventListener('input', function (e) {
+    const lat = poi.getLngLat().lat;
+    poi.remove();
+    poi = new mapboxgl.Marker().setLngLat([e.target.value,lat]).setOffset([0,0]).addTo(map);
+    map.flyTo({center: poi.getLngLat(), zoom: inputZoom.value});
+  });
+
+  inputLat.addEventListener('input', function (e) {
+    const lng = poi.getLngLat().lng;
+    poi.remove();
+    poi = new mapboxgl.Marker().setLngLat([lng,e.target.value]).setOffset([0,0]).addTo(map);
+    map.flyTo({center: poi.getLngLat(), zoom: inputZoom.value});
+  });
+
+  map.on('zoomend', function (e) {
+    inputZoom.value = map.getZoom();
+  });
+
+  inputZoom.addEventListener('input', function (e) {
+    map.setZoom(e.target.value);
+  });
+
+  const mapStyles = #{toJSON mapStyles};
+  
+  inputStyle.addEventListener('change', function (e) {
+    map.setStyle(mapStyles[e.target.value - 1]);
   });
   
 }) ();

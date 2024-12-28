@@ -1,3 +1,6 @@
+Style: Стиль
+Center: Центр
+Zoom: Масштаб
 Next: Далее
 Region: Регион
 City: Город

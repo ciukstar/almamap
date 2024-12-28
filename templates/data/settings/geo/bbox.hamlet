@@ -28,8 +28,10 @@
         
     <div.max ##{idMap}>
 
-    <nav.right-align>
-      <button type=button>
-        _{MsgSave}
+    <form method=post action=@{DataR $ SettingsGeoBboxR country city} enctype=#{et}>
+      ^{fw}
+      <nav.right-align>
+        <button type=submit>
+          _{MsgSave}
         
 

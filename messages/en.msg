@@ -1,3 +1,6 @@
+Style: Style
+Center: Center
+Zoom: Zoom
 Next: Next
 Region: Region
 City: City
