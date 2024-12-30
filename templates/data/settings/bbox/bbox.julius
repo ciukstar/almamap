@@ -17,10 +17,19 @@ const inputMaxLat = document.getElementById(#{idInputMaxLat});
 ['zoomend','dragend'].forEach(x => {
   map.on(x, function (e) {
     
-    [inputMinLon.value,inputMinLat.value] = map.unproject([0,map.getContainer().clientHeight]).toArray();
-    
-    [inputMaxLon.value,inputMaxLat.value] = map.unproject([map.getContainer().clientWidth,0]).toArray();
+    if (!!e.originalEvent) {
+      [inputMinLon.value,inputMinLat.value] = map.unproject([0,map.getContainer().clientHeight]).toArray();
+      
+      [inputMaxLon.value,inputMaxLat.value] = map.unproject([map.getContainer().clientWidth,0]).toArray();
+    }
     
   });
 });
 
+[inputMinLon, inputMinLat, inputMaxLon, inputMaxLat].forEach(x => {
+  x.addEventListener('input', function (e) {
+    map.fitBounds([ [inputMinLon.value, inputMinLat.value],
+                    [inputMaxLon.value, inputMaxLat.value]
+                  ]);
+  });
+});
