@@ -1,6 +1,6 @@
 
 $forall (_,msg) <- filter ((/=) msgError . fst) msgs
-  <div.snackbar.primary.active>
+  <div.snackbar.active>
     <div.max>
       #{msg}
     <button.close.transparent.circle>

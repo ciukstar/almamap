@@ -18,7 +18,7 @@
       <i>home
       <span>_{MsgHome}
 
-    <a href=@{DataR SettingsR} :curr == Just (DataR SettingsR):.active>
+    <a href=@{DataR BboxR} :curr == Just (DataR BboxR):.active>
       <i>settings
       <span>_{MsgSettings}
 

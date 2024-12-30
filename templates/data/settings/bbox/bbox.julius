@@ -1,0 +1,26 @@
+
+mapboxgl.accessToken = #{mapboxPk};
+
+const bounds = #{toJSON bbox};
+
+const map = new mapboxgl.Map({
+  container: #{idMapboxMap},
+  bounds: bounds,
+  style: #{mapboxStyle}
+});
+
+const inputMinLon = document.getElementById(#{idInputMinLon});
+const inputMinLat = document.getElementById(#{idInputMinLat});
+const inputMaxLon = document.getElementById(#{idInputMaxLon});
+const inputMaxLat = document.getElementById(#{idInputMaxLat});
+
+['zoomend','dragend'].forEach(x => {
+  map.on(x, function (e) {
+    
+    [inputMinLon.value,inputMinLat.value] = map.unproject([0,map.getContainer().clientHeight]).toArray();
+    
+    [inputMaxLon.value,inputMaxLat.value] = map.unproject([map.getContainer().clientWidth,0]).toArray();
+    
+  });
+});
+

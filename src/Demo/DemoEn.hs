@@ -20,7 +20,7 @@ import Model
       )
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom, mapboxParamStyle
-      )
+      ), Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     )
 
 import Text.Hamlet (shamlet)
@@ -93,6 +93,12 @@ fillDemoEn = do
                         , userPhotoAttribution = Just freepik
                         }
 
+    insert_ Bbox { bboxMinLon = -0.2739597071966955
+                 , bboxMinLat = 51.411529657088664
+                 , bboxMaxLon = 0.006976602593198322
+                 , bboxMaxLat = 51.56453199636596
+                 }
+    
     insert_ MapboxParam { mapboxParamLon = -0.12
                         , mapboxParamLat = 51.50
                         , mapboxParamZoom = 9

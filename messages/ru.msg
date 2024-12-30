@@ -1,3 +1,10 @@
+NorthEast: Северо-Восток
+SouthWest: Юго-запад
+North: Север
+East: Восток
+South: Юг
+West: Запад
+BoundingBox: Ограничительная рамка
 Style: Стиль
 Center: Центр
 Zoom: Масштаб

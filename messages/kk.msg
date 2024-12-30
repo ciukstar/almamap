@@ -1,3 +1,10 @@
+NorthEast: Солтүстік-шығыс
+SouthWest: Оңтүстік-батыс
+North: Солтүстік
+East: Шығыс
+South: Оңтүстік
+West: Батыс
+BoundingBox: Шектеу қорабы
 Style: Стиль
 Center: Орталық
 Zoom: Масштаб

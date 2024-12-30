@@ -1,0 +1,23 @@
+
+^{widgetTopbar Nothing (msgr MsgSettings) idOverlay Nothing Nothing}
+
+<main>
+
+  <div.tabs.min>
+    <a.active href=@{DataR BboxR}>_{MsgBoundingBox}
+    <a href=@{DataR SettingsR}>_{MsgGeoRegion}
+    <a>_{MsgDisplay}
+
+  <div.page.padding.active>
+
+    <div.max ##{idMapboxMap}>
+
+    <fieldset>
+      <legend>_{MsgBoundingBox}
+      <form method=post action=@{DataR BboxR} enctype=#{et}>
+        ^{fw}
+        <nav.right-align>
+          <button type=submit>
+            _{MsgSave}
+
+  ^{widgetSnackbar msgs}

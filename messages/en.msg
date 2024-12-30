@@ -1,3 +1,10 @@
+NorthEast: Northeast
+SouthWest: Southwest
+North: North
+East: East
+South: South
+West: West
+BoundingBox: Bounding box
 Style: Style
 Center: Center
 Zoom: Zoom

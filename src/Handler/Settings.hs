@@ -29,13 +29,13 @@ import Database.Persist (Entity (Entity, entityVal), insert_)
 import Foundation
     ( Handler, Form, App (appSettings), widgetTopbar
     , Route (DataR)
-    , DataR (SettingsR, SettingsGeoCityR, SettingsGeoBboxR)
+    , DataR (BboxR, SettingsR, SettingsGeoCityR, SettingsGeoBboxR)
     , AppMessage
       ( MsgSettings, MsgGeoRegion, MsgDisplay, MsgCountry, MsgCity, MsgRegion
       , MsgNext, MsgSave, MsgLatitude, MsgLongitude, MsgZoom, MsgCenter
       , MsgStyle, MsgStyleStreets, MsgStyleOutdoors, MsgStyleLight, MsgStyleDark
       , MsgStyleSatellite, MsgStyleSatelliteStreets, MsgStyleNavigationDay
-      , MsgStyleNavigationNight, MsgRecordEdited
+      , MsgStyleNavigationNight, MsgRecordEdited, MsgBoundingBox
       )
     )
 
@@ -348,13 +348,13 @@ getSettingsR = do
                         out tags;
                         |]
          ]
-         
+
     let countries = sort $ r ^.. responseBody . key "elements" . _Array . each . key "tags"
             . key (fromText ("name" <> lang))
             . _String
-    
+
     (fw,et) <- generateFormPost $ formCountry countries
-    
+
     msgr <- getMessageRender
     defaultLayout $ do
         setTitleI MsgSettings
