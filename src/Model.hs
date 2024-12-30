@@ -22,6 +22,8 @@ import ClassyPrelude.Yesod
     , share, sqlSettings
     )
 
+import Data.Aeson
+    ( Value, ToJSON, toJSON )
 import Data.Bool (Bool)
 import Data.ByteString (ByteString)
 import Data.Fixed (Fixed (MkFixed))
@@ -59,6 +61,14 @@ instance HashDBUser User where
     setPasswordHash :: Text -> User -> User
     setPasswordHash h u = u { userPassword = Just h }
 
+
+instance ToJSON Bbox where
+    toJSON :: Bbox -> Value
+    toJSON (Bbox minLon minLat maxLon maxLat) = toJSON ((minLon, minLat), (maxLon, maxLat))
+
+
+defaultBbox :: Bbox
+defaultBbox = Bbox 32.958984 (-5.353521) 43.50585 5.615985
 
 
 overpass :: Text

@@ -31,25 +31,25 @@ import Foundation
     
 import Material3 (md3widget)
 
-import Model (Bbox(Bbox), msgSuccess)
+import Model (Bbox(Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat), msgSuccess, defaultBbox)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 
 import Text.Hamlet (Html)
 
 import Yesod.Core
-    ( Yesod(defaultLayout), setTitleI, newIdent, getYesod, addStylesheetRemote
-    , addScriptRemote, getMessageRender, SomeMessage (SomeMessage), addMessageI
+    ( Yesod(defaultLayout), SomeMessage (SomeMessage), setTitleI, newIdent, getYesod
+    , addStylesheetRemote, addScriptRemote, getMessageRender, addMessageI
     , redirect, getMessages
     )
 import Yesod.Core.Widget (whamlet)
-import Yesod.Persist.Core (YesodPersist(runDB))
 import Yesod.Form.Fields (doubleField)
 import Yesod.Form.Functions (generateFormPost, mreq, runFormPost)
 import Yesod.Form.Types
     ( FieldSettings (FieldSettings, fsLabel, fsId, fsName, fsTooltip, fsAttrs)
     , FormResult (FormSuccess)
     )
+import Yesod.Persist.Core (YesodPersist(runDB))
 
 
 mapboxStyles :: [(AppMessage, Text)]
@@ -76,7 +76,9 @@ postBboxR = do
         bbox <- runDB $ selectOne $ from $ table @Bbox
         case bbox of
           Just (Entity _ (Bbox minLon minLat maxLon maxLat)) -> return ((minLon,minLat),(maxLon,maxLat))
-          Nothing -> return ((32.958984, -5.353521),(43.50585, 5.615985))
+          Nothing -> return ( (bboxMinLon defaultBbox, bboxMinLat defaultBbox)
+                            , (bboxMaxLon defaultBbox, bboxMaxLat defaultBbox)
+                            )
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent
@@ -115,7 +117,9 @@ getBboxR = do
         bbox <- runDB $ selectOne $ from $ table @Bbox
         case bbox of
           Just (Entity _ (Bbox minLon minLat maxLon maxLat)) -> return ((minLon,minLat),(maxLon,maxLat))
-          Nothing -> return ((32.958984, -5.353521),(43.50585, 5.615985))
+          Nothing -> return ( (bboxMinLon defaultBbox, bboxMinLat defaultBbox)
+                            , (bboxMaxLon defaultBbox, bboxMaxLat defaultBbox)
+                            )
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent

@@ -8,8 +8,7 @@ mapboxgl.accessToken = #{mapboxPk};
 
 const map = new mapboxgl.Map({
   container: #{idMap},
-  center: #{toJSON center},
-  zoom: 9,
+  bounds: #{toJSON bbox},
   style: #{style}
 });
 
@@ -30,10 +29,10 @@ Array.from(
   x.title = #{msgr MsgCompass};
 });
 
-const queryTourism = #{query "tourism" Nothing};
-const queryParks = #{query "leisure" (Just "park")};
-const queryRestaurant = #{query "amenity" (Just "restaurant")};
-const queryGovernment = #{query "government" Nothing};
+const queryTourism = #{query bbox "tourism" Nothing};
+const queryParks = #{query bbox "leisure" (Just "park")};
+const queryRestaurant = #{query bbox "amenity" (Just "restaurant")};
+const queryGovernment = #{query bbox "government" Nothing};
 
 markMap(fetchQuery(queryTourism),'marker-tourism');
 
@@ -42,8 +41,7 @@ document.getElementById(#{idInputAddress}).addEventListener('input', debounce(fu
     
   const query = new URLSearchParams({
     q: e.target.value,
-    countrycodes: #{countrycodes},
-    viewbox: #{bbox},
+    viewbox: #{toJSON bbox},
     format: 'json'
   });
   
@@ -154,8 +152,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
       
       const query = new URLSearchParams({
         q: address,
-        countrycodes: #{countrycodes},
-        viewbox: #{bbox},
+        viewbox: #{toJSON bbox},
         format: 'json'
       });
       
@@ -367,8 +364,7 @@ document.getElementById(#{idInputSearch}).addEventListener('input', debounce( fu
     
     const query = new URLSearchParams({
       q: e.target.value,
-      countrycodes: #{countrycodes},
-      viewbox: #{bbox},
+      viewbox: #{toJSON bbox},
       format: 'json'
     });
     
@@ -544,8 +540,8 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
 
 
 
-[ [#{queryAmenityCount "restaurant"}, #{idLabelRestaurants}],
-  [#{queryTagCount "shop"}, #{idLabelShops}]
+[ [#{queryAmenityCount bbox "restaurant"}, #{idLabelRestaurants}],
+  [#{queryTagCount bbox "shop"}, #{idLabelShops}]
 ].map(([x,y]) => [x,document.getElementById(y)]).forEach(([q,e]) => {
 
   fetch(#{overpass},{

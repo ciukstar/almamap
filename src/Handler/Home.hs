@@ -23,6 +23,9 @@ import Data.Text (Text, unpack)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
 
+import Database.Esqueleto.Experimental (selectOne, from, table)
+import Database.Persist (Entity (Entity))
+
 import Foundation
     ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu
     , Route
@@ -47,7 +50,10 @@ import Foundation
       )
     )
 
-import Model (keyThemeLight, keyThemeDark, overpass)
+import Model
+    ( keyThemeLight, keyThemeDark, overpass, defaultBbox
+    , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
+    )
 
 import Network.Wreq (get)
 import qualified Network.Wreq as WL (responseBody)
@@ -76,31 +82,35 @@ import Yesod.Core
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
+import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-center :: (Double, Double)
-center = (76.9406462, 43.2239423)
+styles :: [(Int,(AppMessage, (Text,Text)))]
+styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
+        [ (MsgStyleStreets, ("streets-v12",keyThemeLight))
+        , (MsgStyleOutdoors, ("outdoors-v12",keyThemeLight))
+        , (MsgStyleLight, ("light-v11",keyThemeLight))
+        , (MsgStyleDark, ("dark-v11",keyThemeDark))
+        , (MsgStyleSatellite, ("satellite-v9",keyThemeLight))
+        , (MsgStyleSatelliteStreets, ("satellite-streets-v12",keyThemeLight))
+        , (MsgStyleNavigationDay, ("navigation-day-v1",keyThemeLight))
+        , (MsgStyleNavigationNight, ("navigation-night-v1",keyThemeDark))
+        ]
 
 style :: Text
-style = "mapbox://styles/mapbox/dark-v11"
+style = fst . snd . snd $ (styles !! 2)
 
 
 getHomeR :: Handler Html
 getHomeR = do
 
+    bbox <- do
+        bbox <- runDB $ selectOne $ from $ table @Bbox
+        case bbox of
+          Just (Entity _ b) -> return b
+          Nothing -> return defaultBbox
+    
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
-
-    let styles :: [(Int,(AppMessage, (Text,Text)))]
-        styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
-            [ (MsgStyleStreets, ("streets-v12",keyThemeLight))
-            , (MsgStyleOutdoors, ("outdoors-v12",keyThemeLight))
-            , (MsgStyleLight, ("light-v11",keyThemeLight))
-            , (MsgStyleDark, ("dark-v11",keyThemeDark))
-            , (MsgStyleSatellite, ("satellite-v9",keyThemeLight))
-            , (MsgStyleSatelliteStreets, ("satellite-streets-v12",keyThemeLight))
-            , (MsgStyleNavigationDay, ("navigation-day-v1",keyThemeLight))
-            , (MsgStyleNavigationNight, ("navigation-night-v1",keyThemeDark))
-            ]
 
     msgr <- getMessageRender
 
@@ -220,27 +230,23 @@ getFetchP18PhotoR = do
             . _String
 
 
-queryTagCount :: Text -> Text
-queryTagCount tag = [st|
+queryTagCount :: Bbox -> Text -> Text
+queryTagCount bbox tag = toStrict $ renderMarkup [shamlet|
+    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["#{tag}"](area.city);
+    node["#{tag}"];
 
     out count;
 |]
 
 
-queryAmenityCount :: Text -> Text
-queryAmenityCount typ = [st|
+queryAmenityCount :: Bbox -> Text -> Text
+queryAmenityCount bbox typ = toStrict $ renderMarkup [shamlet|
+    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
-    node["amenity"="#{typ}"](area.city);
+    node["amenity"="#{typ}"];
 
     out count;
 |]
@@ -259,31 +265,21 @@ queryAround args =
             |]
 
 
-query :: Text -> Maybe Text -> Text
-query tag val = toStrict $ renderMarkup [shamlet|
+query :: Bbox -> Text -> Maybe Text -> Text
+query bbox tag val = toStrict $ renderMarkup [shamlet|
+    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    rel["ISO3166-2"="KZ-75"] -> .rel;
-    .rel map_to_area -> .city;
-
     $maybe v <- val
-      node["#{tag}"="#{v}"](area.city) -> .tags;
+      node["#{tag}"="#{v}"] -> .tags;
     $nothing
-      node["#{tag}"](area.city) -> .tags;
+      node["#{tag}"] -> .tags;
 
     node.tags[~"^(name|description)$"~".*"];
 
     out body;
 |]
 
-
-countrycodes :: Text
-countrycodes = "kz"
-
-
-bbox :: Text
-bbox = "76.738277,43.032844,77.166754,43.403766"
-
-
+    
 nominatim :: Text
 nominatim = "https://nominatim.openstreetmap.org/search"

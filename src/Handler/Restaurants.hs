@@ -29,6 +29,9 @@ import Data.Text (Text, unpack, intercalate)
 import Data.Text as T (splitOn)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
+import Database.Esqueleto.Experimental (selectOne, from, table)
+import Database.Persist (Entity(Entity))
+
 import Foundation
     ( App (appSettings), Handler, widgetSnackbar
     , Route(RestaurantsR, HomeR)
@@ -39,7 +42,10 @@ import Foundation
       )
     )
 
-import Model (overpass)
+import Model
+    ( overpass, defaultBbox
+    , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
+    )
 
 import Network.Wreq (post, FormParam((:=)))
 import qualified Network.Wreq as WL (responseBody)
@@ -58,10 +64,7 @@ import Yesod.Core
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, iopt)
 import Yesod.Form.Fields (textField, intField)
-
-
-center :: (Double, Double)
-center = (76.9406462, 43.2239423)
+import Yesod.Persist.Core (YesodPersist(runDB))
 
 style :: Text
 style = "mapbox://styles/mapbox/dark-v11"
@@ -77,15 +80,19 @@ getRestaurantsR = do
     offset <- fromMaybe @Int 0 <$> runInputGet (iopt intField "offset")
     q <- runInputGet $ iopt textField "q"
     cuisine <- runInputGet $ iopt textField "cuisine"
+
+    bbox <- do
+        bbox <- runDB $ selectOne $ from $ table @Bbox
+        case bbox of
+          Just (Entity _ b) -> return b
+          Nothing -> return defaultBbox
     
     let query = renderMarkup
             [shamlet|
+                [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
                 [out:json];
 
-                rel["ISO3166-2"="KZ-75"] -> .rel;
-                .rel map_to_area -> .city;
-
-                node["amenity"="restaurant"]["name"](area.city) -> ._;
+                node["amenity"="restaurant"]["name"] -> ._;
                 $maybe x <- q
                   node._["name"~"#{x}",i] -> ._;
                 $maybe x <- cuisine
