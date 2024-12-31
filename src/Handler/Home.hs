@@ -276,8 +276,8 @@ query bbox tag val = toStrict $ renderMarkup [shamlet|
       node["#{tag}"] -> .tags;
 
     node.tags[~"^(name|description)$"~".*"];
-
-    out body;
+    convert item ::=::,::geom=geom(),_osm_type=type();
+    out geom;
 |]
 
     
