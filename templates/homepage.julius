@@ -12,9 +12,17 @@ const map = new mapboxgl.Map({
   style: #{style}
 });
 
-const imgAttractions = new Image(16,16);
-imgAttractions.onload = () => map.addImage('attractions', imgAttractions);
-imgAttractions.src = '@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}';
+
+[ ['iattractions', '@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
+  ['ipark', '@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
+  ['irestaurant', '@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
+  ['igovernment', '@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}']
+].forEach(([icon, link]) => {
+  const img = new Image(24,24);
+  img.onload = () => map.addImage(icon, img);
+  img.src = link;
+});
+
 
 map.addControl(new mapboxgl.ScaleControl(),'bottom-left');
 
@@ -40,103 +48,8 @@ const queryGovernment = #{query bbox "government" Nothing};
 
 
 map.on('load', () => {
-  fetchQuery(queryTourism).then(
-    data => ({ type: 'FeatureCollection', features: data.elements })
-  ).then(data => {
-    
-    map.addSource('pois', {
-      type: 'geojson',
-      data: data,
-      cluster: true,
-      clusterMaxZoom: 14,
-      clusterRadius: 50
-    });
-
-    map.addLayer({
-      id: 'clusters',
-      type: 'circle',
-      source: 'pois',
-      filter: ['has', 'point_count'],
-      paint: {
-        'circle-color': [
-          'step',
-          ['get', 'point_count'],
-          '#51bbd6',
-          100,
-          '#f1f075',
-          750,
-          '#f28cb1'
-        ],
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          20,
-          100,
-          30,
-          750,
-          40
-        ]
-      }
-    });
-
-    map.addLayer({
-      id: 'cluster-count',
-      type: 'symbol',
-      source: 'pois',
-      filter: ['has', 'point_count'],
-      layout: {
-        'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-        'text-size': 12
-      }
-    });
-
-    map.addLayer({
-      id: 'unclustered-point',
-      type: 'symbol',
-      source: 'pois',
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'icon-image': 'attractions',
-        'icon-size': 1.5,
-        'text-field': 'Get The Name',
-        'text-font': [
-          'Open Sans Semibold',
-          'Arial Unicode MS Bold'
-        ],
-        'text-offset': [0, 1.25],
-        'text-anchor': 'top'
-      }
-    });
-
-    map.on('click', 'clusters', (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: ['clusters']
-      });
-      const clusterId = features[0].properties.cluster_id;
-      map.getSource('pois').getClusterExpansionZoom(
-        clusterId,
-        (err, zoom) => {
-          if (err) return;
-
-          map.easeTo({
-            center: features[0].geometry.coordinates,
-            zoom: zoom
-          });
-        }
-      );
-    });
-
-    map.on('click', 'unclustered-point', (e) => {
-      document.getElementById(#{idDialogOverview}).show();
-    });
-    
-  });
-  
+  loadPois(queryTourism, 'iattractions');
 });
-
-
-// markMap(fetchQuery(queryTourism),'marker-tourism');
 
 
 document.getElementById(#{idInputAddress}).addEventListener('input', debounce(function (e) {
@@ -349,27 +262,141 @@ var currentSwitch = 'attractions';
 
 document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e) {
   if (currentSwitch === 'attractions') {
-    markMap(fetchQuery(queryParks),'marker-parks').then(_ => {
+    updatePois(queryParks, 'ipark').then(_ => {
       e.target.querySelector('i').textContent = 'restaurant';
     });
     currentSwitch = 'park';
   } else if (currentSwitch === 'park') {
-    markMap(fetchQuery(queryRestaurant),'marker-restaurant').then(_ => {
+    updatePois(queryRestaurant, 'irestaurant').then(_ => {
       e.target.querySelector('i').textContent = 'account_balance';
     });
     currentSwitch = 'restaurant';
   } else if (currentSwitch === 'restaurant') {
-    markMap(fetchQuery(queryGovernment),'marker-government').then(_ => {
+    updatePois(queryGovernment, 'igovernment').then(_ => {
       e.target.querySelector('i').textContent = 'attractions';
     });
     currentSwitch = 'government';
   } else if (currentSwitch === 'government') {
-    markMap(fetchQuery(queryTourism),'marker-tourism').then(_ => {
+    updatePois(queryTourism, 'iattractions').then(_ => {
       e.target.querySelector('i').textContent = 'park';
     });
     currentSwitch = 'attractions';
   }
 });
+
+
+function updatePois (query, icon) {
+  return fetchQuery(query).then(
+    data => data.elements
+  ).then(
+    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
+  ).then(
+    data => ({ type: 'FeatureCollection', features: data })
+  ).then(data => {
+    map.getSource('pois').setData(data);
+    map.setLayoutProperty('unclustered-point', 'icon-image', icon);
+  });
+};
+
+
+function loadPois (query, icon) {
+  return fetchQuery(query).then(
+    data => data.elements
+  ).then(
+    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
+  ).then(
+    data => ({ type: 'FeatureCollection', features: data })
+  ).then(data => {
+    
+    map.addSource('pois', {
+      type: 'geojson',
+      data: data,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
+    
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'pois',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step',
+          ['get', 'point_count'], '#51bbd6',
+          100, '#f1f075',
+          750, '#f28cb1'
+        ],
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          20,
+          100,
+          30,
+          750,
+          40
+        ]
+      }
+    });
+
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'pois',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+        'text-size': 12
+      }
+    });
+
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'symbol',
+      source: 'pois',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'icon-image': icon,
+        'icon-size': 1,
+        'text-field': ['get', 'name'],
+        'text-font': [
+          'Open Sans Semibold',
+          'Arial Unicode MS Bold'
+        ],
+        'text-offset': [0, 1],
+        'text-anchor': 'top',
+        'text-size': 12
+      }
+    });
+
+    map.on('click', 'clusters', (e) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ['clusters']
+      });
+      const clusterId = features[0].properties.cluster_id;
+      map.getSource('pois').getClusterExpansionZoom(
+        clusterId,
+        (err, zoom) => {
+          if (err) return;
+
+          map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: zoom
+          });
+        }
+      );
+    });
+
+    map.on('click', 'unclustered-point', (e) => {
+      displayOverview(e.features[0].properties);
+    });
+
+    return data;
+  });
+  
+};
 
 
 const searchSheet = document.getElementById(#{idDialogSearch});
@@ -665,6 +692,90 @@ function fetchQuery (query) {
       data: query
     })
   }).then(data => data.json());
+  
+};
+
+
+function displayOverview (properties) {
+
+  const name = properties['name:kk'] ? properties['name:kk']
+        : ( properties['name:ru'] ? properties['name:ru']
+            : ( properties['name:en'] ? properties['name:en']
+                : properties.name
+              )
+          );
+
+  const descr = properties['description:kk'] ? properties['description:kk']
+        : ( properties['description:ru'] ? properties['description:ru']
+            : ( properties['description:en'] ? properties['description:en']
+                : properties.description
+              )
+          );
+
+  document.getElementById(#{idDialogOverviewTitle}).textContent = name;
+
+  if ('image' in properties) {
+
+    const figure = document.createElement('figure');
+    figure.style['text-align'] = 'center';
+
+    const img = document.createElement('img');
+    img.src = x.tags.image;
+    img.height = 300;
+    img.loading = 'lazy';
+
+    const figcaption = document.createElement('figcaption');
+    figcaption.textContent = descr ? descr : name;
+
+    figure.replaceChildren(img,figcaption);
+    document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+
+  } else if ('wikidata' in properties) {
+
+
+    const params = new URLSearchParams({
+      action: 'wbgetclaims',
+      entity: properties.wikidata,
+      property: 'P18',
+      format: 'json'
+    });
+
+    const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);
+
+    fetch(`@{FetchP18PhotoR}?url=${url}`,{
+      headers: {'Accept': 'application/json'}
+    }).then((res) => res.json()).then(function (res) {
+
+      if (!!res) {
+
+        const src = `https://commons.wikimedia.org/w/thumb.php?width=300&f=${res.replaceAll(" ", "_")}`;
+
+        const figure = document.createElement('figure');
+        figure.style['text-align'] = 'center';
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.width = 300;
+        img.loading = 'lazy';
+
+        const figcaption = document.createElement('figcaption');
+        figcaption.textContent = descr ? descr : name;
+
+        figure.replaceChildren(img,figcaption);
+        document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
+      }
+
+    }).catch(err => {
+      console.error(err);
+    });
+
+  } else {
+
+    document.getElementById(#{idDialogOverviewContent}).textContent = descr ? descr : name;
+
+  }
+
+  document.getElementById(#{idDialogOverview}).show();
   
 };
 

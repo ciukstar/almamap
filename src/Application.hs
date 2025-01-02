@@ -26,6 +26,7 @@ import Database.Persist.Sqlite
     ( runSqlPool,sqlDatabase, createSqlitePoolWithConfig )
                                              
 import Demo.DemoEn (fillDemoEn)
+import Demo.DemoKk (fillDemoKk)
 import Demo.DemoRu (fillDemoRu)
 
 import Import
@@ -115,6 +116,7 @@ makeFoundation appSettings = do
         runMigration migrateAll
         demo <- liftIO $ getEnv "YESOD_DEMO_LANG"
         case demo of
+          Just "KK" -> fillDemoKk
           Just "RU" -> fillDemoRu
           Just _ -> fillDemoEn
           Nothing -> fillDemoEn

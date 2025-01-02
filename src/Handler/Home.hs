@@ -98,7 +98,7 @@ styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
         ]
 
 style :: Text
-style = fst . snd . snd $ (styles !! 2)
+style = fst . snd . snd $ (styles !! 3)
 
 
 getHomeR :: Handler Html
