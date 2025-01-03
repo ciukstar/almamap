@@ -43,20 +43,6 @@
             animation: 6s 0s infinite linear waves
             background: rgba(30,144,255,0.3)
 
-body.light
-    ##{idMap}
-        .marker
-            filter: invert(0%) sepia(82%) saturate(3000%) hue-rotate(86deg) brightness(118%) contrast(119%)
-        .marker.marker-my-location          
-            filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(180deg) brightness(118%) contrast(119%)
-
-body.dark
-    ##{idMap}
-        .marker
-            filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)
-        .marker.marker-my-location          
-            filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(180deg) brightness(118%) contrast(119%)
-
 
 ##{idControlsTopLeft}
     position: fixed
@@ -174,7 +160,7 @@ footer
                 text-transform: lowercase
 
 
-##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}
+##{idButtonCloseDialogPois}, ##{idButtonCloseSearchDialog}, ##{idButtonCloseSearchByCategoryDialog}
     position: absolute
     top: 0.5rem
     right: 0.5rem

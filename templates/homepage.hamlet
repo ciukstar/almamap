@@ -34,8 +34,8 @@ $if not (null msgs)
 <footer.transparent>
   <nav.transparent>
       
-    <button.square.round.large.small-blur ##{idButtonSwitch} title=_{MsgAttractions}>
-      <i>park
+    <button.square.round.large.small-blur ##{idButtonPois} title=_{MsgAttractions}>
+      <i.primary-text>attractions
       
     <button.square.round.large.small-blur ##{idButtonSearchTrigger} title=_{MsgSearchByNameOrAddress}>
       <i>search
@@ -45,6 +45,25 @@ $if not (null msgs)
       
     <button.square.round.large.small-blur ##{idButtonMainMenu} title=_{MsgMainMenu} data-ui=##{idOverlay}>
       <i>menu
+
+
+<dialog.bottom.no-padding ##{idDialogPois}>
+  <div.padding.center-align draggable=true>
+    <i>drag_handle
+  <button.transparent.circle ##{idButtonCloseDialogPois}>
+    <i>close
+    
+  <div.margin>
+    $forall (x,((icon,pin),(label,query))) <- chips
+      <button.chip.round.small-margin type=button :x == defaultChip:.fill 
+             data-value=#{x} data-icon=#{icon} data-pin=#{pin} data-query=#{query}>
+        
+        $if x == defaultChip
+          <i>done
+        $else
+          <i>#{icon}
+          
+        #{label}
 
 
 <dialog.bottom.no-padding ##{idDialogSearch}>

@@ -105,6 +105,10 @@ style :: Text
 style = fst . snd . snd $ (styles !! 3)
 
 
+defaultChip :: Text
+defaultChip = "attractions"
+
+
 getHomeR :: Handler Html
 getHomeR = do
 
@@ -117,6 +121,13 @@ getHomeR = do
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
     msgr <- getMessageRender
+
+    let chips :: [(Text,((Text,Text),(Text,Text)))]
+        chips = [ ("attractions",(("attractions","icon_attractions"), (msgr MsgAttractions, query bbox "tourism" Nothing)))
+                , ("park",(("park","icon_park"), (msgr MsgParks, query bbox "leisure" (Just "park"))))
+                , ("restaurant",(("restaurant","icon_restaurant"), (msgr MsgRestaurants, query bbox "amenity" (Just "restaurant"))))
+                , ("government",(("account_balance","icon_government"), (msgr MsgPublicInstitutions, query bbox "government" Nothing)))
+                ]
 
     let nearbyItems :: [(Int, A.Value)]
         nearbyItems = zip [1..]
@@ -158,7 +169,10 @@ getHomeR = do
         idButtonZoomIn <- newIdent
         idButtonZoomOut <- newIdent
         idButtonMyLocation <- newIdent
-        idButtonSwitch <- newIdent
+        idButtonPois <- newIdent
+
+        idDialogPois <- newIdent
+        idButtonCloseDialogPois <- newIdent
 
         idButtonSearchTrigger <- newIdent
         idDialogSearch <- newIdent

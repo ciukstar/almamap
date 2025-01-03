@@ -242,31 +242,39 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 });
 
 
-var currentSwitch = 'attractions';
+var currentChip = #{defaultChip};
 var currentColor = 'white';
 
-document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e) {
-  if (currentSwitch === 'attractions') {
-    updatePois(queryParks, 'icon_park').then(_ => {
-      e.target.querySelector('i').textContent = 'restaurant';
+document.getElementById(#{idButtonPois}).addEventListener('click', function (e) {
+  document.getElementById(#{idDialogPois}).show();
+});
+
+document.getElementById(#{idButtonCloseDialogPois}).addEventListener('click', function (e) {
+  document.getElementById(#{idDialogPois}).close();
+});
+
+
+Array.from(
+  document.getElementById(#{idDialogPois}).querySelectorAll('button.chip[data-value][data-icon][data-pin][data-query]')
+).forEach(x => {
+  x.addEventListener('click', e => {
+    updatePois(e.target.dataset.query, e.target.dataset.pin).then(_ => {
+
+      Array.from(
+        document.getElementById(#{idDialogPois}).querySelectorAll('button.chip[data-icon]')
+      ).forEach(y => {
+        y.classList.remove('fill');
+        y.querySelector('i').textContent = y.dataset.icon;
+      });
+
+      e.target.classList.add('fill');
+      e.target.querySelector('i').textContent = 'done';
+      document.getElementById(#{idButtonPois}).querySelector('i').textContent = e.target.dataset.icon;
+
+      currentChip = e.target.dataset.value;
+      
     });
-    currentSwitch = 'park';
-  } else if (currentSwitch === 'park') {
-    updatePois(queryRestaurant, 'icon_restaurant').then(_ => {
-      e.target.querySelector('i').textContent = 'account_balance';
-    });
-    currentSwitch = 'restaurant';
-  } else if (currentSwitch === 'restaurant') {
-    updatePois(queryGovernment, 'icon_government').then(_ => {
-      e.target.querySelector('i').textContent = 'attractions';
-    });
-    currentSwitch = 'government';
-  } else if (currentSwitch === 'government') {
-    updatePois(queryTourism, 'icon_attractions').then(_ => {
-      e.target.querySelector('i').textContent = 'park';
-    });
-    currentSwitch = 'attractions';
-  }
+  });
 });
 
 
@@ -356,7 +364,6 @@ function loadPois (query, icon, color) {
         'text-size': 12
       },
       paint: {
-        'icon-color': color,
         'text-color': color
       }
     });
@@ -571,13 +578,13 @@ map.on('style.load', function (e) {
     img.src = link;
   });
   
-  if (currentSwitch === 'attractions') {
+  if (currentChip === 'attractions') {
     loadPois(queryTourism, 'icon_attractions', currentColor)
-  } else if (currentSwitch === 'park') {
+  } else if (currentChip === 'park') {
     loadPois(queryParks, 'icon_park', currentColor)
-  } else if (currentSwitch === 'restaurant') {
+  } else if (currentChip === 'restaurant') {
     loadPois(queryRestaurant, 'icon_restaurant', currentColor)
-  } else if (currentSwitch === 'government') {
+  } else if (currentChip === 'government') {
     loadPois(queryGovernment, 'icon_government', currentColor)
   }
 });

@@ -1,5 +1,5 @@
-name:    almamap
-version: "0.0.0"
+name:       almamap
+version:    "0.0.0"
 category:   Application
 author:     Sergiu Starciuc <ciukstar@gmail.com>
 maintainer: Sergiu Starciuc <ciukstar@gmail.com>
@@ -58,6 +58,7 @@ dependencies:
 - lens-aeson
 - blaze-markup
 - blaze-html
+- yesod-sitemap
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.

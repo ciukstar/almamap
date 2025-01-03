@@ -20,8 +20,9 @@
 /static StaticR Static appStatic
 /auth   AuthR   Auth   getAuth
 
+/sitemap.xml SitemapR GET
 /favicon.ico FaviconR GET
-/robots.txt RobotsR GET
+/robots.txt  RobotsR  GET
 
 
 /data DataR:
