@@ -5,10 +5,10 @@
     <button.circle.large.small-blur ##{idButtonLayers} data-ui=##{idMenuLayers} title=_{MsgMapStyleOptions}>
       <i>layers
       <menu.right.no-wrap ##{idMenuLayers}>
-        $forall (i,(label,(style,theme))) <- styles
-          <li.row data-style=#{style} data-theme=#{theme} #idMenuLayersItem#{i}>
-            <label.radio.row onclick="document.getElementById('idMenuLayersItem#{i}').click()">
-              <input type=radio name=style>
+        $forall (_,(label,(style,(theme,color)))) <- styles
+          <li.row>
+            <label.radio.row>
+              <input type=radio name=style value=#{style} data-theme=#{theme} data-color=#{color}>
               <span>_{label}
 
       

@@ -60,7 +60,9 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 import Settings.StaticFiles
-    ( img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
+    ( img_attractions_pin_1200dp_png
+    , img_attractions_pin_24dp_0000F5_FILL0_wght400_GRAD0_opsz24_svg
+    , img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
@@ -85,16 +87,16 @@ import Yesod.Form.Fields (urlField)
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-styles :: [(Int,(AppMessage, (Text,Text)))]
+styles :: [(Int,(AppMessage, (Text,(Text,Text))))]
 styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
-        [ (MsgStyleStreets, ("streets-v12",keyThemeLight))
-        , (MsgStyleOutdoors, ("outdoors-v12",keyThemeLight))
-        , (MsgStyleLight, ("light-v11",keyThemeLight))
-        , (MsgStyleDark, ("dark-v11",keyThemeDark))
-        , (MsgStyleSatellite, ("satellite-v9",keyThemeLight))
-        , (MsgStyleSatelliteStreets, ("satellite-streets-v12",keyThemeLight))
-        , (MsgStyleNavigationDay, ("navigation-day-v1",keyThemeLight))
-        , (MsgStyleNavigationNight, ("navigation-night-v1",keyThemeDark))
+        [ (MsgStyleStreets, ("streets-v12",(keyThemeLight,"black")))
+        , (MsgStyleOutdoors, ("outdoors-v12",(keyThemeLight,"black")))
+        , (MsgStyleLight, ("light-v11",(keyThemeLight,"black")))
+        , (MsgStyleDark, ("dark-v11",(keyThemeDark,"white")))
+        , (MsgStyleSatellite, ("satellite-v9",(keyThemeLight,"black")))
+        , (MsgStyleSatelliteStreets, ("satellite-streets-v12",(keyThemeLight,"black")))
+        , (MsgStyleNavigationDay, ("navigation-day-v1",(keyThemeLight,"black")))
+        , (MsgStyleNavigationNight, ("navigation-night-v1",(keyThemeDark,"white")))
         ]
 
 style :: Text

@@ -13,17 +13,6 @@ const map = new mapboxgl.Map({
 });
 
 
-[ ['iattractions', '@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
-  ['ipark', '@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
-  ['irestaurant', '@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
-  ['igovernment', '@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}']
-].forEach(([icon, link]) => {
-  const img = new Image(24,24);
-  img.onload = () => map.addImage(icon, img);
-  img.src = link;
-});
-
-
 map.addControl(new mapboxgl.ScaleControl(),'bottom-left');
 
 const nav = new mapboxgl.NavigationControl({
@@ -45,11 +34,6 @@ const queryTourism = #{query bbox "tourism" Nothing};
 const queryParks = #{query bbox "leisure" (Just "park")};
 const queryRestaurant = #{query bbox "amenity" (Just "restaurant")};
 const queryGovernment = #{query bbox "government" Nothing};
-
-
-map.on('load', () => {
-  loadPois(queryTourism, 'iattractions');
-});
 
 
 document.getElementById(#{idInputAddress}).addEventListener('input', debounce(function (e) {
@@ -259,25 +243,26 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 
 
 var currentSwitch = 'attractions';
+var currentColor = 'white';
 
 document.getElementById(#{idButtonSwitch}).addEventListener('click', function (e) {
   if (currentSwitch === 'attractions') {
-    updatePois(queryParks, 'ipark').then(_ => {
+    updatePois(queryParks, 'icon_park').then(_ => {
       e.target.querySelector('i').textContent = 'restaurant';
     });
     currentSwitch = 'park';
   } else if (currentSwitch === 'park') {
-    updatePois(queryRestaurant, 'irestaurant').then(_ => {
+    updatePois(queryRestaurant, 'icon_restaurant').then(_ => {
       e.target.querySelector('i').textContent = 'account_balance';
     });
     currentSwitch = 'restaurant';
   } else if (currentSwitch === 'restaurant') {
-    updatePois(queryGovernment, 'igovernment').then(_ => {
+    updatePois(queryGovernment, 'icon_government').then(_ => {
       e.target.querySelector('i').textContent = 'attractions';
     });
     currentSwitch = 'government';
   } else if (currentSwitch === 'government') {
-    updatePois(queryTourism, 'iattractions').then(_ => {
+    updatePois(queryTourism, 'icon_attractions').then(_ => {
       e.target.querySelector('i').textContent = 'park';
     });
     currentSwitch = 'attractions';
@@ -299,7 +284,8 @@ function updatePois (query, icon) {
 };
 
 
-function loadPois (query, icon) {
+function loadPois (query, icon, color) {
+  
   return fetchQuery(query).then(
     data => data.elements
   ).then(
@@ -362,12 +348,16 @@ function loadPois (query, icon) {
         'icon-size': 1,
         'text-field': ['get', 'name'],
         'text-font': [
-          'Open Sans Semibold',
+          'Open Sans Bold',
           'Arial Unicode MS Bold'
         ],
         'text-offset': [0, 1],
         'text-anchor': 'top',
         'text-size': 12
+      },
+      paint: {
+        'icon-color': color,
+        'text-color': color
       }
     });
 
@@ -569,12 +559,38 @@ document.getElementById(#{idInputSearch}).addEventListener('input', debounce( fu
 }, 500 ));
 
 
+map.on('style.load', function (e) {
+  
+  [ ['icon_attractions', '@{StaticR img_attractions_pin_1200dp_png}'],
+    ['icon_park', '@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
+    ['icon_restaurant', '@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
+    ['icon_government', '@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}']
+  ].forEach(([icon, link]) => {
+    // map.addImage(icon, link);
+    const img = new Image(24,26);
+    img.onload = () => map.addImage(icon, img, { sdf: false });
+    img.src = link;
+  });
+  
+  if (currentSwitch === 'attractions') {
+    loadPois(queryTourism, 'icon_attractions', currentColor)
+  } else if (currentSwitch === 'park') {
+    loadPois(queryParks, 'icon_park', currentColor)
+  } else if (currentSwitch === 'restaurant') {
+    loadPois(queryRestaurant, 'icon_restaurant', currentColor)
+  } else if (currentSwitch === 'government') {
+    loadPois(queryGovernment, 'icon_government', currentColor)
+  }
+});
+
+
 Array.from(
   document.getElementById(#{idMenuLayers}).querySelectorAll('li')
-).forEach(x => {
-  x.addEventListener('click', e => {
+).map(x => x.querySelector('input[type=radio]')).forEach(x => {
+  x.addEventListener('input', function (e) {
     ui('mode', e.target.dataset.theme);
-    map.setStyle(e.target.dataset.style);
+    currentColor = e.target.dataset.color;
+    map.setStyle(e.target.value);    
   });
 });
 
