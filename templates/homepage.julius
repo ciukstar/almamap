@@ -561,13 +561,12 @@ document.getElementById(#{idInputSearch}).addEventListener('input', debounce( fu
 
 map.on('style.load', function (e) {
   
-  [ ['icon_attractions', '@{StaticR img_attractions_pin_1200dp_png}'],
-    ['icon_park', '@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
-    ['icon_restaurant', '@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}'],
-    ['icon_government', '@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}']
+  [ ['icon_attractions', '@{StaticR img_attractions_pin_720dp_png}'],
+    ['icon_park', '@{StaticR img_park_pin_720dp_png}'],
+    ['icon_restaurant', '@{StaticR img_restaurant_pin_720dp_png}'],
+    ['icon_government', '@{StaticR img_account_balance_pin_720dp_png}']
   ].forEach(([icon, link]) => {
-    // map.addImage(icon, link);
-    const img = new Image(24,26);
+    const img = new Image(26,26);
     img.onload = () => map.addImage(icon, img, { sdf: false });
     img.src = link;
   });

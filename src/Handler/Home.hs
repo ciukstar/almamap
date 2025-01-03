@@ -60,8 +60,10 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 import Settings.StaticFiles
-    ( img_attractions_pin_1200dp_png
-    , img_attractions_pin_24dp_0000F5_FILL0_wght400_GRAD0_opsz24_svg
+    ( img_account_balance_pin_720dp_png
+    , img_restaurant_pin_720dp_png
+    , img_park_pin_720dp_png
+    , img_attractions_pin_720dp_png
     , img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
@@ -278,7 +280,9 @@ query bbox tag val = toStrict $ renderMarkup [shamlet|
       node["#{tag}"] -> .tags;
 
     node.tags[~"^(name|description)$"~".*"];
+
     convert item ::=::,::geom=geom(),_osm_type=type();
+    
     out geom;
 |]
 
