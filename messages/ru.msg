@@ -1,3 +1,7 @@
+SearchByCategory: Поиск по категориям
+DisplayDifferentTypesOfPOIs: Отображение различных типов точек интереса
+LightAndDarkTheme: Светлая и темная тема
+PoiClustering: Кластеризация точек интереса
 NorthEast: Северо-Восток
 SouthWest: Юго-запад
 North: Север
@@ -180,6 +184,7 @@ Username: Логин
 SignOut: Выйти
 SignIn: Войти
 Home: Главная
+MetaDescription: Достопримечательности из OpenStreetMap на карте Mapbox
 AppName: AlmaMap
 
 Doc001 appname href: Веб-приложение <a class="link" href=#{href} target=_blank>#{appname}</a> отображает точки интереса из OpenStreetMap на карте Mapbox.

@@ -1,3 +1,7 @@
+SearchByCategory: Санат бойынша іздеу
+DisplayDifferentTypesOfPOIs: Әр түрлі POI түрлерін көрсетіңіз
+LightAndDarkTheme: Ашық және қараңғы тақырып
+PoiClustering: Кластерлеу POI
 NorthEast: Солтүстік-шығыс
 SouthWest: Оңтүстік-батыс
 North: Солтүстік
@@ -180,6 +184,7 @@ Username: Пайдаланушы аты
 SignOut: Шығу
 SignIn: Кіру
 Home: Үй
+MetaDescription: Mapbox-тағы OpenStreetMap қолданбасының қызықты нүктелері
 AppName: AlmaMap
 
 Doc001 appname href: <a class="link" href=#{href} target=_blank>#{appname}</a> веб-қосымшасы Mapbox картасында OpenStreetMap қолданбасының қызықты жерлерін көрсетеді.

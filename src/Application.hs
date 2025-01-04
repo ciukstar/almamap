@@ -49,7 +49,7 @@ import System.Log.FastLogger
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
-import Handler.Common (getFaviconR, getRobotsR, getSitemapR)
+import Handler.Common (getFaviconR, getRobotsR, getSitemapR, getWebAppManifestR)
 import Handler.Docs ( getDocsR )
 import Handler.Home ( getHomeR, getFetchR, getFetchP18PhotoR )
 import Handler.Restaurants (getRestaurantsR )

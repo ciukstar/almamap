@@ -213,9 +213,10 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized SitemapR _ = return Authorized
+    isAuthorized WebAppManifestR _ = return Authorized
+    
     
     isAuthorized (StaticR _) _ = return Authorized
-
     
     isAuthorized FetchR _ = setUltDestCurrent >> return Authorized
     isAuthorized FetchP18PhotoR _ = setUltDestCurrent >> return Authorized

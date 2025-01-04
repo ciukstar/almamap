@@ -1,3 +1,7 @@
+SearchByCategory: Search by category
+DisplayDifferentTypesOfPOIs: Display different types of POIs
+LightAndDarkTheme: Light and dark theme
+PoiClustering: Clustering of points of interest
 NorthEast: Northeast
 SouthWest: Southwest
 North: North
@@ -180,6 +184,7 @@ Username: Username
 SignOut: Sign out
 SignIn: Sign in
 Home: Home
+MetaDescription: Points of interest from OpenStreetMap on the Mapbox map
 AppName: AlmaMap
 
 Doc001 appname@Text href@Text: The <a class="link" href=#{href} target=_blank>#{appname}</a> web application displays points of interest from OpenStreetMap on the Mapbox map.
