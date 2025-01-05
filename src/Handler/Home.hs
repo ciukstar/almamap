@@ -19,6 +19,8 @@ import qualified Data.Aeson as A (Value)
 import qualified Data.Aeson.KeyMap as AKM (lookup)
 import Data.Aeson.Lens (key, AsValue (_String), nth)
 import Data.Bifunctor (Bifunctor(second, first))
+import qualified Data.List.Safe as LS (head)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text, unpack)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
@@ -60,7 +62,8 @@ import qualified Network.Wreq as WL (responseBody)
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 import Settings.StaticFiles
-    ( img_account_balance_pin_720dp_png
+    ( img_shopping_cart_pin_720dp_png
+    , img_account_balance_pin_720dp_png
     , img_restaurant_pin_720dp_png
     , img_park_pin_720dp_png
     , img_attractions_pin_720dp_png
@@ -81,7 +84,7 @@ import Text.Shakespeare.Text (st)
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
     , addScriptRemote, getYesod, selectRep, provideJson, getMessageRender
-    , newIdent
+    , newIdent, languages
     )
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
@@ -112,6 +115,10 @@ defaultChip = "attractions"
 getHomeR :: Handler Html
 getHomeR = do
 
+    langs <- languages
+    
+    let lang = fromMaybe "" $ LS.head langs :: Text
+    
     bbox <- do
         bbox <- runDB $ selectOne $ from $ table @Bbox
         case bbox of
@@ -131,23 +138,23 @@ getHomeR = do
 
     let nearbyItems :: [(Int, A.Value)]
         nearbyItems = zip [1..]
-                      [ object [ "marker" .= String "marker-tourism"
+                      [ object [ "icon" .= String "icon_attractions"
                                , "label" .= msgr MsgAttractions
                                , "query" .= queryAround "[tourism]"
                                ]
-                      , object [ "marker" .= String "marker-parks"
+                      , object [ "icon" .= String "icon_park"
                                , "label" .= msgr MsgParks
                                , "query" .= queryAround "[leisure=park]"
                                ]
-                      , object [ "marker" .= String "marker-restaurant"
+                      , object [ "icon" .= String "icon_restaurant"
                                , "label" .= msgr MsgRestaurants
                                , "query" .= queryAround "[amenity=restaurant]"
                                ]
-                      , object [ "marker" .= String "marker-government"
+                      , object [ "icon" .= String "icon_government"
                                , "label" .= msgr MsgPublicInstitutions
                                , "query" .= queryAround "[government]"
                                ]
-                      , object [ "marker" .= String "marker-shop"
+                      , object [ "icon" .= String "icon_shopping_cart"
                                , "label" .= msgr MsgShops
                                , "query" .= queryAround "[shop]"
                                ]
@@ -279,7 +286,9 @@ queryAround args =
 
                 node.tags[~"^(name|description)$"~".*"];
 
-                out body;
+                convert item ::=::,::geom=geom(),_osm_type=type();
+    
+                out geom;
             |]
 
 

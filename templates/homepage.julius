@@ -9,6 +9,7 @@ mapboxgl.accessToken = #{mapboxPk};
 const map = new mapboxgl.Map({
   container: #{idMap},
   bounds: #{toJSON bbox},
+  language: #{toJSON langs},
   style: #{style}
 });
 
@@ -127,7 +128,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
   const address = data.get('address');
   const radius = 1000 * data.get('radius');
   const item = JSON.parse(data.get('item'));
-  const marker = item.marker;
+  const icon = item.icon;
   const query = item.query;
 
   if (!!myLocationWatchID) {
@@ -187,7 +188,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
       
       if (data.elements.length > 0) {
         
-        const pool = [ [ lng,lat ], ... data.elements.map(x => [x.lon,x.lat]) ];
+        const pool = [ [ lng,lat ], ... data.elements.map(x => [x.geometry.coordinates[0],x.geometry.coordinates[1]]) ];
 
         const pad = 0.005;
         const bbox = new mapboxgl.LngLatBounds(
@@ -231,9 +232,16 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
       
       return data;
       
+    }).then(
+      data => data.elements
+    ).then(
+      data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
+    ).then(
+      data => ({ type: 'FeatureCollection', features: data })
+    ).then(data => {
+      map.getSource('pois').setData(data);
+      map.setLayoutProperty('unclustered-point', 'icon-image', icon);
     });
-    
-    markMap(data,marker);
 
     document.getElementById(#{idDialogExploreNearby}).close();
     
@@ -354,7 +362,12 @@ function loadPois (query, icon, color) {
       layout: {
         'icon-image': icon,
         'icon-size': 1,
-        'text-field': ['get', 'name'],
+        'text-field': [ 'case',
+                        ['all', ['to-boolean', #{lang}], ['has', 'name:#{rawJS lang}']], ['get', 'name:#{rawJS lang}'],
+                        ['has', 'name'], ['get', 'name'],
+                        ['all',['to-boolean', #{lang}],['has','description:#{rawJS lang}']],['get','description:#{rawJS lang}'],
+                        ['get', 'description']
+                      ],
         'text-font': [
           'Open Sans Bold',
           'Arial Unicode MS Bold'
@@ -571,7 +584,8 @@ map.on('style.load', function (e) {
   [ ['icon_attractions', '@{StaticR img_attractions_pin_720dp_png}'],
     ['icon_park', '@{StaticR img_park_pin_720dp_png}'],
     ['icon_restaurant', '@{StaticR img_restaurant_pin_720dp_png}'],
-    ['icon_government', '@{StaticR img_account_balance_pin_720dp_png}']
+    ['icon_government', '@{StaticR img_account_balance_pin_720dp_png}'],
+    ['icon_shopping_cart', '@{StaticR img_shopping_cart_pin_720dp_png}']
   ].forEach(([icon, link]) => {
     const img = new Image(26,26);
     img.onload = () => map.addImage(icon, img, { sdf: false });
@@ -720,19 +734,11 @@ function fetchQuery (query) {
 
 function displayOverview (properties) {
 
-  const name = properties['name:kk'] ? properties['name:kk']
-        : ( properties['name:ru'] ? properties['name:ru']
-            : ( properties['name:en'] ? properties['name:en']
-                : properties.name
-              )
-          );
+  const name = ('name:#{rawJS lang}' in properties)
+        ? properties['name:#{rawJS lang}'] : properties.name;
 
-  const descr = properties['description:kk'] ? properties['description:kk']
-        : ( properties['description:ru'] ? properties['description:ru']
-            : ( properties['description:en'] ? properties['description:en']
-                : properties.description
-              )
-          );
+  const descr = ('description:#{rawJS lang}' in properties)
+        ? properties['description:#{rawJS lang}'] : properties.description;
 
   document.getElementById(#{idDialogOverviewTitle}).textContent = name;
 
@@ -799,108 +805,6 @@ function displayOverview (properties) {
 
   document.getElementById(#{idDialogOverview}).show();
   
-};
-
-
-function markMap (data, icon) {
-
-  markers.forEach(x => { x.remove(); });
-  markers.length = 0;
-  
-  return data.then(res => {
-    
-    res.elements.filter(x => 'node' == x.type).forEach(x => {
-      const el = document.createElement('div');
-      el.className = `marker ${icon}`;
-
-      el.addEventListener('click', (e) => {
-
-        const name = x.tags['name:kk'] ? x.tags['name:kk']
-              : ( x.tags['name:ru'] ? x.tags['name:ru']
-                  : ( x.tags['name:en'] ? x.tags['name:en']
-                      : x.tags.name
-                    )
-                );
-
-        const descr = x.tags['description:kk'] ? x.tags['description:kk']
-              : ( x.tags['description:ru'] ? x.tags['description:ru']
-                  : ( x.tags['description:en'] ? x.tags['description:en']
-                      : x.tags.description
-                    )
-                );
-
-        document.getElementById(#{idDialogOverviewTitle}).textContent = name;
-        
-        if ('image' in x.tags) {
-
-          const figure = document.createElement('figure');
-          figure.style['text-align'] = 'center';
-          
-          const img = document.createElement('img');
-          img.src = x.tags.image;
-          img.height = 300;
-          img.loading = 'lazy';
-          
-          const figcaption = document.createElement('figcaption');
-          figcaption.textContent = descr ? descr : name;
-          
-          figure.replaceChildren(img,figcaption);
-          document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
-          
-        } else if ('wikidata' in x.tags) {
-
-
-          const params = new URLSearchParams({
-            action: 'wbgetclaims',
-            entity: x.tags.wikidata,
-            property: 'P18',
-            format: 'json'
-          });
-
-          const url = encodeURIComponent(`https://www.wikidata.org/w/api.php?${params}`);
-          
-          fetch(`@{FetchP18PhotoR}?url=${url}`,{
-            headers: {'Accept': 'application/json'}
-          }).then((res) => res.json()).then(function (res) {
-
-            if (!!res) {
-              
-              const src = `https://commons.wikimedia.org/w/thumb.php?width=300&f=${res.replaceAll(" ", "_")}`;
-
-              const figure = document.createElement('figure');
-              figure.style['text-align'] = 'center';
-              
-              const img = document.createElement('img');
-              img.src = src;
-              img.width = 300;
-              img.loading = 'lazy';
-              
-              const figcaption = document.createElement('figcaption');
-              figcaption.textContent = descr ? descr : name;
-              
-              figure.replaceChildren(img,figcaption);
-              document.getElementById(#{idDialogOverviewContent}).replaceChildren(figure);
-            }
-            
-          }).catch(err => {
-            console.error(err);
-          });
-          
-        } else {
-          
-          document.getElementById(#{idDialogOverviewContent}).textContent = descr ? descr : name;
-          
-        }
-        
-        document.getElementById(#{idDialogOverview}).show();
-      });
-      
-      const marker = new mapboxgl.Marker(el);
-      marker.setLngLat([x.lon, x.lat]).setOffset([0,-8]).addTo(map);
-      markers.push(marker);
-      
-    });
-  });
 };
 
 
