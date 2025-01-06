@@ -28,7 +28,8 @@
 
 /data DataR:
 
-    /settings/bbox BboxR GET POST
+    /settings/display DisplayR GET POST
+    /settings/bbox    BboxR    GET POST
 
     /settings/geo/#Text/#Text/bbox SettingsGeoBboxR GET POST
     /settings/geo/#Text/city       SettingsGeoCityR GET POST

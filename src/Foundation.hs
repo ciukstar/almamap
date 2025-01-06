@@ -175,6 +175,9 @@ instance Yesod App where
         master <- getYesod
         lang <- fromMaybe "en" . LS.head <$> languages
 
+        theme <- liftHandler $ maybe "dark" (defaultThemeTheme . entityVal)
+                                 <$> runDB (selectOne $ from $ table @DefaultTheme)
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -218,22 +221,23 @@ instance Yesod App where
     
     isAuthorized (StaticR _) _ = return Authorized
     
-    isAuthorized FetchR _ = setUltDestCurrent >> return Authorized
-    isAuthorized FetchP18PhotoR _ = setUltDestCurrent >> return Authorized
+    isAuthorized FetchR _ = return Authorized
+    isAuthorized FetchP18PhotoR _ = return Authorized
 
     
-    isAuthorized (DataR BboxR) _ = isAdmin
+    isAuthorized (DataR DisplayR) _ =  setUltDestCurrent >> isAdmin
+    isAuthorized (DataR BboxR) _ =  setUltDestCurrent >> isAdmin
     
-    isAuthorized (DataR (SettingsGeoBboxR _ _)) _ = isAdmin
+    isAuthorized (DataR (SettingsGeoBboxR _ _)) _ =isAdmin
     isAuthorized (DataR (SettingsGeoCityR _)) _ = isAdmin
-    isAuthorized (DataR SettingsR) _ = setUltDestCurrent >> isAdmin
+    isAuthorized (DataR SettingsR) _ = isAdmin
     
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin
     isAuthorized (DataR (UserEditR _)) _ = isAdmin
     isAuthorized (DataR UserNewR) _ = isAdmin
     isAuthorized (DataR (UserR _)) _ = isAdmin
     isAuthorized (DataR UsersR) _ = setUltDestCurrent >> isAdmin
-    isAuthorized (DataR (UserPhotoR _)) _ = return Authorized
+    isAuthorized (DataR (UserPhotoR _)) _ = isAuthenticated
     
 
     -- This function creates static content files in the static folder

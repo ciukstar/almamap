@@ -10,18 +10,6 @@
         width: 24px
         height: 24px
         background-size: 100%
-
-    .marker-tourism
-        background-image: url('@{StaticR img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
-
-    .marker-parks
-        background-image: url('@{StaticR img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
-
-    .marker-restaurant
-        background-image: url('@{StaticR img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
-        
-    .marker-government
-        background-image: url('@{StaticR img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
         
     .marker-shop
         background-image: url('@{StaticR img_shopping_cart_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg}')
@@ -78,9 +66,11 @@
     display: flex
     flex-direction: column
     row-gap: 1rem
+    pointer-events: none
     
     button
         background-color: rgba(255,255, 255, 0.2)
+        pointer-events: all
 
     ##{idButtonExploreNearby}
         margin-bottom: 2rem
@@ -135,11 +125,13 @@ footer
     bottom: 0
     width: 100%
     background-color: transparent
+    pointer-events: none
     
     nav
         justify-content: space-around
         button.square.round.large
             background-color: rgba(255,255, 255, 0.2)
+            pointer-events: all
 
 
 ##{idDialogExploreNearby}

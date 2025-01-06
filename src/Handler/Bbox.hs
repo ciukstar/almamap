@@ -19,7 +19,7 @@ import Database.Persist (Entity (Entity), insert_)
 import Foundation
     ( Handler, Form, App (appSettings), widgetTopbar, widgetSnackbar
     , Route (DataR)
-    , DataR (BboxR, SettingsR)
+    , DataR (BboxR, SettingsR, DisplayR)
     , AppMessage
       ( MsgBoundingBox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgStyleStreets
       , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite

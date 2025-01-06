@@ -1,3 +1,8 @@
+Theme: Тақырып
+ThemeLight: Жеңіл
+ThemeDark: Қараңғы
+DefaultMapStyle: Әдепкі карта стилі
+DefaultTheme: Әдепкі тақырып
 SearchByCategory: Санат бойынша іздеу
 DisplayDifferentTypesOfPOIs: Әр түрлі POI түрлерін көрсетіңіз
 LightAndDarkTheme: Ашық және қараңғы тақырып

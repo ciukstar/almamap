@@ -1,3 +1,8 @@
+Theme: Тема
+ThemeLight: Светлая
+ThemeDark: Темная
+DefaultMapStyle: Стиль карты по умолчанию
+DefaultTheme: Тема по умолчанию
 SearchByCategory: Поиск по категориям
 DisplayDifferentTypesOfPOIs: Отображение различных типов точек интереса
 LightAndDarkTheme: Светлая и темная тема

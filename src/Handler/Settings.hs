@@ -29,7 +29,7 @@ import Database.Persist (Entity (Entity, entityVal), insert_)
 import Foundation
     ( Handler, Form, App (appSettings), widgetTopbar
     , Route (DataR)
-    , DataR (BboxR, SettingsR, SettingsGeoCityR, SettingsGeoBboxR)
+    , DataR (BboxR, SettingsR, SettingsGeoCityR, SettingsGeoBboxR, DisplayR)
     , AppMessage
       ( MsgSettings, MsgGeoRegion, MsgDisplay, MsgCountry, MsgCity, MsgRegion
       , MsgNext, MsgSave, MsgLatitude, MsgLongitude, MsgZoom, MsgCenter

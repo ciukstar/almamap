@@ -111,11 +111,6 @@ const geolocationWatchOptions = {
   timeout: 10000
 };
 
-
-function fillTemplate (template, vars) {
-  return new Function("return `" + template +"`").call(vars);
-}
-
 document.getElementById(#{idFormExploreNearby}).addEventListener('submit', function (e) {
   
   e.preventDefault();
@@ -284,129 +279,6 @@ Array.from(
     });
   });
 });
-
-
-function updatePois (query, icon) {
-  return fetchQuery(query).then(
-    data => data.elements
-  ).then(
-    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
-  ).then(
-    data => ({ type: 'FeatureCollection', features: data })
-  ).then(data => {
-    map.getSource('pois').setData(data);
-    map.setLayoutProperty('unclustered-point', 'icon-image', icon);
-  });
-};
-
-
-function loadPois (query, icon, color) {
-  
-  return fetchQuery(query).then(
-    data => data.elements
-  ).then(
-    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
-  ).then(
-    data => ({ type: 'FeatureCollection', features: data })
-  ).then(data => {
-    
-    map.addSource('pois', {
-      type: 'geojson',
-      data: data,
-      cluster: true,
-      clusterMaxZoom: 14,
-      clusterRadius: 50
-    });
-    
-    map.addLayer({
-      id: 'clusters',
-      type: 'circle',
-      source: 'pois',
-      filter: ['has', 'point_count'],
-      paint: {
-        'circle-color': [
-          'step',
-          ['get', 'point_count'], '#51bbd6',
-          100, '#f1f075',
-          750, '#f28cb1'
-        ],
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          20,
-          100,
-          30,
-          750,
-          40
-        ]
-      }
-    });
-
-    map.addLayer({
-      id: 'cluster-count',
-      type: 'symbol',
-      source: 'pois',
-      filter: ['has', 'point_count'],
-      layout: {
-        'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-        'text-size': 12
-      }
-    });
-
-    map.addLayer({
-      id: 'unclustered-point',
-      type: 'symbol',
-      source: 'pois',
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'icon-image': icon,
-        'icon-size': 1,
-        'text-field': [ 'case',
-                        ['all', ['to-boolean', #{lang}], ['has', 'name:#{rawJS lang}']], ['get', 'name:#{rawJS lang}'],
-                        ['has', 'name'], ['get', 'name'],
-                        ['all',['to-boolean', #{lang}],['has','description:#{rawJS lang}']],['get','description:#{rawJS lang}'],
-                        ['get', 'description']
-                      ],
-        'text-font': [
-          'Open Sans Bold',
-          'Arial Unicode MS Bold'
-        ],
-        'text-offset': [0, 1],
-        'text-anchor': 'top',
-        'text-size': 12
-      },
-      paint: {
-        'text-color': color
-      }
-    });
-
-    map.on('click', 'clusters', (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: ['clusters']
-      });
-      const clusterId = features[0].properties.cluster_id;
-      map.getSource('pois').getClusterExpansionZoom(
-        clusterId,
-        (err, zoom) => {
-          if (err) return;
-
-          map.easeTo({
-            center: features[0].geometry.coordinates,
-            zoom: zoom
-          });
-        }
-      );
-    });
-
-    map.on('click', 'unclustered-point', (e) => {
-      displayOverview(e.features[0].properties);
-    });
-
-    return data;
-  });
-  
-};
 
 
 const searchSheet = document.getElementById(#{idDialogSearch});
@@ -595,11 +467,11 @@ map.on('style.load', function (e) {
   if (currentChip === 'attractions') {
     loadPois(queryTourism, 'icon_attractions', currentColor)
   } else if (currentChip === 'park') {
-    loadPois(queryParks, 'icon_park', currentColor)
+    loadPois(queryParks, 'icon_park', currentColor);
   } else if (currentChip === 'restaurant') {
-    loadPois(queryRestaurant, 'icon_restaurant', currentColor)
+    loadPois(queryRestaurant, 'icon_restaurant', currentColor);
   } else if (currentChip === 'government') {
-    loadPois(queryGovernment, 'icon_government', currentColor)
+    loadPois(queryGovernment, 'icon_government', currentColor);
   }
 });
 
@@ -717,6 +589,152 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
   });
   
 });
+
+
+function fillTemplate (template, vars) {
+  return new Function("return `" + template +"`").call(vars);
+}
+
+
+function updatePois (query, icon) {
+  
+  const loadIndicator = document.createElement('progress');
+  loadIndicator.className = 'circle absolute center middle';
+  loadIndicator.style.zIndex = 1;
+  document.body.appendChild(loadIndicator);
+  
+  return fetchQuery(query).then(
+    data => data.elements
+  ).then(
+    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
+  ).then(
+    data => ({ type: 'FeatureCollection', features: data })
+  ).then(data => {
+    map.getSource('pois').setData(data);
+    map.setLayoutProperty('unclustered-point', 'icon-image', icon);
+    return data;
+  }).then(data => {
+    loadIndicator.remove();
+    return data;
+  });
+};
+
+
+function loadPois (query, icon, color) {
+  
+  const loadIndicator = document.createElement('progress');
+  loadIndicator.className = 'circle absolute center middle';
+  loadIndicator.style.zIndex = 1;
+  document.body.appendChild(loadIndicator);
+  
+  return fetchQuery(query).then(
+    data => data.elements
+  ).then(
+    data => data.map(e => ({type: 'Feature', geometry: e.geometry, properties: e.tags}))
+  ).then(
+    data => ({ type: 'FeatureCollection', features: data })
+  ).then(data => {
+    
+    map.addSource('pois', {
+      type: 'geojson',
+      data: data,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
+    
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'pois',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': [
+          'step',
+          ['get', 'point_count'], '#51bbd6',
+          100, '#f1f075',
+          750, '#f28cb1'
+        ],
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          20,
+          100,
+          30,
+          750,
+          40
+        ]
+      }
+    });
+
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'pois',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+        'text-size': 12
+      }
+    });
+
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'symbol',
+      source: 'pois',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'icon-image': icon,
+        'icon-size': 1,
+        'text-field': [ 'case',
+                        ['all', ['to-boolean', #{lang}], ['has', 'name:#{rawJS lang}']], ['get', 'name:#{rawJS lang}'],
+                        ['has', 'name'], ['get', 'name'],
+                        ['all',['to-boolean', #{lang}],['has','description:#{rawJS lang}']],['get','description:#{rawJS lang}'],
+                        ['get', 'description']
+                      ],
+        'text-font': [
+          'Open Sans Bold',
+          'Arial Unicode MS Bold'
+        ],
+        'text-offset': [0, 1],
+        'text-anchor': 'top',
+        'text-size': 12
+      },
+      paint: {
+        'text-color': color
+      }
+    });
+
+    map.on('click', 'clusters', (e) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ['clusters']
+      });
+      const clusterId = features[0].properties.cluster_id;
+      map.getSource('pois').getClusterExpansionZoom(
+        clusterId,
+        (err, zoom) => {
+          if (err) return;
+
+          map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: zoom
+          });
+        }
+      );
+    });
+
+    map.on('click', 'unclustered-point', (e) => {
+      displayOverview(e.features[0].properties);
+    });
+
+    return data;
+  }).then(data => {
+    loadIndicator.remove();
+    return data;
+  });
+  
+};
 
 
 function fetchQuery (query) {

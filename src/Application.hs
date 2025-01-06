@@ -55,6 +55,7 @@ import Handler.Home ( getHomeR, getFetchR, getFetchP18PhotoR )
 import Handler.Restaurants (getRestaurantsR )
 import Handler.Shops (getShopsR )
 
+import Handler.Display (getDisplayR, postDisplayR)
 import Handler.Bbox (getBboxR, postBboxR)
 
 import Handler.Settings

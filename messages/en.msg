@@ -1,3 +1,8 @@
+Theme: Theme
+ThemeLight: Light
+ThemeDark: Dark
+DefaultMapStyle: Default map style
+DefaultTheme: Default theme
 SearchByCategory: Search by category
 DisplayDifferentTypesOfPOIs: Display different types of POIs
 LightAndDarkTheme: Light and dark theme

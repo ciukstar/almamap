@@ -67,10 +67,6 @@ import Settings.StaticFiles
     , img_restaurant_pin_720dp_png
     , img_park_pin_720dp_png
     , img_attractions_pin_720dp_png
-    , img_attractions_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_park_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_restaurant_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
-    , img_account_balance_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_assistant_navigation_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_shopping_cart_24dp_013048_FILL0_wght400_GRAD0_opsz24_svg
     , img_compass_needle_svg
@@ -130,10 +126,18 @@ getHomeR = do
     msgr <- getMessageRender
 
     let chips :: [(Text,((Text,Text),(Text,Text)))]
-        chips = [ ("attractions",(("attractions","icon_attractions"), (msgr MsgAttractions, query bbox "tourism" Nothing)))
-                , ("park",(("park","icon_park"), (msgr MsgParks, query bbox "leisure" (Just "park"))))
-                , ("restaurant",(("restaurant","icon_restaurant"), (msgr MsgRestaurants, query bbox "amenity" (Just "restaurant"))))
-                , ("government",(("account_balance","icon_government"), (msgr MsgPublicInstitutions, query bbox "government" Nothing)))
+        chips = [ ( "attractions"
+                  , (("attractions","icon_attractions"), (msgr MsgAttractions, query bbox "tourism" Nothing))
+                  )
+                , ( "park"
+                  , (("park","icon_park"), (msgr MsgParks, query bbox "leisure" (Just "park")))
+                  )
+                , ( "restaurant"
+                  , (("restaurant","icon_restaurant"), (msgr MsgRestaurants, query bbox "amenity" (Just "restaurant")))
+                  )
+                , ( "government"
+                  , (("account_balance","icon_government"), (msgr MsgPublicInstitutions, query bbox "government" Nothing))
+                  )
                 ]
 
     let nearbyItems :: [(Int, A.Value)]

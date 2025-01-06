@@ -6,7 +6,7 @@
   <div.tabs.min>
     <a.active href=@{DataR BboxR}>_{MsgBoundingBox}
     <a href=@{DataR SettingsR}>_{MsgGeoRegion}
-    <a>_{MsgDisplay}
+    <a href=@{DataR DisplayR}>_{MsgDisplay}
 
   <div.page.padding.active>
 
