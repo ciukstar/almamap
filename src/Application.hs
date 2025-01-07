@@ -56,12 +56,13 @@ import Handler.Restaurants (getRestaurantsR )
 import Handler.Shops (getShopsR )
 
 import Handler.Display (getDisplayR, postDisplayR)
-import Handler.Bbox (getBboxR, postBboxR)
+import Handler.Bbox (getBboxR, postBboxR, postBboxDeleR)
 
-import Handler.Settings
-    ( getSettingsR, postSettingsR
+import Handler.Geo
+    ( getSettingsGeoCountryR, postSettingsGeoCountryR
     , getSettingsGeoCityR, postSettingsGeoCityR
     , getSettingsGeoBboxR, postSettingsGeoBboxR
+    , postSettingsGeoDeleR
     )
 
 

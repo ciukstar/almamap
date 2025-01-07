@@ -3,12 +3,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Handler.Settings
-  ( getSettingsR, postSettingsR
+module Handler.Geo
+  ( getSettingsGeoCountryR, postSettingsGeoCountryR
   , getSettingsGeoCityR, postSettingsGeoCityR
   , getSettingsGeoBboxR, postSettingsGeoBboxR
+  , postSettingsGeoDeleR
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Lens ((^..), Each(each), to)
 import qualified Control.Lens as L ((^?))
 import Control.Monad (void)
@@ -17,34 +19,38 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON (toJSON))
 import Data.Aeson.Key (fromText)
 import Data.Aeson.Lens (key, AsValue (_Array, _String), AsNumber (_Double), nth)
-import Data.Bifunctor (Bifunctor(second))
 import Data.List (sort)
 import qualified Data.List.Safe as LS (head)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text, unpack)
 import qualified Data.Text as T
 
 import Database.Esqueleto.Experimental (selectOne, from, table, delete)
-import Database.Persist (Entity (Entity, entityVal), insert_)
+import Database.Persist (Entity (entityVal), insert_)
 
 import Foundation
-    ( Handler, Form, App (appSettings), widgetTopbar
+    ( Handler, Form, App (appSettings), widgetSnackbar, widgetTopbar, mapboxStyles
     , Route (DataR)
-    , DataR (BboxR, SettingsR, SettingsGeoCityR, SettingsGeoBboxR, DisplayR)
+    , DataR
+      ( BboxR, SettingsGeoCountryR, SettingsGeoCityR, SettingsGeoBboxR, DisplayR
+      , SettingsGeoDeleR
+      )
     , AppMessage
       ( MsgSettings, MsgGeoRegion, MsgDisplay, MsgCountry, MsgCity, MsgRegion
       , MsgNext, MsgSave, MsgLatitude, MsgLongitude, MsgZoom, MsgCenter
-      , MsgStyle, MsgStyleStreets, MsgStyleOutdoors, MsgStyleLight, MsgStyleDark
-      , MsgStyleSatellite, MsgStyleSatelliteStreets, MsgStyleNavigationDay
-      , MsgStyleNavigationNight, MsgRecordEdited, MsgBoundingBox
+      , MsgRecordEdited, MsgBoundingBox, MsgDele
+      , MsgCancel, MsgConfirmPlease, MsgDeleteAreYouSure, MsgRecordDeleted
+      , MsgInvalidFormData
       )
     )
 
 import Material3 (md3selectWidget, md3widget)
 import Model
-    ( overpass, msgSuccess
+    ( overpass, msgSuccess, msgError
+    , DefaultMapStyle (defaultMapStyleStyle)
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
-      , mapboxParamStyle, mapboxParamCity, mapboxParamCountry
+      , mapboxParamCity, mapboxParamCountry, mapboxParamLang
       )
     )
 
@@ -58,9 +64,10 @@ import Text.Shakespeare.Text (st)
 import Yesod.Core
     ( Yesod(defaultLayout), setTitleI, newIdent, getMessageRender, whamlet
     , redirect, languages, getYesod, addStylesheetRemote, addScriptRemote
-    , SomeMessage (SomeMessage), addMessageI
+    , SomeMessage (SomeMessage), addMessageI, MonadHandler (liftHandler)
+    , getMessages
     )
-import Yesod.Form.Fields (selectField, optionsPairs, doubleField, selectFieldList)
+import Yesod.Form.Fields (selectField, optionsPairs, doubleField)
 import Yesod.Form.Functions (mreq, runFormPost, generateFormPost)
 import Yesod.Form.Types
     ( FieldSettings(FieldSettings, fsLabel, fsId, fsName, fsTooltip, fsAttrs)
@@ -69,25 +76,25 @@ import Yesod.Form.Types
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-mapboxStyles :: [(AppMessage, Text)]
-mapboxStyles = second ("mapbox://styles/mapbox/" <>) <$>
-    [ (MsgStyleStreets, "streets-v12")
-    , (MsgStyleOutdoors, "outdoors-v12")
-    , (MsgStyleLight, "light-v11")
-    , (MsgStyleDark, "dark-v11")
-    , (MsgStyleSatellite, "satellite-v9")
-    , (MsgStyleSatelliteStreets, "satellite-streets-v12")
-    , (MsgStyleNavigationDay, "navigation-day-v1")
-    , (MsgStyleNavigationNight, "navigation-night-v1")
-    ]
-
-
-mapboxStyle :: Text
-mapboxStyle = snd (mapboxStyles !! 3)
+postSettingsGeoDeleR :: Text -> Text -> Handler Html
+postSettingsGeoDeleR country city = do
+    ((fr,_),_) <- runFormPost formParamDelete
+    case fr of
+      FormSuccess () -> do
+          runDB $ delete $ void $ from $ table @MapboxParam
+          addMessageI msgSuccess MsgRecordDeleted
+          redirect $ DataR SettingsGeoCountryR
+          
+      _otherwise -> do
+          addMessageI msgError MsgInvalidFormData
+          redirect $ DataR $ SettingsGeoBboxR country city
 
 
 postSettingsGeoBboxR :: Text -> Text -> Handler Html
 postSettingsGeoBboxR country city = do
+    
+    mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
     lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
 
@@ -109,14 +116,15 @@ postSettingsGeoBboxR country city = do
     idInputLon <- newIdent
     idInputLat <- newIdent
     idInputZoom <- newIdent
-    idInputStyle <- newIdent
 
     params <- runDB $ selectOne $ from $ table @MapboxParam
             
     ((fr,fw),et) <- runFormPost $ formMapViewport
-        idInputLon idInputLat idInputZoom idInputStyle
+        idInputLon idInputLat idInputZoom
         country city
         (entityVal <$> params)
+
+    (fw0,et0) <- generateFormPost formParamDelete
 
     case fr of
       FormSuccess param -> do
@@ -127,13 +135,14 @@ postSettingsGeoBboxR country city = do
       
       _otherwise -> do    
           msgr <- getMessageRender
-
-          let mapStyles = snd <$> mapboxStyles
+          msgs <- getMessages
 
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
               idMap <- newIdent
+              idButtonShowDialogDelete <- newIdent
+              idDialogDelete <- newIdent
 
               mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -145,58 +154,58 @@ postSettingsGeoBboxR country city = do
 
 getSettingsGeoBboxR :: Text -> Text -> Handler Html
 getSettingsGeoBboxR country city = do
+    
+    mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
-    params <- runDB $ selectOne $ from $ table @MapboxParam
+    lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) . LS.head <$> languages
 
-    param <- case params of
-      Just (Entity _ p) -> return p
-      
-      Nothing -> do
-          lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
+    r <- liftIO $ post (unpack overpass)
+        [ "data" := [st|
+                       [out:json];
+                       area["name#{lang}"="#{country}"];
+                       node(area)[place="city"]["name#{lang}"="#{city}"];
+                       out center;
+                       |]
+        ]
 
-          r <- liftIO $ post (unpack overpass)
-              [ "data" := [st|
-                             [out:json];
-                             area["name#{lang}"="#{country}"];
-                             node(area)[place="city"]["name#{lang}"="#{city}"];
-                             out center;
-                             |]
-              ]
+    let c = r L.^? responseBody . key "elements" . nth 0
+            . to (\x -> (x L.^? key "lon" . _Double, x L.^? key "lat" . _Double))
 
-          let c = r L.^? responseBody . key "elements" . nth 0
-                  . to (\x -> (x L.^? key "lon" . _Double, x L.^? key "lat" . _Double))
+    let center = case c of
+          Just (Just lon, Just lat) -> (lon,lat)
+          _otherwise -> (0,0)
 
-          let center = case c of
-                Just (Just lon, Just lat) -> (lon,lat)
-                _otherwise -> (0,0)
+    language <- LS.head <$> languages
 
-          return MapboxParam { mapboxParamCountry = country
-                             , mapboxParamCity = city
-                             , mapboxParamLon = fst center
-                             , mapboxParamLat = snd center
-                             , mapboxParamZoom = 9
-                             , mapboxParamStyle = "mapbox://styles/mapbox/dark-v11"
-                             }
+    let param = MapboxParam { mapboxParamCountry = country
+                            , mapboxParamCity = city
+                            , mapboxParamLang = language
+                            , mapboxParamLon = fst center
+                            , mapboxParamLat = snd center
+                            , mapboxParamZoom = 9
+                            }
 
     idInputLon <- newIdent
     idInputLat <- newIdent
     idInputZoom <- newIdent
-    idInputStyle <- newIdent
         
     (fw,et) <- generateFormPost $ formMapViewport
-        idInputLon idInputLat idInputZoom idInputStyle
+        idInputLon idInputLat idInputZoom
         country city
         (Just param)
+
+    (fw0,et0) <- generateFormPost formParamDelete
     
     msgr <- getMessageRender
-
-    let center = (mapboxParamLon param, mapboxParamLat param)
-    let mapStyles = snd <$> mapboxStyles
+    msgs <- getMessages
     
     defaultLayout $ do
         setTitleI MsgSettings
         idOverlay <- newIdent
         idMap <- newIdent
+        idButtonShowDialogDelete <- newIdent
+        idDialogDelete <- newIdent
 
         mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -206,10 +215,16 @@ getSettingsGeoBboxR country city = do
         $(widgetFile "data/settings/geo/bbox")
 
 
-formMapViewport :: Text -> Text -> Text -> Text
+formParamDelete :: Form ()
+formParamDelete extra = return (pure (), [whamlet|#{extra}|])
+
+
+formMapViewport :: Text -> Text -> Text
                 -> Text -> Text
                 -> Maybe MapboxParam -> Form MapboxParam
-formMapViewport idInputLon idInputLat idInputZoom idInputStyle country city  params extra = do
+formMapViewport idInputLon idInputLat idInputZoom country city params extra = do
+
+    lang <- liftHandler $ LS.head <$> languages
     
     (lonR,lonV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgLongitude
@@ -225,13 +240,8 @@ formMapViewport idInputLon idInputLat idInputZoom idInputStyle country city  par
         { fsLabel = SomeMessage MsgZoom
         , fsId = Just idInputZoom, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
         } (mapboxParamZoom <$> params)
-            
-    (styleR,styleV) <- mreq (selectFieldList mapboxStyles) FieldSettings
-        { fsLabel = SomeMessage MsgStyle
-        , fsId = Just idInputStyle, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } (mapboxParamStyle <$> params)
 
-    return ( MapboxParam country city <$> lonR <*> latR <*> zoomR <*> styleR
+    return ( MapboxParam country city lang <$> lonR <*> latR <*> zoomR
            , [whamlet|
                      ^{extra}
                      
@@ -241,8 +251,6 @@ formMapViewport idInputLon idInputLat idInputZoom idInputStyle country city  par
                        ^{md3widget latV}
                        
                      ^{md3widget zoomV}
-                       
-                     ^{md3selectWidget styleV}
                      |]
            )
 
@@ -271,6 +279,7 @@ postSettingsGeoCityR country = do
 
       _otherwise -> do
           msgr <- getMessageRender
+          msgs <- getMessages
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
@@ -299,14 +308,15 @@ getSettingsGeoCityR country = do
     (fw,et) <- generateFormPost $ formCity cities
     
     msgr <- getMessageRender
+    msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgSettings
         idOverlay <- newIdent
         $(widgetFile "data/settings/geo/city")
     
 
-postSettingsR :: Handler Html
-postSettingsR = do
+postSettingsGeoCountryR :: Handler Html
+postSettingsGeoCountryR = do
 
     lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
     
@@ -329,10 +339,11 @@ postSettingsR = do
           
       _otherwise -> do
           msgr <- getMessageRender
+          msgs <- getMessages
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
-              $(widgetFile "data/settings/settings")
+              $(widgetFile "data/settings/geo/country")
 
 
 formCity :: [Text] -> Form Text
@@ -345,8 +356,8 @@ formCity cities extra = do
     return (cityR, [whamlet|^{extra} ^{md3selectWidget cityV}|])
 
 
-getSettingsR :: Handler Html
-getSettingsR = do
+getSettingsGeoCountryR :: Handler Html
+getSettingsGeoCountryR = do
 
     lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
 
@@ -365,10 +376,11 @@ getSettingsR = do
     (fw,et) <- generateFormPost $ formCountry countries
 
     msgr <- getMessageRender
+    msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgSettings
         idOverlay <- newIdent
-        $(widgetFile "data/settings/settings")
+        $(widgetFile "data/settings/geo/country")
 
 
 formCountry :: [Text] -> Form Text

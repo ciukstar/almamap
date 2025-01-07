@@ -1,3 +1,4 @@
+NoBoundingBoxSetYet: Шектеу өрісі әлі орнатылмаған
 TextColor: Мәтін түсі
 Theme: Тақырып
 ThemeLight: Жеңіл

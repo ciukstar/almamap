@@ -1,12 +1,14 @@
 
 mapboxgl.accessToken = #{mapboxPk};
 
-const bounds = #{toJSON bbox};
+const bounds = #{toJSON (entityVal <$> bbox)};
 
 const map = new mapboxgl.Map({
   container: #{idMapboxMap},
+  style: #{mapboxStyle},
   bounds: bounds,
-  style: #{mapboxStyle}
+  center: #{toJSON center},
+  zoom: #{toJSON zoom}
 });
 
 const inputMinLon = document.getElementById(#{idInputMinLon});
@@ -32,4 +34,14 @@ const inputMaxLat = document.getElementById(#{idInputMaxLat});
                     [inputMaxLon.value, inputMaxLat.value]
                   ]);
   });
+});
+
+
+document.getElementById(#{idButtonShowBboxForm}).addEventListener('click', e => {
+  document.getElementById(#{idBboxFormWrapper}).style.display = 'block';
+  document.getElementById(#{idFigureShowBboxForm}).style.display = 'none';
+});
+
+document.getElementById(#{idButtonShowDialogDelete}).addEventListener('click', e => {
+  document.getElementById(#{idDialogDelete}).show();
 });

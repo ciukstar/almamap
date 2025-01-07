@@ -1,18 +1,18 @@
 
 ^{widgetTopbar Nothing (msgr MsgSettings) idOverlay Nothing Nothing}
 
-<main>
+<main.responsive>
 
   <div.tabs.min>
     <a href=@{DataR BboxR}>_{MsgBoundingBox}
-    <a.active href=@{DataR SettingsR}>_{MsgGeoRegion}
+    <a.active href=@{DataR SettingsGeoCountryR}>_{MsgGeoRegion}
     <a>_{MsgDisplay}
 
   <div.page.padding.active>
 
     <nav>
       <div.center-align>
-        <a.button.circle.small href=@{DataR SettingsR}>
+        <a.button.circle.small href=@{DataR SettingsGeoCountryR}>
           <i>done
         <div.small-margin>_{MsgCountry}
       
@@ -32,5 +32,8 @@
       <nav.right-align>
         <button type=submit>
           _{MsgNext}
+
+
+  ^{widgetSnackbar msgs}
         
 

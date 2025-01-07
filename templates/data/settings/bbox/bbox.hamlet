@@ -1,23 +1,48 @@
 
 ^{widgetTopbar Nothing (msgr MsgSettings) idOverlay Nothing Nothing}
 
-<main>
+<main.responsive>
 
-  <div.tabs.min>
+  <div.tabs.min.scroll>
     <a.active href=@{DataR BboxR}>_{MsgBoundingBox}
-    <a href=@{DataR SettingsR}>_{MsgGeoRegion}
+    <a href=@{DataR SettingsGeoCountryR}>_{MsgGeoRegion}
     <a href=@{DataR DisplayR}>_{MsgDisplay}
 
   <div.page.padding.active>
 
-    <div.max ##{idMapboxMap}>
+    <div ##{idBboxFormWrapper} :isNothing bbox:style="display:none">
+      <div.max ##{idMapboxMap}>
 
-    <fieldset>
-      <legend>_{MsgBoundingBox}
-      <form method=post action=@{DataR BboxR} enctype=#{et}>
-        ^{fw}
-        <nav.right-align>
-          <button type=submit>
-            _{MsgSave}
+      <fieldset>
+        <legend>_{MsgBoundingBox}
+        <form method=post action=@{DataR BboxR} enctype=#{et}>
+          ^{fw}
+          <nav.right-align>
+            <button.transparent.border type=button ##{idButtonShowDialogDelete} data-ui=##{idOverlay}>
+              _{MsgDele}
+            <button type=submit>
+              _{MsgSave}
+
+    <figure.center-align ##{idFigureShowBboxForm} :isJust bbox:style="display:none">
+      <i.large.padding>folder_open
+      <figcaption>
+        <div.padding>_{MsgNoBoundingBoxSetYet}.
+        <button ##{idButtonShowBboxForm}>
+          <i>add
+          _{MsgAdd}
+
 
   ^{widgetSnackbar msgs}
+
+
+<dialog ##{idDialogDelete}>
+  <h6>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR BboxDeleR} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

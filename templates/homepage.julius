@@ -8,9 +8,11 @@ mapboxgl.accessToken = #{mapboxPk};
 
 const map = new mapboxgl.Map({
   container: #{idMap},
-  bounds: #{toJSON bbox},
   language: #{toJSON langs},
-  style: #{style}
+  style: #{style},
+  bounds: #{toJSON bbox},
+  center: #{toJSON center},
+  zoom: #{toJSON zoom}
 });
 
 
@@ -31,10 +33,10 @@ Array.from(
   x.title = #{msgr MsgCompass};
 });
 
-const queryTourism = #{query mlang area bbox "tourism" Nothing};
-const queryParks = #{query mlang area bbox "leisure" (Just "park")};
-const queryRestaurant = #{query mlang area bbox "amenity" (Just "restaurant")};
-const queryGovernment = #{query mlang area bbox "government" Nothing};
+const queryTourism = #{query area bbox "tourism" Nothing};
+const queryParks = #{query area bbox "leisure" (Just "park")};
+const queryRestaurant = #{query area bbox "amenity" (Just "restaurant")};
+const queryGovernment = #{query area bbox "government" Nothing};
 
 
 document.getElementById(#{idInputAddress}).addEventListener('input', debounce(function (e) {

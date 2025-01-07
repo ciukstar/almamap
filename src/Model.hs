@@ -28,7 +28,7 @@ import Data.Bool (Bool)
 import Data.ByteString (ByteString)
 import Data.Fixed (Fixed (MkFixed))
 import Data.Function ((.))
-import Data.Maybe (Maybe (Just))
+import Data.Maybe (Maybe (Just, Nothing))
 import Data.Time.Clock
     ( NominalDiffTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
 

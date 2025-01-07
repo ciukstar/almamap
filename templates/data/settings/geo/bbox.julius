@@ -16,7 +16,6 @@
   const inputLng = document.getElementById(#{idInputLon});
   const inputLat = document.getElementById(#{idInputLat});
   const inputZoom = document.getElementById(#{idInputZoom});
-  const inputStyle = document.getElementById(#{idInputStyle});
 
   map.on('click', function (e) {
     poi.remove();
@@ -47,11 +46,10 @@
   inputZoom.addEventListener('input', function (e) {
     map.setZoom(e.target.value);
   });
-
-  const mapStyles = #{toJSON mapStyles};
-  
-  inputStyle.addEventListener('change', function (e) {
-    map.setStyle(mapStyles[e.target.value - 1]);
-  });
   
 }) ();
+
+
+document.getElementById(#{idButtonShowDialogDelete}).addEventListener('click', e => {
+  document.getElementById(#{idDialogDelete}).show();
+});

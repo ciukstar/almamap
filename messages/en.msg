@@ -1,3 +1,4 @@
+NoBoundingBoxSetYet: No bounding box has been set yet
 TextColor: Text color
 Theme: Theme
 ThemeLight: Light

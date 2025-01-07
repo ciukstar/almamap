@@ -20,10 +20,10 @@ Bbox
 MapboxParam
     country Text
     city Text
+    lang Text Maybe
     lon Double
     lat Double
     zoom Double
-    style Text
 
 
 UserPhoto

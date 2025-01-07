@@ -1,11 +1,11 @@
 
 ^{widgetTopbar Nothing (msgr MsgSettings) idOverlay Nothing Nothing}
 
-<main>
+<main.responsive>
 
-  <div.tabs.min>
+  <div.tabs.min.scroll>
     <a href=@{DataR BboxR}>_{MsgBoundingBox}
-    <a href=@{DataR SettingsR}>_{MsgGeoRegion}
+    <a href=@{DataR SettingsGeoCountryR}>_{MsgGeoRegion}
     <a.active href=@{DataR DisplayR}>_{MsgDisplay}
 
   <div.page.padding.active>

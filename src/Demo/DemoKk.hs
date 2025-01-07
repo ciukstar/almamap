@@ -20,7 +20,7 @@ import Model
       )
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
-      , mapboxParamStyle, mapboxParamCountry, mapboxParamCity
+      , mapboxParamCountry, mapboxParamCity, mapboxParamLang
       )
     , Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultTheme (DefaultTheme, defaultThemeTheme)
@@ -111,10 +111,10 @@ fillDemoKk = do
 
     insert_ MapboxParam { mapboxParamCountry = "Kazakhstan"
                         , mapboxParamCity = "Almaty"
+                        , mapboxParamLang = Just "en"
                         , mapboxParamLon = -0.12
                         , mapboxParamLat = 51.50
                         , mapboxParamZoom = 9
-                        , mapboxParamStyle = "mapbox://styles/mapbox/dark-v11"
                         }
     
     return ()

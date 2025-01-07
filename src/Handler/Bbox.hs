@@ -5,6 +5,7 @@
 
 module Handler.Bbox
   ( getBboxR, postBboxR
+  , postBboxDeleR
   ) where
 
 import Control.Applicative ((<|>))
@@ -12,28 +13,30 @@ import Control.Monad (void)
 
 import Data.Aeson (ToJSON (toJSON))
 import qualified Data.List.Safe as LS (head)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isNothing, isJust)
 import Data.Text (Text)
 
 import Database.Esqueleto.Experimental (selectOne, from, table, delete)
-import Database.Persist (Entity (Entity), entityVal, insert_)
+import Database.Persist (Entity, entityVal, insert_)
 
 import Foundation
     ( Handler, Form, App (appSettings), widgetTopbar, widgetSnackbar, mapboxStyles
     , Route (DataR)
-    , DataR (BboxR, SettingsR, DisplayR)
+    , DataR (BboxR, SettingsGeoCountryR, DisplayR, BboxDeleR)
     , AppMessage
       ( MsgBoundingBox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgRecordEdited
       , MsgSave, MsgWest, MsgSouth, MsgNorth, MsgEast, MsgSouthWest, MsgNorthEast
+      , MsgDele, MsgConfirmPlease, MsgDeleteAreYouSure, MsgCancel, MsgInvalidFormData
+      , MsgRecordDeleted, MsgAdd, MsgNoBoundingBoxSetYet
       )
     )
     
 import Material3 (md3widget)
 
 import Model
-    ( msgSuccess, defaultBbox
+    ( msgSuccess, msgError
     , Bbox(Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
-    , DefaultMapStyle (defaultMapStyleStyle)
+    , DefaultMapStyle (defaultMapStyleStyle), MapboxParam (MapboxParam)
     )
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
@@ -55,26 +58,38 @@ import Yesod.Form.Types
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
+postBboxDeleR :: Handler Html
+postBboxDeleR = do
+    ((fr,_),_) <- runFormPost formBboxDelete
+    case fr of
+      FormSuccess () -> do
+          runDB $ delete $ void $ from $ table @Bbox
+          addMessageI msgSuccess MsgRecordDeleted
+          redirect $ DataR BboxR
+          
+      _otherwise -> do
+          addMessageI msgError MsgInvalidFormData
+          redirect $ DataR BboxR
+
+
 postBboxR :: Handler Html
 postBboxR = do
     
     mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
                    <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
     
-    bbox <- do
-        bbox <- runDB $ selectOne $ from $ table @Bbox
-        case bbox of
-          Just (Entity _ (Bbox minLon minLat maxLon maxLat)) -> return ((minLon,minLat),(maxLon,maxLat))
-          Nothing -> return ( (bboxMinLon defaultBbox, bboxMinLat defaultBbox)
-                            , (bboxMaxLon defaultBbox, bboxMaxLat defaultBbox)
-                            )
+    bbox <- runDB $ selectOne $ from $ table @Bbox
+    params <- runDB $ selectOne $ from $ table @MapboxParam
+    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent
     idInputMaxLon <- newIdent
     idInputMaxLat <- newIdent
 
-    ((fr,fw),et) <- runFormPost $ formBbox idInputMinLon idInputMinLat idInputMaxLon idInputMaxLat (Just bbox)
+    ((fr,fw),et) <- runFormPost $ formBbox idInputMinLon idInputMinLat idInputMaxLon idInputMaxLat bbox
+    (fw0,et0) <- generateFormPost formBboxDelete
 
     case fr of
       FormSuccess r -> do
@@ -90,6 +105,11 @@ postBboxR = do
               setTitleI MsgBoundingBox
               idOverlay <- newIdent
               idMapboxMap <- newIdent
+              idBboxFormWrapper <- newIdent
+              idFigureShowBboxForm <- newIdent
+              idButtonShowBboxForm <- newIdent
+              idButtonShowDialogDelete <- newIdent
+              idDialogDelete <- newIdent
 
               mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -104,21 +124,19 @@ getBboxR = do
     
     mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
                    <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
-    
-    bbox <- do
-        bbox <- runDB $ selectOne $ from $ table @Bbox
-        case bbox of
-          Just (Entity _ (Bbox minLon minLat maxLon maxLat)) -> return ((minLon,minLat),(maxLon,maxLat))
-          Nothing -> return ( (bboxMinLon defaultBbox, bboxMinLat defaultBbox)
-                            , (bboxMaxLon defaultBbox, bboxMaxLat defaultBbox)
-                            )
+
+    bbox <- runDB $ selectOne $ from $ table @Bbox
+    params <- runDB $ selectOne $ from $ table @MapboxParam
+    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent
     idInputMaxLon <- newIdent
     idInputMaxLat <- newIdent
 
-    (fw,et) <- generateFormPost $ formBbox idInputMinLon idInputMinLat idInputMaxLon idInputMaxLat (Just bbox)
+    (fw,et) <- generateFormPost $ formBbox idInputMinLon idInputMinLat idInputMaxLon idInputMaxLat bbox
+    (fw0,et0) <- generateFormPost formBboxDelete
         
     msgr <- getMessageRender
     msgs <- getMessages
@@ -126,6 +144,11 @@ getBboxR = do
         setTitleI MsgBoundingBox
         idOverlay <- newIdent
         idMapboxMap <- newIdent
+        idButtonShowBboxForm <- newIdent
+        idBboxFormWrapper <- newIdent
+        idFigureShowBboxForm <- newIdent
+        idButtonShowDialogDelete <- newIdent
+        idDialogDelete <- newIdent
 
         mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -136,28 +159,28 @@ getBboxR = do
 
 
 formBbox :: Text -> Text -> Text -> Text
-         -> Maybe ((Double, Double),(Double, Double)) -> Form Bbox
+         -> Maybe (Entity Bbox) -> Form Bbox
 formBbox idMinLon idMinLat idMaxLon idMaxLat bbox extra = do
     
     (minLonR,minLonV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgWest
         , fsId = Just idMinLon, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } (fst . fst <$> bbox)
+        } (bboxMinLon . entityVal <$> bbox)
     
     (minLatR,minLatV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgSouth
         , fsId = Just idMinLat, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } (snd . fst <$> bbox)
+        } (bboxMinLat . entityVal <$> bbox)
     
     (maxLonR,maxLonV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgEast
         , fsId = Just idMaxLon, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } (fst . snd <$> bbox)
+        } (bboxMaxLon . entityVal <$> bbox)
     
     (maxLatR,maxLatV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgNorth
         , fsId = Just idMaxLat, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } (snd . snd <$> bbox)
+        } (bboxMaxLat . entityVal <$> bbox)
 
     let r = Bbox <$> minLonR <*> minLatR <*> maxLonR <*> maxLatR
     let w = [whamlet|
@@ -175,3 +198,7 @@ formBbox idMinLon idMinLat idMaxLon idMaxLat bbox extra = do
                     |]
 
     return (r,w)
+
+
+formBboxDelete :: Form ()
+formBboxDelete extra = return (pure (), [whamlet|#{extra}|])

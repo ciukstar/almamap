@@ -27,7 +27,7 @@ import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
 
 import Database.Esqueleto.Experimental (selectOne, from, table)
-import Database.Persist (Entity (Entity), entityVal)
+import Database.Persist (entityVal)
 
 import Foundation
     ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, mapboxStyles
@@ -54,9 +54,9 @@ import Foundation
     )
 
 import Model
-    ( keyThemeLight, keyThemeDark, overpass, defaultBbox
+    ( keyThemeLight, keyThemeDark, overpass 
     , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
-    , DefaultMapStyle (defaultMapStyleStyle, DefaultMapStyle), MapboxParam (MapboxParam)
+    , DefaultMapStyle (DefaultMapStyle), MapboxParam (MapboxParam)
     )
 
 import Network.Wreq (get)
@@ -82,7 +82,7 @@ import Text.Shakespeare.Text (st)
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
     , addScriptRemote, getYesod, selectRep, provideJson, getMessageRender
-    , newIdent, languages, Lang
+    , newIdent, languages
     )
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
@@ -117,12 +117,14 @@ getHomeR = do
                      <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
     langs <- languages
-    let mlang = LS.head langs
-    let lang = fromMaybe "" mlang
+    let lang = fromMaybe "" (LS.head langs)
 
     area <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @MapboxParam )
     
-    bbox <- (<|> Just defaultBbox) . (entityVal <$>) <$> runDB ( selectOne $ from $ table @Bbox)
+    bbox <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @Bbox)
+    params <- runDB $ selectOne $ from $ table @MapboxParam
+    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
     
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -131,20 +133,20 @@ getHomeR = do
     let chips :: [(Text,((Text,Text),(Text,Text)))]
         chips = [ ( "attractions"
                   , ( ("attractions","icon_attractions")
-                    , (msgr MsgAttractions, query mlang area bbox "tourism" Nothing)
+                    , (msgr MsgAttractions, query area bbox "tourism" Nothing)
                     )
                   )
                 , ( "park"
-                  , (("park","icon_park"), (msgr MsgParks, query mlang area bbox "leisure" (Just "park")))
+                  , (("park","icon_park"), (msgr MsgParks, query area bbox "leisure" (Just "park")))
                   )
                 , ( "restaurant"
                   , ( ("restaurant","icon_restaurant")
-                    , (msgr MsgRestaurants, query mlang area bbox "amenity" (Just "restaurant"))
+                    , (msgr MsgRestaurants, query area bbox "amenity" (Just "restaurant"))
                     )
                   )
                 , ( "government"
                   , ( ("account_balance","icon_government")
-                    , (msgr MsgPublicInstitutions, query mlang area bbox "government" Nothing)
+                    , (msgr MsgPublicInstitutions, query area bbox "government" Nothing)
                     )
                   )
                 ]
@@ -274,9 +276,9 @@ queryTagCount area bbox tag = toStrict $ renderMarkup [shamlet|
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    $maybe MapboxParam country city _ _ _ _ <- area
-      area["name"="#{country}"];
-      node(area)[place="city"]["name"="#{city}"];
+    $maybe MapboxParam country city lang _ _ _ <- area
+      area["name#{langSuffix lang}"="#{country}"];
+      node(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
       node["#{tag}"];
 
     $nothing
@@ -292,9 +294,9 @@ queryAmenityCount area bbox typ = toStrict $ renderMarkup [shamlet|
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    $maybe MapboxParam country city _ _ _ _ <- area
-      area["name"="#{country}"];
-      node(area)[place="city"]["name"="#{city}"];
+    $maybe MapboxParam country city lang _ _ _ <- area
+      area["name#{langSuffix lang}"="#{country}"];
+      node(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
       node(area)["amenity"="#{typ}"];
 
     $nothing
@@ -319,15 +321,15 @@ queryAround args =
             |]
 
 
-query :: Maybe Lang -> Maybe MapboxParam -> Maybe Bbox -> Text -> Maybe Text -> Text
-query lang params bbox tag val = toStrict $ renderMarkup [shamlet|
+query :: Maybe MapboxParam -> Maybe Bbox -> Text -> Maybe Text -> Text
+query params bbox tag val = toStrict $ renderMarkup [shamlet|
     $maybe bbox <- bbox
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
     
-    $maybe MapboxParam country city _ _ _ _ <- params
-      area["name#{language lang}"="#{country}"];
-      area(area)[place="city"]["name#{language lang}"="#{city}"];
+    $maybe MapboxParam country city lang _ _ _ <- params
+      area["name#{langSuffix lang}"="#{country}"];
+      area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
       $maybe v <- val
         node(area)["#{tag}"="#{v}"] -> .tags;
       $nothing
@@ -346,8 +348,9 @@ query lang params bbox tag val = toStrict $ renderMarkup [shamlet|
     out geom;
 |]
 
-    where
-      language = maybe "" (T.cons ':' . T.takeWhile (/= '-'))
+      
+langSuffix :: Maybe Text -> Text
+langSuffix = maybe "" (T.cons ':' . T.takeWhile (/= '-'))
 
     
 nominatim :: Text

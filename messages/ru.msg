@@ -1,3 +1,4 @@
+NoBoundingBoxSetYet: Ограничительная рамка пока не установлена
 TextColor: Цвет текста
 Theme: Тема
 ThemeLight: Светлая
