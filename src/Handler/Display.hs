@@ -7,31 +7,29 @@ module Handler.Display
   ( getDisplayR, postDisplayR
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad (void)
 
-import Data.Bifunctor (Bifunctor(second))
 import Database.Persist (Entity (entityVal), insert_)
 import Database.Esqueleto.Experimental
     ( selectOne, from, table, delete)
 
-
 import Foundation
-    ( Handler, Form, widgetTopbar, widgetSnackbar
+    ( Handler, Form, widgetTopbar, widgetSnackbar, mapboxStyles
     , Route (DataR)
     , DataR (BboxR, SettingsR, DisplayR)
     , AppMessage
       ( MsgSettings, MsgBoundingBox, MsgGeoRegion, MsgDisplay
       , MsgDefaultTheme, MsgDefaultMapStyle, MsgSave, MsgTheme, MsgThemeDark
-      , MsgThemeLight, MsgStyleStreets, MsgStyleOutdoors, MsgStyleLight
-      , MsgStyleDark, MsgStyleSatellite, MsgStyleSatelliteStreets
-      , MsgStyleNavigationDay, MsgStyleNavigationNight, MsgStyle, MsgRecordEdited
+      , MsgThemeLight, MsgStyle, MsgRecordEdited, MsgTextColor
       )
     )
     
 import Material3 (md3selectWidget, md3radioField)
 import Model
-    ( DefaultTheme (DefaultTheme, defaultThemeTheme)
-    , DefaultMapStyle (DefaultMapStyle, defaultMapStyleStyle), msgSuccess
+    ( msgSuccess
+    , DefaultTheme (DefaultTheme, defaultThemeTheme)
+    , DefaultMapStyle (DefaultMapStyle, defaultMapStyleStyle, defaultMapStyleTextColor)
     )
 
 import Settings (widgetFile)
@@ -47,10 +45,10 @@ import Yesod.Core
 import Yesod.Core.Widget (whamlet, toWidget)
 import Yesod.Form.Functions (generateFormPost, mreq, runFormPost)
 import Yesod.Persist.Core (YesodPersist(runDB))
-import Yesod.Form.Fields (selectField, optionsPairs)
+import Yesod.Form.Fields (selectField, optionsPairs, colorField)
 import Yesod.Form.Types
     ( FieldSettings(FieldSettings, fsLabel, fsId, fsName, fsTooltip, fsAttrs)
-    , FieldView (fvInput, fvId), FormResult (FormSuccess)
+    , FieldView (fvInput, fvId, fvLabel), FormResult (FormSuccess)
     )
 
 
@@ -106,23 +104,19 @@ formDisplay theme style extra = do
         , fsId = Nothing, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
         } (defaultThemeTheme . entityVal <$> theme)
 
-    let styleOptions = optionsPairs $ second ("mapbox://styles/mapbox/" <>) <$>
-            [ (MsgStyleStreets, "streets-v12")
-            , (MsgStyleOutdoors, "outdoors-v12")
-            , (MsgStyleLight, "light-v11")
-            , (MsgStyleDark, "dark-v11")
-            , (MsgStyleSatellite, "satellite-v9")
-            , (MsgStyleSatelliteStreets, "satellite-streets-v12")
-            , (MsgStyleNavigationDay, "navigation-day-v1")
-            , (MsgStyleNavigationNight, "navigation-night-v1")
-            ]
+    let styleOptions = optionsPairs $ (\((m,_),s) -> (m,s)) <$> mapboxStyles
 
     (styleR,styleV) <- mreq (selectField styleOptions) FieldSettings
         { fsLabel = SomeMessage MsgStyle
         , fsId = Nothing, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
         } (defaultMapStyleStyle . entityVal <$> style)
+
+    (colorR,colorV) <- mreq colorField FieldSettings
+        { fsLabel = SomeMessage MsgTextColor
+        , fsId = Nothing, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
+        } ((defaultMapStyleTextColor . entityVal <$> style) <|> Just "#808080")
         
-    let r = ((,) . DefaultTheme <$> themeR) <*> (DefaultMapStyle <$> styleR)
+    let r = ((,) . DefaultTheme <$> themeR) <*> (DefaultMapStyle <$> styleR <*> colorR)
     let w = do
             toWidget [cassius|
                              ##{fvId themeV}
@@ -149,5 +143,10 @@ formDisplay theme style extra = do
                     <fieldset>
                       <legend>_{MsgDefaultMapStyle}
                       ^{md3selectWidget styleV}
+                      
+                      <button.transparent.border>
+                        <i>palette
+                        <span>#{fvLabel colorV}
+                        ^{fvInput colorV}
                     |]
     return (r,w)

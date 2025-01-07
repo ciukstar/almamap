@@ -1,3 +1,4 @@
+TextColor: Цвет текста
 Theme: Тема
 ThemeLight: Светлая
 ThemeDark: Темная

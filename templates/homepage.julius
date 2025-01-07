@@ -31,10 +31,10 @@ Array.from(
   x.title = #{msgr MsgCompass};
 });
 
-const queryTourism = #{query bbox "tourism" Nothing};
-const queryParks = #{query bbox "leisure" (Just "park")};
-const queryRestaurant = #{query bbox "amenity" (Just "restaurant")};
-const queryGovernment = #{query bbox "government" Nothing};
+const queryTourism = #{query mlang area bbox "tourism" Nothing};
+const queryParks = #{query mlang area bbox "leisure" (Just "park")};
+const queryRestaurant = #{query mlang area bbox "amenity" (Just "restaurant")};
+const queryGovernment = #{query mlang area bbox "government" Nothing};
 
 
 document.getElementById(#{idInputAddress}).addEventListener('input', debounce(function (e) {
@@ -246,7 +246,7 @@ document.getElementById(#{idFormExploreNearby}).addEventListener('submit', funct
 
 
 var currentChip = #{defaultChip};
-var currentColor = 'white';
+var currentColor = #{textColor};
 
 document.getElementById(#{idButtonPois}).addEventListener('click', function (e) {
   document.getElementById(#{idDialogPois}).show();
@@ -576,8 +576,8 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
 
 
 
-[ [#{queryAmenityCount bbox "restaurant"}, #{idLabelRestaurants}],
-  [#{queryTagCount bbox "shop"}, #{idLabelShops}]
+[ [#{queryAmenityCount area bbox "restaurant"}, #{idLabelRestaurants}],
+  [#{queryTagCount area bbox "shop"}, #{idLabelShops}]
 ].map(([x,y]) => [x,document.getElementById(y)]).forEach(([q,e]) => {
 
   fetch(#{overpass},{

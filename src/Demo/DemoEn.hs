@@ -19,9 +19,12 @@ import Model
       , userPhotoPhoto
       )
     , MapboxParam
-      ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom, mapboxParamStyle
+      ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
+      , mapboxParamStyle, mapboxParamCity, mapboxParamCountry
       )
     , Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
+    , DefaultTheme (DefaultTheme, defaultThemeTheme)
+    , DefaultMapStyle (DefaultMapStyle, defaultMapStyleStyle, defaultMapStyleTextColor)
     )
 
 import Text.Hamlet (shamlet)
@@ -94,13 +97,21 @@ fillDemoEn = do
                         , userPhotoAttribution = Just freepik
                         }
 
+    insert_ DefaultTheme { defaultThemeTheme = "dark" }
+
+    insert_ DefaultMapStyle { defaultMapStyleStyle = "mapbox://styles/mapbox/dark-v11"
+                            , defaultMapStyleTextColor = "#FFFFFF"
+                            }
+
     insert_ Bbox { bboxMinLon = -0.2739597071966955
                  , bboxMinLat = 51.411529657088664
                  , bboxMaxLon = 0.006976602593198322
                  , bboxMaxLat = 51.56453199636596
                  }
     
-    insert_ MapboxParam { mapboxParamLon = -0.12
+    insert_ MapboxParam { mapboxParamCountry = "United Kingdom"
+                        , mapboxParamCity = "London"
+                        , mapboxParamLon = -0.12
                         , mapboxParamLat = 51.50
                         , mapboxParamZoom = 9
                         , mapboxParamStyle = "mapbox://styles/mapbox/dark-v11"

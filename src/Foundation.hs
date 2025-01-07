@@ -55,6 +55,19 @@ data App = App
 
 mkMessage "App" "messages" "en"
 
+
+mapboxStyles :: [((AppMessage,Text), Text)]
+mapboxStyles = second ("mapbox://styles/mapbox/" <>) <$>
+    [ ((MsgStyleDark, "white"), "dark-v11")
+    , ((MsgStyleLight, "black"), "light-v11")
+    , ((MsgStyleStreets, "black"), "streets-v12")
+    , ((MsgStyleOutdoors, "black"), "outdoors-v12")
+    , ((MsgStyleSatellite, "black"), "satellite-v9")
+    , ((MsgStyleSatelliteStreets, "black"), "satellite-streets-v12")
+    , ((MsgStyleNavigationDay, "black"), "navigation-day-v1")
+    , ((MsgStyleNavigationNight, "white"), "navigation-night-v1")
+    ]
+
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
 -- http://www.yesodweb.com/book/routing-and-handlers
@@ -230,14 +243,14 @@ instance Yesod App where
     
     isAuthorized (DataR (SettingsGeoBboxR _ _)) _ =isAdmin
     isAuthorized (DataR (SettingsGeoCityR _)) _ = isAdmin
-    isAuthorized (DataR SettingsR) _ = isAdmin
+    isAuthorized (DataR SettingsR) _ = setUltDestCurrent >> isAdmin
     
     isAuthorized (DataR (UserDeleR _)) _ = isAdmin
     isAuthorized (DataR (UserEditR _)) _ = isAdmin
     isAuthorized (DataR UserNewR) _ = isAdmin
     isAuthorized (DataR (UserR _)) _ = isAdmin
     isAuthorized (DataR UsersR) _ = setUltDestCurrent >> isAdmin
-    isAuthorized (DataR (UserPhotoR _)) _ = isAuthenticated
+    isAuthorized (DataR (UserPhotoR _)) _ = return Authorized
     
 
     -- This function creates static content files in the static folder

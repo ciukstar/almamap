@@ -1,3 +1,4 @@
+TextColor: Мәтін түсі
 Theme: Тақырып
 ThemeLight: Жеңіл
 ThemeDark: Қараңғы

@@ -1,3 +1,4 @@
+TextColor: Text color
 Theme: Theme
 ThemeLight: Light
 ThemeDark: Dark

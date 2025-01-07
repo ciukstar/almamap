@@ -7,31 +7,34 @@ module Handler.Bbox
   ( getBboxR, postBboxR
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad (void)
 
 import Data.Aeson (ToJSON (toJSON))
-import Data.Bifunctor (Bifunctor(second))
+import qualified Data.List.Safe as LS (head)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
 import Database.Esqueleto.Experimental (selectOne, from, table, delete)
-import Database.Persist (Entity (Entity), insert_)
+import Database.Persist (Entity (Entity), entityVal, insert_)
 
 import Foundation
-    ( Handler, Form, App (appSettings), widgetTopbar, widgetSnackbar
+    ( Handler, Form, App (appSettings), widgetTopbar, widgetSnackbar, mapboxStyles
     , Route (DataR)
     , DataR (BboxR, SettingsR, DisplayR)
     , AppMessage
-      ( MsgBoundingBox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgStyleStreets
-      , MsgStyleOutdoors, MsgStyleLight, MsgStyleDark, MsgStyleSatellite
-      , MsgStyleSatelliteStreets, MsgStyleNavigationDay, MsgStyleNavigationNight
+      ( MsgBoundingBox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgRecordEdited
       , MsgSave, MsgWest, MsgSouth, MsgNorth, MsgEast, MsgSouthWest, MsgNorthEast
-      , MsgRecordEdited
       )
     )
     
 import Material3 (md3widget)
 
-import Model (Bbox(Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat), msgSuccess, defaultBbox)
+import Model
+    ( msgSuccess, defaultBbox
+    , Bbox(Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
+    , DefaultMapStyle (defaultMapStyleStyle)
+    )
 
 import Settings (widgetFile, AppSettings (appMapboxPk))
 
@@ -52,25 +55,11 @@ import Yesod.Form.Types
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-mapboxStyles :: [(AppMessage, Text)]
-mapboxStyles = second ("mapbox://styles/mapbox/" <>) <$>
-    [ (MsgStyleStreets, "streets-v12")
-    , (MsgStyleOutdoors, "outdoors-v12")
-    , (MsgStyleLight, "light-v11")
-    , (MsgStyleDark, "dark-v11")
-    , (MsgStyleSatellite, "satellite-v9")
-    , (MsgStyleSatelliteStreets, "satellite-streets-v12")
-    , (MsgStyleNavigationDay, "navigation-day-v1")
-    , (MsgStyleNavigationNight, "navigation-night-v1")
-    ]
-
-
-mapboxStyle :: Text
-mapboxStyle = snd (mapboxStyles !! 3)
-
-
 postBboxR :: Handler Html
 postBboxR = do
+    
+    mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
     
     bbox <- do
         bbox <- runDB $ selectOne $ from $ table @Bbox
@@ -112,6 +101,9 @@ postBboxR = do
 
 getBboxR :: Handler Html
 getBboxR = do
+    
+    mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
     
     bbox <- do
         bbox <- runDB $ selectOne $ from $ table @Bbox

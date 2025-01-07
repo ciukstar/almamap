@@ -20,6 +20,7 @@ import qualified Data.Aeson as A (Value)
 import Data.Aeson.Lens (key)
 import Data.Aeson.Types (Parser, parseMaybe)
 import Data.List (sortBy)
+import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust, mapMaybe)
 import qualified Data.Set as S (Set, fromList, size)
 import Data.Text (Text, unpack)
@@ -27,10 +28,10 @@ import Data.Text as T (splitOn)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
 import Database.Esqueleto.Experimental (selectOne, from, table)
-import Database.Persist (Entity(Entity))
+import Database.Persist (Entity(Entity), entityVal)
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar
+    ( App (appSettings), Handler, widgetSnackbar, mapboxStyles
     , Route(ShopsR, HomeR)
     , AppMessage
       ( MsgClose, MsgSearchForShops, MsgDescription, MsgAddress, MsgType
@@ -42,6 +43,7 @@ import Foundation
 import Model
     ( overpass, defaultBbox
     , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
+    , DefaultMapStyle (defaultMapStyleStyle)
     )
 
 import Network.Wreq (post, FormParam((:=)))
@@ -64,16 +66,15 @@ import Yesod.Form.Fields (textField, intField)
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-style :: Text
-style = "mapbox://styles/mapbox/dark-v11"
-
-
 page :: Int
 page = 100
 
 
 getShopsR :: Handler TypedContent
 getShopsR = do 
+    
+    style <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
     
     offset <- fromMaybe @Int 0 <$> runInputGet (iopt intField "offset")
     q <- runInputGet $ iopt textField "q"

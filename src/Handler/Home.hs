@@ -11,6 +11,7 @@ module Handler.Home
   , getFetchP18PhotoR
   ) where
 
+import Control.Applicative ((<|>))
 import qualified Control.Lens as L ( (^?) )
 import Control.Monad.IO.Class (liftIO)
 
@@ -26,10 +27,10 @@ import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
 
 import Database.Esqueleto.Experimental (selectOne, from, table)
-import Database.Persist (Entity (Entity))
+import Database.Persist (Entity (Entity), entityVal)
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu
+    ( App (appSettings), Handler, widgetSnackbar, widgetMainMenu, mapboxStyles
     , Route
       ( ShopsR, RestaurantsR, StaticR, FetchR, FetchP18PhotoR
       )
@@ -55,6 +56,7 @@ import Foundation
 import Model
     ( keyThemeLight, keyThemeDark, overpass, defaultBbox
     , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
+    , DefaultMapStyle (defaultMapStyleStyle, DefaultMapStyle), MapboxParam (MapboxParam)
     )
 
 import Network.Wreq (get)
@@ -80,28 +82,26 @@ import Text.Shakespeare.Text (st)
 import Yesod.Core
     ( TypedContent, Yesod(defaultLayout), getMessages, addStylesheetRemote
     , addScriptRemote, getYesod, selectRep, provideJson, getMessageRender
-    , newIdent, languages
+    , newIdent, languages, Lang
     )
 import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
 import Yesod.Persist.Core (YesodPersist(runDB))
+import qualified Data.Text as T
 
 
 styles :: [(Int,(AppMessage, (Text,(Text,Text))))]
 styles = zip [1::Int ..] . (second (first ("mapbox://styles/mapbox/" <>)) <$>) $
-        [ (MsgStyleStreets, ("streets-v12",(keyThemeLight,"black")))
-        , (MsgStyleOutdoors, ("outdoors-v12",(keyThemeLight,"black")))
+        [ (MsgStyleDark, ("dark-v11",(keyThemeDark,"white")))
         , (MsgStyleLight, ("light-v11",(keyThemeLight,"black")))
-        , (MsgStyleDark, ("dark-v11",(keyThemeDark,"white")))
+        , (MsgStyleStreets, ("streets-v12",(keyThemeLight,"black")))
+        , (MsgStyleOutdoors, ("outdoors-v12",(keyThemeLight,"black")))
         , (MsgStyleSatellite, ("satellite-v9",(keyThemeLight,"black")))
         , (MsgStyleSatelliteStreets, ("satellite-streets-v12",(keyThemeLight,"black")))
         , (MsgStyleNavigationDay, ("navigation-day-v1",(keyThemeLight,"black")))
         , (MsgStyleNavigationNight, ("navigation-night-v1",(keyThemeDark,"white")))
         ]
-
-style :: Text
-style = fst . snd . snd $ (styles !! 3)
 
 
 defaultChip :: Text
@@ -110,16 +110,19 @@ defaultChip = "attractions"
 
 getHomeR :: Handler Html
 getHomeR = do
+    
+    (style,textColor) <- fromMaybe ("","#000000")
+        . ((<|> (\((_,c),s) -> (s,c)) <$> LS.head  mapboxStyles)
+           . ((\(DefaultMapStyle s c) -> (s,c)) . entityVal <$>))
+                     <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
     langs <- languages
+    let mlang = LS.head langs
+    let lang = fromMaybe "" mlang
+
+    area <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @MapboxParam )
     
-    let lang = fromMaybe "" $ LS.head langs :: Text
-    
-    bbox <- do
-        bbox <- runDB $ selectOne $ from $ table @Bbox
-        case bbox of
-          Just (Entity _ b) -> return b
-          Nothing -> return defaultBbox
+    bbox <- (<|> Just defaultBbox) . (entityVal <$>) <$> runDB ( selectOne $ from $ table @Bbox)
     
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -127,16 +130,22 @@ getHomeR = do
 
     let chips :: [(Text,((Text,Text),(Text,Text)))]
         chips = [ ( "attractions"
-                  , (("attractions","icon_attractions"), (msgr MsgAttractions, query bbox "tourism" Nothing))
+                  , ( ("attractions","icon_attractions")
+                    , (msgr MsgAttractions, query mlang area bbox "tourism" Nothing)
+                    )
                   )
                 , ( "park"
-                  , (("park","icon_park"), (msgr MsgParks, query bbox "leisure" (Just "park")))
+                  , (("park","icon_park"), (msgr MsgParks, query mlang area bbox "leisure" (Just "park")))
                   )
                 , ( "restaurant"
-                  , (("restaurant","icon_restaurant"), (msgr MsgRestaurants, query bbox "amenity" (Just "restaurant")))
+                  , ( ("restaurant","icon_restaurant")
+                    , (msgr MsgRestaurants, query mlang area bbox "amenity" (Just "restaurant"))
+                    )
                   )
                 , ( "government"
-                  , (("account_balance","icon_government"), (msgr MsgPublicInstitutions, query bbox "government" Nothing))
+                  , ( ("account_balance","icon_government")
+                    , (msgr MsgPublicInstitutions, query mlang area bbox "government" Nothing)
+                    )
                   )
                 ]
 
@@ -259,23 +268,37 @@ getFetchP18PhotoR = do
             . _String
 
 
-queryTagCount :: Bbox -> Text -> Text
-queryTagCount bbox tag = toStrict $ renderMarkup [shamlet|
-    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
+queryTagCount :: Maybe MapboxParam -> Maybe Bbox -> Text -> Text
+queryTagCount area bbox tag = toStrict $ renderMarkup [shamlet|
+    $maybe bbox <- bbox
+      [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    node["#{tag}"];
+    $maybe MapboxParam country city _ _ _ _ <- area
+      area["name"="#{country}"];
+      node(area)[place="city"]["name"="#{city}"];
+      node["#{tag}"];
+
+    $nothing
+      node["#{tag}"];
 
     out count;
 |]
 
 
-queryAmenityCount :: Bbox -> Text -> Text
-queryAmenityCount bbox typ = toStrict $ renderMarkup [shamlet|
-    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
+queryAmenityCount :: Maybe MapboxParam -> Maybe Bbox -> Text -> Text
+queryAmenityCount area bbox typ = toStrict $ renderMarkup [shamlet|
+    $maybe bbox <- bbox
+      [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    node["amenity"="#{typ}"];
+    $maybe MapboxParam country city _ _ _ _ <- area
+      area["name"="#{country}"];
+      node(area)[place="city"]["name"="#{city}"];
+      node(area)["amenity"="#{typ}"];
+
+    $nothing
+      node["amenity"="#{typ}"];
 
     out count;
 |]
@@ -296,15 +319,25 @@ queryAround args =
             |]
 
 
-query :: Bbox -> Text -> Maybe Text -> Text
-query bbox tag val = toStrict $ renderMarkup [shamlet|
-    [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
+query :: Maybe Lang -> Maybe MapboxParam -> Maybe Bbox -> Text -> Maybe Text -> Text
+query lang params bbox tag val = toStrict $ renderMarkup [shamlet|
+    $maybe bbox <- bbox
+      [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
-
-    $maybe v <- val
-      node["#{tag}"="#{v}"] -> .tags;
+    
+    $maybe MapboxParam country city _ _ _ _ <- params
+      area["name#{language lang}"="#{country}"];
+      area(area)[place="city"]["name#{language lang}"="#{city}"];
+      $maybe v <- val
+        node(area)["#{tag}"="#{v}"] -> .tags;
+      $nothing
+        node(area)["#{tag}"] -> .tags;
+        
     $nothing
-      node["#{tag}"] -> .tags;
+      $maybe v <- val
+        node["#{tag}"="#{v}"] -> .tags;
+      $nothing
+        node["#{tag}"] -> .tags;
 
     node.tags[~"^(name|description)$"~".*"];
 
@@ -312,6 +345,9 @@ query bbox tag val = toStrict $ renderMarkup [shamlet|
     
     out geom;
 |]
+
+    where
+      language = maybe "" (T.cons ':' . T.takeWhile (/= '-'))
 
     
 nominatim :: Text

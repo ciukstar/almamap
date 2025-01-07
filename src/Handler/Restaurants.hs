@@ -30,10 +30,10 @@ import Data.Text as T (splitOn)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
 import Database.Esqueleto.Experimental (selectOne, from, table)
-import Database.Persist (Entity(Entity))
+import Database.Persist (Entity(Entity), entityVal)
 
 import Foundation
-    ( App (appSettings), Handler, widgetSnackbar
+    ( App (appSettings), Handler, widgetSnackbar, mapboxStyles
     , Route(RestaurantsR, HomeR)
     , AppMessage
       ( MsgClose, MsgRestaurants, MsgSearchForRestaurants, MsgCuisine
@@ -45,6 +45,7 @@ import Foundation
 import Model
     ( overpass, defaultBbox
     , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
+    , DefaultMapStyle (defaultMapStyleStyle)
     )
 
 import Network.Wreq (post, FormParam((:=)))
@@ -66,9 +67,6 @@ import Yesod.Form.Input (runInputGet, iopt)
 import Yesod.Form.Fields (textField, intField)
 import Yesod.Persist.Core (YesodPersist(runDB))
 
-style :: Text
-style = "mapbox://styles/mapbox/dark-v11"
-
 
 page :: Int
 page = 100
@@ -76,6 +74,9 @@ page = 100
 
 getRestaurantsR :: Handler TypedContent
 getRestaurantsR = do
+    
+    style <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
+                   <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
     offset <- fromMaybe @Int 0 <$> runInputGet (iopt intField "offset")
     q <- runInputGet $ iopt textField "q"

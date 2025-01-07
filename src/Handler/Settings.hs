@@ -44,7 +44,7 @@ import Model
     ( overpass, msgSuccess
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
-      , mapboxParamStyle
+      , mapboxParamStyle, mapboxParamCity, mapboxParamCountry
       )
     )
 
@@ -113,7 +113,10 @@ postSettingsGeoBboxR country city = do
 
     params <- runDB $ selectOne $ from $ table @MapboxParam
             
-    ((fr,fw),et) <- runFormPost $ formMapViewport idInputLon idInputLat idInputZoom idInputStyle (entityVal <$> params)
+    ((fr,fw),et) <- runFormPost $ formMapViewport
+        idInputLon idInputLat idInputZoom idInputStyle
+        country city
+        (entityVal <$> params)
 
     case fr of
       FormSuccess param -> do
@@ -167,7 +170,9 @@ getSettingsGeoBboxR country city = do
                 Just (Just lon, Just lat) -> (lon,lat)
                 _otherwise -> (0,0)
 
-          return MapboxParam { mapboxParamLon = fst center
+          return MapboxParam { mapboxParamCountry = country
+                             , mapboxParamCity = city
+                             , mapboxParamLon = fst center
                              , mapboxParamLat = snd center
                              , mapboxParamZoom = 9
                              , mapboxParamStyle = "mapbox://styles/mapbox/dark-v11"
@@ -178,7 +183,10 @@ getSettingsGeoBboxR country city = do
     idInputZoom <- newIdent
     idInputStyle <- newIdent
         
-    (fw,et) <- generateFormPost $ formMapViewport idInputLon idInputLat idInputZoom idInputStyle (Just param)
+    (fw,et) <- generateFormPost $ formMapViewport
+        idInputLon idInputLat idInputZoom idInputStyle
+        country city
+        (Just param)
     
     msgr <- getMessageRender
 
@@ -199,8 +207,9 @@ getSettingsGeoBboxR country city = do
 
 
 formMapViewport :: Text -> Text -> Text -> Text
+                -> Text -> Text
                 -> Maybe MapboxParam -> Form MapboxParam
-formMapViewport idInputLon idInputLat idInputZoom idInputStyle params extra = do
+formMapViewport idInputLon idInputLat idInputZoom idInputStyle country city  params extra = do
     
     (lonR,lonV) <- mreq doubleField FieldSettings
         { fsLabel = SomeMessage MsgLongitude
@@ -222,7 +231,7 @@ formMapViewport idInputLon idInputLat idInputZoom idInputStyle params extra = do
         , fsId = Just idInputStyle, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
         } (mapboxParamStyle <$> params)
 
-    return ( MapboxParam <$> lonR <*> latR <*> zoomR <*> styleR
+    return ( MapboxParam country city <$> lonR <*> latR <*> zoomR <*> styleR
            , [whamlet|
                      ^{extra}
                      
