@@ -18,7 +18,7 @@
 module Model where
 
 import ClassyPrelude.Yesod
-    ( Typeable, Text, mkMigrate, mkPersist, persistFileWith
+    ( Typeable, mkMigrate, mkPersist, persistFileWith
     , share, sqlSettings
     )
 
@@ -26,9 +26,12 @@ import Data.Aeson
     ( Value, ToJSON, toJSON )
 import Data.Bool (Bool)
 import Data.ByteString (ByteString)
+import Data.Eq ((/=))
 import Data.Fixed (Fixed (MkFixed))
 import Data.Function ((.))
-import Data.Maybe (Maybe (Just, Nothing))
+import Data.Maybe (Maybe (Just), maybe)
+import Data.Text (Text)
+import qualified Data.Text as T (cons, takeWhile)
 import Data.Time.Clock
     ( NominalDiffTime, nominalDiffTimeToSeconds, secondsToNominalDiffTime)
 
@@ -67,12 +70,12 @@ instance ToJSON Bbox where
     toJSON (Bbox minLon minLat maxLon maxLat) = toJSON ((minLon, minLat), (maxLon, maxLat))
 
 
-defaultBbox :: Bbox
-defaultBbox = Bbox 32.958984 (-5.353521) 43.50585 5.615985
-
-
 overpass :: Text
 overpass = "https://overpass-api.de/api/interpreter"
+
+    
+nominatim :: Text
+nominatim = "https://nominatim.openstreetmap.org/search"
 
 
 mediae :: [(Text,Text)]
@@ -88,7 +91,7 @@ msgError :: Text
 msgError = "error"
 
 keyThemeMode :: Text
-keyThemeMode = "booklib_theme_mode"
+keyThemeMode = "almamap_theme_mode"
 
 paramTaskStatus :: Text
 paramTaskStatus = "status"
@@ -113,6 +116,10 @@ paramTheme = "theme"
 
 eventChangeTheme :: Text
 eventChangeTheme = "changetheme"
+
+      
+langSuffix :: Maybe Text -> Text
+langSuffix = maybe "" (T.cons ':' . T.takeWhile (/= '-'))
 
 
 nominalDiffTimeToHours :: NominalDiffTime -> Double

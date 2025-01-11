@@ -1,0 +1,4 @@
+
+document.getElementById(#{idButtonShowDialogDelete}).addEventListener('click', e => {
+  document.getElementById(#{idDialogDelete}).show();
+});

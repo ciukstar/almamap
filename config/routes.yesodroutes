@@ -33,7 +33,7 @@
     /settings/bbox/dele BboxDeleR POST
     /settings/bbox      BboxR     GET POST
 
-    /settings/geo/#Text/#Text/dele SettingsGeoDeleR    POST
+    /settings/geo/dele             SettingsGeoDeleR    POST
     /settings/geo/#Text/#Text/bbox SettingsGeoBboxR    GET POST
     /settings/geo/#Text/city       SettingsGeoCityR    GET POST
     /settings/geo/country          SettingsGeoCountryR GET POST

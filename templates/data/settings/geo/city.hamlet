@@ -9,31 +9,43 @@
     <a>_{MsgDisplay}
 
   <div.page.padding.active>
-
     <nav>
       <div.center-align>
         <a.button.circle.small href=@{DataR SettingsGeoCountryR}>
           <i>done
         <div.small-margin>_{MsgCountry}
-      
+
       <hr.max>
       <div.center-align>
         <a.button.circle.small href=@{DataR $ SettingsGeoCityR country}>2
         <div.small-margin>_{MsgCity}
-      
+
       <hr.max>
       <div.center-align>
         <button.circle.small type=button disabled>3
         <div.small-margin>_{MsgRegion}
-      
-  
+
+
     <form method=post action=@{DataR $ SettingsGeoCityR country} enctype=#{et}>
       ^{fw}
       <nav.right-align>
+        <button.transparent.border type=button ##{idButtonShowDialogDelete} data-ui=##{idOverlay}>
+          _{MsgDele}
         <button type=submit>
           _{MsgNext}
 
 
   ^{widgetSnackbar msgs}
-        
 
+
+<dialog ##{idDialogDelete}>
+  <h6>_{MsgConfirmPlease}
+  <div>_{MsgDeleteAreYouSure}
+  <nav.right-align.no-space>
+    <button.transparent.link data-ui=##{idOverlay}
+      onclick="document.getElementById('#{idDialogDelete}').close()">
+      _{MsgCancel}
+    <form method=post action=@{DataR SettingsGeoDeleR} enctype=#{et0}>
+      ^{fw0}
+      <button.primary type=submit>
+        _{MsgDele}

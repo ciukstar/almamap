@@ -1,3 +1,4 @@
+NoGeoRegionSetYet: The geographic region has not yet been established
 NoBoundingBoxSetYet: No bounding box has been set yet
 TextColor: Text color
 Theme: Theme

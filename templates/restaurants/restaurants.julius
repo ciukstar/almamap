@@ -144,7 +144,7 @@ function showDialogDetails (x) {
 
     map = !!map ? map : new mapboxgl.Map({
       container: #{idMap},
-      bounds: #{toJSON bbox},
+      bounds: #{toJSON $ entityVal <$> bbox},
       style: #{style}
     });
 

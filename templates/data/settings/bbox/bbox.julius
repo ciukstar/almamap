@@ -7,7 +7,7 @@ const map = new mapboxgl.Map({
   container: #{idMapboxMap},
   style: #{mapboxStyle},
   bounds: bounds,
-  center: #{toJSON center},
+  center: #{toJSON $ fromMaybe (0,0) center},
   zoom: #{toJSON zoom}
 });
 

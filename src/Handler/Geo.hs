@@ -21,7 +21,7 @@ import Data.Aeson.Key (fromText)
 import Data.Aeson.Lens (key, AsValue (_Array, _String), AsNumber (_Double), nth)
 import Data.List (sort)
 import qualified Data.List.Safe as LS (head)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust, isNothing)
 import Data.Text (Text, unpack)
 import qualified Data.Text as T
 
@@ -40,7 +40,7 @@ import Foundation
       , MsgNext, MsgSave, MsgLatitude, MsgLongitude, MsgZoom, MsgCenter
       , MsgRecordEdited, MsgBoundingBox, MsgDele
       , MsgCancel, MsgConfirmPlease, MsgDeleteAreYouSure, MsgRecordDeleted
-      , MsgInvalidFormData
+      , MsgInvalidFormData, MsgNoGeoRegionSetYet, MsgAdd
       )
     )
 
@@ -76,9 +76,9 @@ import Yesod.Form.Types
 import Yesod.Persist.Core (YesodPersist(runDB))
 
 
-postSettingsGeoDeleR :: Text -> Text -> Handler Html
-postSettingsGeoDeleR country city = do
-    ((fr,_),_) <- runFormPost formParamDelete
+postSettingsGeoDeleR :: Handler Html
+postSettingsGeoDeleR = do
+    ((fr,_),_) <- runFormPost formSettingsGeoDelete
     case fr of
       FormSuccess () -> do
           runDB $ delete $ void $ from $ table @MapboxParam
@@ -87,7 +87,7 @@ postSettingsGeoDeleR country city = do
           
       _otherwise -> do
           addMessageI msgError MsgInvalidFormData
-          redirect $ DataR $ SettingsGeoBboxR country city
+          redirect $ DataR SettingsGeoCountryR
 
 
 postSettingsGeoBboxR :: Text -> Text -> Handler Html
@@ -124,7 +124,7 @@ postSettingsGeoBboxR country city = do
         country city
         (entityVal <$> params)
 
-    (fw0,et0) <- generateFormPost formParamDelete
+    (fw0,et0) <- generateFormPost formSettingsGeoDelete
 
     case fr of
       FormSuccess param -> do
@@ -149,7 +149,7 @@ postSettingsGeoBboxR country city = do
               addStylesheetRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css"
               addScriptRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"
 
-              $(widgetFile "data/settings/geo/bbox")
+              $(widgetFile "data/settings/geo/center")
 
 
 getSettingsGeoBboxR :: Text -> Text -> Handler Html
@@ -195,7 +195,7 @@ getSettingsGeoBboxR country city = do
         country city
         (Just param)
 
-    (fw0,et0) <- generateFormPost formParamDelete
+    (fw0,et0) <- generateFormPost formSettingsGeoDelete
     
     msgr <- getMessageRender
     msgs <- getMessages
@@ -212,11 +212,11 @@ getSettingsGeoBboxR country city = do
         addStylesheetRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css"
         addScriptRemote "https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"
             
-        $(widgetFile "data/settings/geo/bbox")
+        $(widgetFile "data/settings/geo/center")
 
 
-formParamDelete :: Form ()
-formParamDelete extra = return (pure (), [whamlet|#{extra}|])
+formSettingsGeoDelete :: Form ()
+formSettingsGeoDelete extra = return (pure (), [whamlet|#{extra}|])
 
 
 formMapViewport :: Text -> Text -> Text
@@ -278,17 +278,19 @@ postSettingsGeoCityR country = do
       FormSuccess city -> redirect $ DataR $ SettingsGeoBboxR country city
 
       _otherwise -> do
+          (fw0,et0) <- generateFormPost formSettingsGeoDelete
           msgr <- getMessageRender
           msgs <- getMessages
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
+              idButtonShowDialogDelete <- newIdent
+              idDialogDelete <- newIdent
               $(widgetFile "data/settings/geo/city")
 
 
 getSettingsGeoCityR :: Text -> Handler Html
 getSettingsGeoCityR country = do
-
     
     lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
 
@@ -306,12 +308,15 @@ getSettingsGeoCityR country = do
             . _String
     
     (fw,et) <- generateFormPost $ formCity cities
+    (fw0,et0) <- generateFormPost formSettingsGeoDelete
     
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgSettings
         idOverlay <- newIdent
+        idButtonShowDialogDelete <- newIdent
+        idDialogDelete <- newIdent
         $(widgetFile "data/settings/geo/city")
     
 
@@ -338,11 +343,18 @@ postSettingsGeoCountryR = do
       FormSuccess city -> redirect $ DataR $ SettingsGeoCityR city
           
       _otherwise -> do
+          geo <- runDB $ selectOne $ from $ table @MapboxParam
+          (fw0,et0) <- generateFormPost formSettingsGeoDelete
           msgr <- getMessageRender
           msgs <- getMessages
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
+              idButtonShowDialogDelete <- newIdent
+              idGeoRegionFormWrapper <- newIdent
+              idFigureNoGeoSettings <- newIdent
+              idButtonShowGeoRegionForm <- newIdent
+              idDialogDelete <- newIdent
               $(widgetFile "data/settings/geo/country")
 
 
@@ -359,6 +371,8 @@ formCity cities extra = do
 getSettingsGeoCountryR :: Handler Html
 getSettingsGeoCountryR = do
 
+    geo <- runDB $ selectOne $ from $ table @MapboxParam
+    
     lang <- maybe "" (T.cons ':' . T.takeWhile (/= '-')) .  LS.head <$> languages
 
     r <- liftIO $ post (unpack overpass)
@@ -374,12 +388,18 @@ getSettingsGeoCountryR = do
             . _String
 
     (fw,et) <- generateFormPost $ formCountry countries
+    (fw0,et0) <- generateFormPost formSettingsGeoDelete
 
     msgr <- getMessageRender
     msgs <- getMessages
     defaultLayout $ do
         setTitleI MsgSettings
         idOverlay <- newIdent
+        idButtonShowDialogDelete <- newIdent
+        idGeoRegionFormWrapper <- newIdent
+        idFigureNoGeoSettings <- newIdent
+        idButtonShowGeoRegionForm <- newIdent
+        idDialogDelete <- newIdent
         $(widgetFile "data/settings/geo/country")
 
 

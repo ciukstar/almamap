@@ -1,0 +1,10 @@
+
+
+document.getElementById(#{idButtonShowGeoRegionForm}).addEventListener('click', e => {
+  document.getElementById(#{idGeoRegionFormWrapper}).style.display = 'block';
+  document.getElementById(#{idFigureNoGeoSettings}).style.display = 'none';
+});
+
+document.getElementById(#{idButtonShowDialogDelete}).addEventListener('click', e => {
+  document.getElementById(#{idDialogDelete}).show();
+});

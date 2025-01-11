@@ -43,9 +43,9 @@ import Foundation
     )
 
 import Model
-    ( overpass, defaultBbox
+    ( overpass, langSuffix
     , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
-    , DefaultMapStyle (defaultMapStyleStyle)
+    , DefaultMapStyle (defaultMapStyleStyle), MapboxParam (MapboxParam)
     )
 
 import Network.Wreq (post, FormParam((:=)))
@@ -82,17 +82,24 @@ getRestaurantsR = do
     q <- runInputGet $ iopt textField "q"
     cuisine <- runInputGet $ iopt textField "cuisine"
 
-    bbox <- do
-        bbox <- runDB $ selectOne $ from $ table @Bbox
-        case bbox of
-          Just (Entity _ b) -> return b
-          Nothing -> return defaultBbox
+    bbox <- runDB $ selectOne $ from $ table @Bbox
+    geo <- runDB $ selectOne $ from $ table @MapboxParam
     
     let query = renderMarkup
             [shamlet|
-                [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
+                $maybe Entity _ bbox <- bbox
+                  [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
                 [out:json];
 
+                $maybe Entity _ (MapboxParam country city lang _ _ _) <- geo
+                  area["name#{langSuffix lang}"="#{country}"];
+                  area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
+                  node(area)["amenity"="restaurant"]["name"] -> ._;
+                  $maybe x <- q
+                    node._["name"~"#{x}",i] -> ._;
+                  $maybe x <- cuisine
+                    node._["cuisine"~"#{x}"] -> ._;
+                  
                 node["amenity"="restaurant"]["name"] -> ._;
                 $maybe x <- q
                   node._["name"~"#{x}",i] -> ._;

@@ -11,7 +11,7 @@ const map = new mapboxgl.Map({
   language: #{toJSON langs},
   style: #{style},
   bounds: #{toJSON bbox},
-  center: #{toJSON center},
+  center: #{toJSON $ fromMaybe (0,0) center},
   zoom: #{toJSON zoom}
 });
 
@@ -578,8 +578,8 @@ document.getElementById(#{idButtonMyLocation}).addEventListener('click', functio
 
 
 
-[ [#{queryAmenityCount area bbox "restaurant"}, #{idLabelRestaurants}],
-  [#{queryTagCount area bbox "shop"}, #{idLabelShops}]
+[ [#{queryCount area bbox "[amenity=restaurant]"}, #{idLabelRestaurants}],
+  [#{queryCount area bbox "[shop]"}, #{idLabelShops}]
 ].map(([x,y]) => [x,document.getElementById(y)]).forEach(([q,e]) => {
 
   fetch(#{overpass},{

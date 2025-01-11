@@ -15,7 +15,7 @@ import Control.Applicative ((<|>))
 import qualified Control.Lens as L ( (^?) )
 import Control.Monad.IO.Class (liftIO)
 
-import Data.Aeson (decode, encode, toJSON, object, (.=), Value (Object, String))
+import Data.Aeson (Value (Object, String), decode, encode, toJSON, object, (.=))
 import qualified Data.Aeson as A (Value)
 import qualified Data.Aeson.KeyMap as AKM (lookup)
 import Data.Aeson.Lens (key, AsValue (_String), nth)
@@ -54,7 +54,7 @@ import Foundation
     )
 
 import Model
-    ( keyThemeLight, keyThemeDark, overpass 
+    ( keyThemeLight, keyThemeDark, overpass, nominatim, langSuffix
     , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultMapStyle (DefaultMapStyle), MapboxParam (MapboxParam)
     )
@@ -88,7 +88,6 @@ import Yesod.Core.Widget (setTitleI)
 import Yesod.Form.Input (runInputGet, ireq)
 import Yesod.Form.Fields (urlField)
 import Yesod.Persist.Core (YesodPersist(runDB))
-import qualified Data.Text as T
 
 
 styles :: [(Int,(AppMessage, (Text,(Text,Text))))]
@@ -270,37 +269,19 @@ getFetchP18PhotoR = do
             . _String
 
 
-queryTagCount :: Maybe MapboxParam -> Maybe Bbox -> Text -> Text
-queryTagCount area bbox tag = toStrict $ renderMarkup [shamlet|
+queryCount :: Maybe MapboxParam -> Maybe Bbox -> Text -> Text
+queryCount area bbox attr = toStrict $ renderMarkup [shamlet|
     $maybe bbox <- bbox
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
     $maybe MapboxParam country city lang _ _ _ <- area
       area["name#{langSuffix lang}"="#{country}"];
-      node(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
-      node["#{tag}"];
+      area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
+      node(area)#{attr}[~"^(name|description)$"~".*"];
 
     $nothing
-      node["#{tag}"];
-
-    out count;
-|]
-
-
-queryAmenityCount :: Maybe MapboxParam -> Maybe Bbox -> Text -> Text
-queryAmenityCount area bbox typ = toStrict $ renderMarkup [shamlet|
-    $maybe bbox <- bbox
-      [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
-    [out:json];
-
-    $maybe MapboxParam country city lang _ _ _ <- area
-      area["name#{langSuffix lang}"="#{country}"];
-      node(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
-      node(area)["amenity"="#{typ}"];
-
-    $nothing
-      node["amenity"="#{typ}"];
+      node#{attr}[~"^(name|description)$"~".*"];
 
     out count;
 |]
@@ -347,11 +328,3 @@ query params bbox tag val = toStrict $ renderMarkup [shamlet|
     
     out geom;
 |]
-
-      
-langSuffix :: Maybe Text -> Text
-langSuffix = maybe "" (T.cons ':' . T.takeWhile (/= '-'))
-
-    
-nominatim :: Text
-nominatim = "https://nominatim.openstreetmap.org/search"

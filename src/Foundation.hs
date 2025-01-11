@@ -244,7 +244,7 @@ instance Yesod App where
     isAuthorized (DataR BboxR) _ =  setUltDestCurrent >> isAdmin
 
     
-    isAuthorized (DataR (SettingsGeoDeleR _ _)) _ = isAdmin
+    isAuthorized (DataR SettingsGeoDeleR) _ = isAdmin
     isAuthorized (DataR (SettingsGeoBboxR _ _)) _ = isAdmin
     isAuthorized (DataR (SettingsGeoCityR _)) _ = isAdmin
     isAuthorized (DataR SettingsGeoCountryR) _ = setUltDestCurrent >> isAdmin

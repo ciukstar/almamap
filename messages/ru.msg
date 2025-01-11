@@ -1,3 +1,4 @@
+NoGeoRegionSetYet: Географический регион пока не установлен
 NoBoundingBoxSetYet: Ограничительная рамка пока не установлена
 TextColor: Цвет текста
 Theme: Тема

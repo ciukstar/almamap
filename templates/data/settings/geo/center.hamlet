@@ -48,7 +48,7 @@
     <button.transparent.link data-ui=##{idOverlay}
       onclick="document.getElementById('#{idDialogDelete}').close()">
       _{MsgCancel}
-    <form method=post action=@{DataR $ SettingsGeoDeleR country city} enctype=#{et0}>
+    <form method=post action=@{DataR SettingsGeoDeleR} enctype=#{et0}>
       ^{fw0}
       <button.primary type=submit>
         _{MsgDele}

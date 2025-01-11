@@ -1,3 +1,4 @@
+NoGeoRegionSetYet: Географиялық аймақ әлі құрылған жоқ
 NoBoundingBoxSetYet: Шектеу өрісі әлі орнатылмаған
 TextColor: Мәтін түсі
 Theme: Тақырып
