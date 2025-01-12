@@ -80,8 +80,8 @@ postBboxR = do
     
     bbox <- runDB $ selectOne $ from $ table @Bbox
     params <- runDB $ selectOne $ from $ table @MapboxParam
-    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
-    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
+    let center = (\(MapboxParam _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ z) -> z) . entityVal <$> params
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent
@@ -127,8 +127,8 @@ getBboxR = do
 
     bbox <- runDB $ selectOne $ from $ table @Bbox
     params <- runDB $ selectOne $ from $ table @MapboxParam
-    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
-    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
+    let center = (\(MapboxParam _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ z) -> z) . entityVal <$> params
 
     idInputMinLon <- newIdent
     idInputMinLat <- newIdent

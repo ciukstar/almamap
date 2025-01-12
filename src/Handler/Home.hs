@@ -54,7 +54,7 @@ import Foundation
     )
 
 import Model
-    ( keyThemeLight, keyThemeDark, overpass, nominatim, langSuffix
+    ( keyThemeLight, keyThemeDark, overpass, nominatim
     , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultMapStyle (DefaultMapStyle), MapboxParam (MapboxParam)
     )
@@ -122,8 +122,8 @@ getHomeR = do
     
     bbox <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @Bbox)
     params <- runDB $ selectOne $ from $ table @MapboxParam
-    let center = (\(MapboxParam _ _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
-    let zoom = (\(MapboxParam _ _ _ _ _ z) -> z) . entityVal <$> params
+    let center = (\(MapboxParam _ _ lon lat _) -> (lon,lat)) . entityVal <$> params
+    let zoom = (\(MapboxParam _ _ _ _ z) -> z) . entityVal <$> params
     
     mapboxPk <- appMapboxPk . appSettings <$> getYesod
 
@@ -275,9 +275,9 @@ queryCount area bbox attr = toStrict $ renderMarkup [shamlet|
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
 
-    $maybe MapboxParam country city lang _ _ _ <- area
-      area["name#{langSuffix lang}"="#{country}"];
-      area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
+    $maybe MapboxParam country city _ _ _ <- area
+      area["name"="#{country}"];
+      area(area)[place="city"]["name"="#{city}"];
       node(area)#{attr}[~"^(name|description)$"~".*"];
 
     $nothing
@@ -308,13 +308,13 @@ query params bbox tag val = toStrict $ renderMarkup [shamlet|
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
     
-    $maybe MapboxParam country city lang _ _ _ <- params
-      area["name#{langSuffix lang}"="#{country}"];
-      area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
+    $maybe MapboxParam country city _ _ _ <- params
+      area["name"="#{country}"] -> .country;
+      area["name"="#{city}"] -> .city;
       $maybe v <- val
-        node(area)["#{tag}"="#{v}"] -> .tags;
+        node["#{tag}"="#{v}"](area.country)(area.city) -> .tags;
       $nothing
-        node(area)["#{tag}"] -> .tags;
+        node["#{tag}"](area.country)(area.city) -> .tags;
         
     $nothing
       $maybe v <- val

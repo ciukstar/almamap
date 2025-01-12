@@ -43,7 +43,7 @@ import Foundation
     )
 
 import Model
-    ( overpass, langSuffix
+    ( overpass
     , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
     , DefaultMapStyle (defaultMapStyleStyle), MapboxParam (MapboxParam)
     )
@@ -91,9 +91,9 @@ getRestaurantsR = do
                   [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
                 [out:json];
 
-                $maybe Entity _ (MapboxParam country city lang _ _ _) <- geo
-                  area["name#{langSuffix lang}"="#{country}"];
-                  area(area)[place="city"]["name#{langSuffix lang}"="#{city}"];
+                $maybe Entity _ (MapboxParam country city _ _ _) <- geo
+                  area["name"="#{country}"];
+                  area(area)[place="city"]["name"="#{city}"];
                   node(area)["amenity"="restaurant"]["name"] -> ._;
                   $maybe x <- q
                     node._["name"~"#{x}",i] -> ._;

@@ -25,7 +25,7 @@
       <hr.max>
       <div.center-align>
         <a.button.circle.small href=@{DataR $ SettingsGeoBboxR country city}>3
-        <div.small-margin>_{MsgRegion}
+        <div.small-margin>_{MsgCenter}
         
     <div.max ##{idMap}>
 

@@ -23,7 +23,7 @@
       <hr.max>
       <div.center-align>
         <button.circle.small type=button disabled>3
-        <div.small-margin>_{MsgRegion}
+        <div.small-margin>_{MsgCenter}
 
 
     <form method=post action=@{DataR $ SettingsGeoCityR country} enctype=#{et}>
