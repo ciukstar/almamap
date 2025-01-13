@@ -26,7 +26,10 @@ import Data.Text (Text, unpack)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Text.Lazy (toStrict)
 
-import Database.Esqueleto.Experimental (selectOne, from, table)
+import Database.Esqueleto.Experimental
+    ( selectOne, from, table, where_, val
+    , (^.), (==.), Value (unValue)
+    )
 import Database.Persist (entityVal)
 
 import Foundation
@@ -54,10 +57,13 @@ import Foundation
     )
 
 import Model
-    ( keyThemeLight, keyThemeDark, overpass, nominatim
+    ( keyThemeLight, keyThemeDark, keyEndpointOverpass, keyEndpointNominatim
     , Bbox (bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
-    , DefaultMapStyle (DefaultMapStyle), MapboxParam (MapboxParam)
+    , DefaultMapStyle (DefaultMapStyle)
+    , MapboxParam (MapboxParam)
+    , Endpoint, EntityField (EndpointKey, EndpointVal)
     )
+import qualified Model (overpass, nominatim)
 
 import Network.Wreq (get)
 import qualified Network.Wreq as WL (responseBody)
@@ -118,6 +124,16 @@ getHomeR = do
     langs <- languages
     let lang = fromMaybe "" (LS.head langs)
 
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
+
+    nominatim <- maybe Model.nominatim unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointNominatim
+        return $ x ^. EndpointVal )
+        
     area <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @MapboxParam )
     
     bbox <- (entityVal <$>) <$> runDB ( selectOne $ from $ table @Bbox)
@@ -303,7 +319,7 @@ queryAround args =
 
 
 query :: Maybe MapboxParam -> Maybe Bbox -> Text -> Maybe Text -> Text
-query params bbox tag val = toStrict $ renderMarkup [shamlet|
+query params bbox tag value = toStrict $ renderMarkup [shamlet|
     $maybe bbox <- bbox
       [bbox:#{bboxMinLat bbox},#{bboxMinLon bbox},#{bboxMaxLat bbox},#{bboxMaxLon bbox}]
     [out:json];
@@ -311,13 +327,13 @@ query params bbox tag val = toStrict $ renderMarkup [shamlet|
     $maybe MapboxParam country city _ _ _ <- params
       area["name"="#{country}"] -> .country;
       area["name"="#{city}"] -> .city;
-      $maybe v <- val
+      $maybe v <- value
         node["#{tag}"="#{v}"](area.country)(area.city) -> .tags;
       $nothing
         node["#{tag}"](area.country)(area.city) -> .tags;
         
     $nothing
-      $maybe v <- val
+      $maybe v <- value
         node["#{tag}"="#{v}"] -> .tags;
       $nothing
         node["#{tag}"] -> .tags;

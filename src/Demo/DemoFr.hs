@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Demo.DemoKk (fillDemoKk) where
+module Demo.DemoFr (fillDemoFr) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Trans.Reader (ReaderT)
@@ -20,7 +20,7 @@ import Model
       )
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
-      , mapboxParamCountry, mapboxParamCity
+      , mapboxParamCity, mapboxParamCountry
       )
     , Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultTheme (DefaultTheme, defaultThemeTheme)
@@ -34,8 +34,8 @@ import Text.Hamlet (shamlet)
 import Yesod.Auth.Email (saltPass)
 
 
-fillDemoKk :: MonadIO m => ReaderT SqlBackend m ()
-fillDemoKk = do
+fillDemoFr :: MonadIO m => ReaderT SqlBackend m ()
+fillDemoFr = do
 
     let freepik = [shamlet|
                           Designed by #
@@ -43,10 +43,10 @@ fillDemoKk = do
                             Freepik
                           |]
 
-    pass1 <- liftIO $ saltPass "erkejanb"
-    uid1 <- insert $ User { userEmail = "erkejanb@xmail.kz"
+    pass1 <- liftIO $ saltPass "bernardj"
+    uid1 <- insert $ User { userEmail = "bernardj@xmailx.fr"
                           , userPassword = Just pass1
-                          , userName = Just "Еркежан Байбөрі"
+                          , userName = Just "Bernard Jade"
                           , userAdmin = True
                           }
 
@@ -57,10 +57,10 @@ fillDemoKk = do
                         , userPhotoAttribution = Just freepik
                         }
 
-    pass2 <- liftIO $ saltPass "igisinz"
-    uid2 <- insert $ User { userEmail = "igisinz@xmail.kz"
+    pass2 <- liftIO $ saltPass "thomasgr"
+    uid2 <- insert $ User { userEmail = "thomasgr@xmailx.fr"
                           , userPassword = Just pass2
-                          , userName = Just "Игісін Зікірия"
+                          , userName = Just "Thomas Gabriel Raphaël"
                           , userAdmin = False
                           }
 
@@ -71,10 +71,10 @@ fillDemoKk = do
                         , userPhotoAttribution = Just freepik
                         }
 
-    pass3 <- liftIO $ saltPass "narmaphabetn"
-    uid3 <- insert $ User { userEmail = "narmaphabetn@xmail.kz"
+    pass3 <- liftIO $ saltPass "richardal"
+    uid3 <- insert $ User { userEmail = "richardal@xmailx.fr"
                           , userPassword = Just pass3
-                          , userName = Just "Нармағамбет Нысынбай"
+                          , userName = Just "Richard Arthur Louis"
                           , userAdmin = False
                           }
 
@@ -85,10 +85,10 @@ fillDemoKk = do
                         , userPhotoAttribution = Just freepik
                         }
 
-    pass4 <- liftIO $ saltPass "yriyay"
-    uid4 <- insert $ User { userEmail = "yriyay@xmail.kz"
+    pass4 <- liftIO $ saltPass "duboisaa"
+    uid4 <- insert $ User { userEmail = "duboisaa@xmailx.fr"
                           , userPassword = Just pass4
-                          , userName = Just "Үрия Үстем"
+                          , userName = Just "Dubois Alice Ambre"
                           , userAdmin = False
                           }
 
@@ -101,20 +101,20 @@ fillDemoKk = do
 
     insert_ DefaultTheme { defaultThemeTheme = "dark" }
 
-    insert_ DefaultMapStyle { defaultMapStyleStyle = "mapbox://styles/mapbox/dark-v11" 
+    insert_ DefaultMapStyle { defaultMapStyleStyle = "mapbox://styles/mapbox/dark-v11"
                             , defaultMapStyleTextColor = "#FFFFFF"
                             }
 
-    insert_ Bbox { bboxMinLon = 76.62533582272056
-                 , bboxMinLat = 43.01706289821615
-                 , bboxMaxLon = 77.25985266747443
-                 , bboxMaxLat = 43.42148919080813
+    insert_ Bbox { bboxMinLon = 2.215564530851225
+                 , bboxMinLat = 48.773829267918444
+                 , bboxMaxLon = 2.469044413794336
+                 , bboxMaxLat = 48.926853772696916
                  }
-
-    insert_ MapboxParam { mapboxParamCountry = "Kazakhstan"
-                        , mapboxParamCity = "Almaty"
-                        , mapboxParamLon = -0.12
-                        , mapboxParamLat = 51.50
+    
+    insert_ MapboxParam { mapboxParamCountry = "France"
+                        , mapboxParamCity = "Paris"
+                        , mapboxParamLon = 2.3483915
+                        , mapboxParamLat = 48.8534951
                         , mapboxParamZoom = 9
                         }
 

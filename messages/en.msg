@@ -1,3 +1,6 @@
+Nominatim: Nominatim
+Overpass: Overpass
+Endpoints: Endpoints
 NoGeoRegionSetYet: The geographic region has not yet been established
 NoBoundingBoxSetYet: No bounding box has been set yet
 TextColor: Text color
@@ -16,6 +19,7 @@ North: North
 East: East
 South: South
 West: West
+Bbox: Bbox
 BoundingBox: Bounding box
 Style: Style
 Center: Center
@@ -139,10 +143,14 @@ Empty: Empty
 Copy: Copy
 Settings: Settings
 Country: Country
+CountryRO: RO
+CountryFR: FR
 CountryKZ: KZ
 CountryRU: RU
 CountryUS: US
 Language: Language
+LangRo: Romanian
+LangFr: French
 LangKz: Kazakh
 LangRu: Russian
 LangEn: English
@@ -184,7 +192,7 @@ EmptyDataSet: Empty dataset
 AccessDeniedAdminsOnly: Only administrators have access to this page. Please log in with an administrator account
 LoginPlease: Please log in to access this page
 Users: Users
-Email: E-mail
+Email: Email
 ResetPassword: Reset password
 RestoreLogin: Restore login
 Password: Password

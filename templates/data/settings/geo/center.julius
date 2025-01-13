@@ -6,9 +6,10 @@
 
   const map = new mapboxgl.Map({
     container: #{idMap},
+    style: #{mapboxStyle},
+    language: #{toJSON langs},
     center: center,
-    zoom: 9,
-    style: #{mapboxStyle}
+    zoom: 9
   });
 
   let poi = new mapboxgl.Marker().setLngLat(center).setOffset([0,0]).addTo(map);

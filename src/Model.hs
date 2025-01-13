@@ -73,16 +73,23 @@ instance ToJSON Bbox where
 overpass :: Text
 overpass = "https://overpass-api.de/api/interpreter"
 
+keyEndpointOverpass :: Text
+keyEndpointOverpass = "overpass"
+
     
 nominatim :: Text
 nominatim = "https://nominatim.openstreetmap.org/search"
+
+
+keyEndpointNominatim :: Text
+keyEndpointNominatim = "nominatim"
 
 
 mediae :: [(Text,Text)]
 mediae = [("s","small"),("m","medium"),("l","large")] :: [(Text,Text)]
 
 langs :: [(Text,Text)]
-langs = [("kk","KZ"),("ru","RU"),("en","EN")]
+langs = [("en","EN"),("fr","FR"),("kk","KZ"),("ro","RO"),("ru","RU")]
 
 msgSuccess :: Text
 msgSuccess = "success"

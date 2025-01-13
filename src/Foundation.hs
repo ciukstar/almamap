@@ -32,11 +32,15 @@ import Text.Jasmine (minifym)
 
 import Yesod.Auth.HashDB (authHashDBWithForm)
 import Yesod.Auth.Message
-    ( AuthMessage(InvalidLogin), defaultMessage, englishMessage, russianMessage )
+    ( AuthMessage(InvalidLogin), defaultMessage, englishMessage, frenchMessage
+    , romanianMessage, russianMessage    
+    )
 import Yesod.Core.Types (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Form.I18n.English (englishFormMessage)
+import Yesod.Form.I18n.French (frenchFormMessage)
+import Yesod.Form.I18n.Romanian (romanianFormMessage)
 import Yesod.Form.I18n.Russian (russianFormMessage)
 
 
@@ -142,7 +146,9 @@ widgetLang action backlink  = do
     $(widgetFile "widgets/lang")
   where
       resolveLang :: Lang -> AppMessage
+      resolveLang "fr" = MsgLangFr
       resolveLang "kk" = MsgLangKz
+      resolveLang "ro" = MsgLangRo
       resolveLang "ru" = MsgLangRu
       resolveLang _ = MsgLangEn
 
@@ -237,6 +243,8 @@ instance Yesod App where
     isAuthorized FetchR _ = return Authorized
     isAuthorized FetchP18PhotoR _ = return Authorized
 
+    
+    isAuthorized (DataR EndpointsR) _ =  setUltDestCurrent >> isAdmin
     
     isAuthorized (DataR DisplayR) _ =  setUltDestCurrent >> isAdmin
     
@@ -375,6 +383,8 @@ instance YesodAuth App where
     renderAuthMessage :: App -> [Text] -> AuthMessage -> Text
     renderAuthMessage _ [] = defaultMessage
     renderAuthMessage _ ("en":_) = englishMessage
+    renderAuthMessage _ ("fr":_) = frenchMessage
+    renderAuthMessage _ ("ro":_) = romanianMessage
     renderAuthMessage _ ("ru":_) = russianMessage
     renderAuthMessage app (_:xs) = renderAuthMessage app xs
     
@@ -429,6 +439,8 @@ instance RenderMessage App FormMessage where
     renderMessage :: App -> [Lang] -> FormMessage -> Text
     renderMessage _ [] = defaultFormMessage
     renderMessage _ ("en":_) = englishFormMessage
+    renderMessage _ ("fr":_) = frenchFormMessage
+    renderMessage _ ("ro":_) = romanianFormMessage
     renderMessage _ ("ru":_) = russianFormMessage
     renderMessage app (_:xs) = renderMessage app xs
 

@@ -25,6 +25,8 @@ import Model
     , Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultTheme (DefaultTheme, defaultThemeTheme)
     , DefaultMapStyle (DefaultMapStyle, defaultMapStyleStyle, defaultMapStyleTextColor)
+    , Endpoint (Endpoint, endpointKey, endpointVal)
+    , keyEndpointOverpass, overpass, keyEndpointNominatim, nominatim
     )
     
 import Text.Hamlet (shamlet)
@@ -110,11 +112,19 @@ fillDemoRu = do
                  , bboxMaxLat = 56.000713384146735
                  }
 
-    insert_ MapboxParam { mapboxParamCountry = "Russia"
-                        , mapboxParamCity = "Moscow"
+    insert_ MapboxParam { mapboxParamCountry = "Россия"
+                        , mapboxParamCity = "Москва"
                         , mapboxParamLon = 37.6174782
                         , mapboxParamLat = 55.7505412
                         , mapboxParamZoom = 9
                         }
+
+    insert_ Endpoint { endpointKey = Model.keyEndpointOverpass
+                     , endpointVal = Model.overpass
+                     }
+
+    insert_ Endpoint { endpointKey = Model.keyEndpointNominatim
+                     , endpointVal = Model.nominatim
+                     }
 
     return ()

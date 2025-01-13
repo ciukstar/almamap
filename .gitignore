@@ -21,7 +21,9 @@ cabal.sandbox.config
 \#*
 almamap.cabal
 deploy-demo-en.sh
+deploy-demo-fr.sh
 deploy-demo-kk.sh
+deploy-demo-ro.sh
 deploy-demo-ru.sh
 env.sh
 almamap

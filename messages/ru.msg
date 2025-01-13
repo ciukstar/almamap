@@ -1,3 +1,6 @@
+Nominatim: Nominatim
+Overpass: Overpass
+Endpoints: Конечные точки
 NoGeoRegionSetYet: Географический регион пока не установлен
 NoBoundingBoxSetYet: Ограничительная рамка пока не установлена
 TextColor: Цвет текста
@@ -16,6 +19,7 @@ North: Север
 East: Восток
 South: Юг
 West: Запад
+Bbox: Рамка
 BoundingBox: Ограничительная рамка
 Style: Стиль
 Center: Центр
@@ -139,10 +143,13 @@ Empty: Пустой
 Copy: Копировать
 Settings: Настройки
 Country: Страна
+CountryFR: Франция
 CountryKZ: Казахстан
 CountryRU: Россия
 CountryUS: США
 Language: Язык
+LangRo: Румынский
+LangFr: Французский
 LangKz: Казахский
 LangRu: Русский
 LangEn: Английский

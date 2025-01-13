@@ -17,9 +17,9 @@ import Database.Esqueleto.Experimental
 import Foundation
     ( Handler, Form, widgetTopbar, widgetSnackbar, mapboxStyles
     , Route (DataR)
-    , DataR (BboxR, SettingsGeoCountryR, DisplayR)
+    , DataR (BboxR, SettingsGeoCountryR, DisplayR, EndpointsR)
     , AppMessage
-      ( MsgSettings, MsgBoundingBox, MsgGeoRegion, MsgDisplay
+      ( MsgSettings, MsgBbox, MsgGeoRegion, MsgDisplay, MsgEndpoints
       , MsgDefaultTheme, MsgDefaultMapStyle, MsgSave, MsgTheme, MsgThemeDark
       , MsgThemeLight, MsgStyle, MsgRecordEdited, MsgTextColor
       )

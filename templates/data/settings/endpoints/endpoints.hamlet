@@ -6,12 +6,12 @@
   <div.tabs.min.scroll>
     <a href=@{DataR BboxR}>_{MsgBbox}
     <a href=@{DataR SettingsGeoCountryR}>_{MsgGeoRegion}
-    <a.active href=@{DataR DisplayR}>_{MsgDisplay}
-    <a href=@{DataR EndpointsR}>_{MsgEndpoints}
+    <a href=@{DataR DisplayR}>_{MsgDisplay}
+    <a.active href=@{DataR EndpointsR}>_{MsgEndpoints}
 
   <div.page.padding.active>
 
-    <form method=post action=@{DataR DisplayR} enctype=#{et}>
+    <form method=post action=@{DataR EndpointsR} enctype=#{et}>
       ^{fw}
       <nav.right-align>
         <button type=submit>

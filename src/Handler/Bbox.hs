@@ -22,12 +22,13 @@ import Database.Persist (Entity, entityVal, insert_)
 import Foundation
     ( Handler, Form, App (appSettings), widgetTopbar, widgetSnackbar, mapboxStyles
     , Route (DataR)
-    , DataR (BboxR, SettingsGeoCountryR, DisplayR, BboxDeleR)
+    , DataR (BboxR, SettingsGeoCountryR, DisplayR, BboxDeleR, EndpointsR)
     , AppMessage
-      ( MsgBoundingBox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgRecordEdited
+      ( MsgBbox, MsgDisplay, MsgSettings, MsgGeoRegion, MsgRecordEdited
       , MsgSave, MsgWest, MsgSouth, MsgNorth, MsgEast, MsgSouthWest, MsgNorthEast
       , MsgDele, MsgConfirmPlease, MsgDeleteAreYouSure, MsgCancel, MsgInvalidFormData
-      , MsgRecordDeleted, MsgAdd, MsgNoBoundingBoxSetYet
+      , MsgRecordDeleted, MsgAdd, MsgNoBoundingBoxSetYet, MsgBoundingBox
+      , MsgEndpoints
       )
     )
     
@@ -46,7 +47,7 @@ import Text.Hamlet (Html)
 import Yesod.Core
     ( Yesod(defaultLayout), SomeMessage (SomeMessage), setTitleI, newIdent, getYesod
     , addStylesheetRemote, addScriptRemote, getMessageRender, addMessageI
-    , redirect, getMessages
+    , redirect, getMessages, languages
     )
 import Yesod.Core.Widget (whamlet)
 import Yesod.Form.Fields (doubleField)
@@ -99,6 +100,7 @@ postBboxR = do
           redirect $ DataR BboxR
       
       _otherwise -> do
+          langs <- languages
           msgr <- getMessageRender
           msgs <- getMessages
           defaultLayout $ do
@@ -121,6 +123,8 @@ postBboxR = do
 
 getBboxR :: Handler Html
 getBboxR = do
+
+    langs <- languages
     
     mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
                    <$> runDB ( selectOne $ from $ table @DefaultMapStyle )

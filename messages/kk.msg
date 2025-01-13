@@ -1,3 +1,6 @@
+Nominatim: Nominatim
+Overpass: Overpass
+Endpoints: Соңғы нүктелер
 NoGeoRegionSetYet: Географиялық аймақ әлі құрылған жоқ
 NoBoundingBoxSetYet: Шектеу өрісі әлі орнатылмаған
 TextColor: Мәтін түсі
@@ -16,6 +19,7 @@ North: Солтүстік
 East: Шығыс
 South: Оңтүстік
 West: Батыс
+Bbox: Қорабы
 BoundingBox: Шектеу қорабы
 Style: Стиль
 Center: Орталық
@@ -139,10 +143,14 @@ Empty: Бос
 Copy: Көшіру
 Settings: Параметрлер
 Country: Ел
+CountryRO: RO
+CountryFR: FR
 CountryKZ: KZ
 CountryRU: РУ
 CountryUS: АҚШ
 Language: Тіл
+LangRo: Румындық
+LangFr: Француз
 LangKz: Қазақ
 LangRu: Орыс
 LangEn: Ағылшын

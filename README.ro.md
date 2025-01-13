@@ -1,18 +1,19 @@
 
+[In English](https://github.com/ciukstar/almamap/blob/master/README.md)  
+
 [En français](https://github.com/ciukstar/almamap/blob/master/README.fr.md)  
 
 [Қазақ](https://github.com/ciukstar/almamap/blob/master/README.kk.md)  
-
-[În română](https://github.com/ciukstar/almamap/blob/master/README.ro.md)  
 
 [На русском](https://github.com/ciukstar/almamap/blob/master/README.ru.md)
 
 
 # AlmaMap
 
-The [AlmaMap](https://almamap-i4rimw5qwq-de.a.run.app) web application displays points of interest from OpenStreetMap on the Mapbox map.
+Aplicația web [AlmaMap](https://almamapro-i4rimw5qwq-de.a.run.app) afișează punctele de interes din OpenStreetMap pe harta Mapbox.
 
-## Integration with external APIs
+
+## Integrare cu API-uri externe
 
 * OpenStreetMap
   
@@ -25,4 +26,4 @@ The [AlmaMap](https://almamap-i4rimw5qwq-de.a.run.app) web application displays 
 
 ## Demo
 
-[Click here to see demo](https://almamap-i4rimw5qwq-de.a.run.app)
+[Click aici pentru a vedea demo](https://almamapro-i4rimw5qwq-de.a.run.app)

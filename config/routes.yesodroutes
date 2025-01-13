@@ -28,6 +28,8 @@
 
 /data DataR:
 
+    /settings/endpoints EndpointsR GET POST
+    
     /settings/display DisplayR GET POST
     
     /settings/bbox/dele BboxDeleR POST

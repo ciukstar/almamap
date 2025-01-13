@@ -10,7 +10,7 @@ ARG YESOD_DEMO_LANG=EN
 ARG YESOD_MAPBOX_PK
 
 WORKDIR       /opt/almamap
-COPY almamap /opt/almamap
+COPY almamap  /opt/almamap
 COPY static   /opt/almamap/static
 COPY config   /opt/almamap/config
 COPY demo     /opt/almamap/demo

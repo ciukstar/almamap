@@ -6,6 +6,7 @@ const bounds = #{toJSON (entityVal <$> bbox)};
 const map = new mapboxgl.Map({
   container: #{idMapboxMap},
   style: #{mapboxStyle},
+  language: #{toJSON langs},
   bounds: bounds,
   center: #{toJSON $ fromMaybe (0,0) center},
   zoom: #{toJSON zoom}

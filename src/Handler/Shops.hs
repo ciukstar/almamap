@@ -27,7 +27,10 @@ import Data.Text (Text, unpack)
 import Data.Text as T (splitOn)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
-import Database.Esqueleto.Experimental (selectOne, from, table)
+import Database.Esqueleto.Experimental
+    ( selectOne, from, table, Value (unValue), where_, val
+    , (^.), (==.)
+    )
 import Database.Persist (Entity(Entity), entityVal)
 
 import Foundation
@@ -41,10 +44,14 @@ import Foundation
     )
 
 import Model
-    ( overpass
+    ( keyEndpointOverpass
     , Bbox (bboxMinLat, bboxMinLon, bboxMaxLat, bboxMaxLon)
-    , DefaultMapStyle (defaultMapStyleStyle), MapboxParam (MapboxParam)
+    , DefaultMapStyle (defaultMapStyleStyle)
+    , MapboxParam (MapboxParam)
+    , Endpoint
+    , EntityField (EndpointKey, EndpointVal)
     )
+import qualified Model (overpass)
 
 import Network.Wreq (post, FormParam((:=)))
 import qualified Network.Wreq as WL (responseBody)
@@ -83,6 +90,11 @@ getShopsR = do
 
     bbox <- runDB $ selectOne $ from $ table @Bbox
     geo <- runDB $ selectOne $ from $ table @MapboxParam
+
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
     
     let query = renderMarkup
             [shamlet|

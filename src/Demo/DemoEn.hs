@@ -25,6 +25,8 @@ import Model
     , Bbox (Bbox, bboxMinLon, bboxMinLat, bboxMaxLon, bboxMaxLat)
     , DefaultTheme (DefaultTheme, defaultThemeTheme)
     , DefaultMapStyle (DefaultMapStyle, defaultMapStyleStyle, defaultMapStyleTextColor)
+    , Endpoint (Endpoint, endpointKey, endpointVal)
+    , keyEndpointOverpass, overpass, keyEndpointNominatim, nominatim
     )
 
 import Text.Hamlet (shamlet)
@@ -115,5 +117,13 @@ fillDemoEn = do
                         , mapboxParamLat = 51.50
                         , mapboxParamZoom = 9
                         }
+
+    insert_ Endpoint { endpointKey = Model.keyEndpointOverpass
+                     , endpointVal = Model.overpass
+                     }
+
+    insert_ Endpoint { endpointKey = Model.keyEndpointNominatim
+                     , endpointVal = Model.nominatim
+                     }
     
     return ()

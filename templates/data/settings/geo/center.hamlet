@@ -4,9 +4,10 @@
 <main.responsive>
 
   <div.tabs.min.scroll>
-    <a href=@{DataR BboxR}>_{MsgBoundingBox}
+    <a href=@{DataR BboxR}>_{MsgBbox}
     <a.active href=@{DataR SettingsGeoCountryR}>_{MsgGeoRegion}
     <a href=@{DataR DisplayR}>_{MsgDisplay}
+    <a href=@{DataR EndpointsR}>_{MsgEndpoints}
 
   <div.page.padding.active>
 

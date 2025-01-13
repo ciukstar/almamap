@@ -1,5 +1,5 @@
 
-[En français](https://github.com/ciukstar/almamap/blob/master/README.fr.md)  
+[In English](https://github.com/ciukstar/almamap/blob/master/README.md)  
 
 [Қазақ](https://github.com/ciukstar/almamap/blob/master/README.kk.md)  
 
@@ -10,9 +10,9 @@
 
 # AlmaMap
 
-The [AlmaMap](https://almamap-i4rimw5qwq-de.a.run.app) web application displays points of interest from OpenStreetMap on the Mapbox map.
+L'application Web [AlmaMap](https://almamapfr-i4rimw5qwq-de.a.run.app) affiche les points d'intérêt d'OpenStreetMap sur la carte Mapbox.
 
-## Integration with external APIs
+## Intégration avec des API externes
 
 * OpenStreetMap
   
@@ -23,6 +23,6 @@ The [AlmaMap](https://almamap-i4rimw5qwq-de.a.run.app) web application displays 
   
   * [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)
 
-## Demo
+## Démo
 
-[Click here to see demo](https://almamap-i4rimw5qwq-de.a.run.app)
+[Cliquez ici pour voir la démo](https://almamapfr-i4rimw5qwq-de.a.run.app)

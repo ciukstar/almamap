@@ -55,6 +55,7 @@ import Handler.Home ( getHomeR, getFetchR, getFetchP18PhotoR )
 import Handler.Restaurants (getRestaurantsR )
 import Handler.Shops (getShopsR )
 
+import Handler.Endpoints (getEndpointsR, postEndpointsR) 
 import Handler.Display (getDisplayR, postDisplayR)
 import Handler.Bbox (getBboxR, postBboxR, postBboxDeleR)
 
@@ -74,6 +75,8 @@ import Handler.Users
     )
 
 import System.Environment.Blank (getEnv)
+import Demo.DemoFr (fillDemoFr)
+import Demo.DemoRo (fillDemoRo)
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -118,7 +121,9 @@ makeFoundation appSettings = do
         runMigration migrateAll
         demo <- liftIO $ getEnv "YESOD_DEMO_LANG"
         case demo of
+          Just "FR" -> fillDemoFr
           Just "KK" -> fillDemoKk
+          Just "RO" -> fillDemoRo
           Just "RU" -> fillDemoRu
           Just _ -> fillDemoEn
           Nothing -> fillDemoEn

@@ -23,10 +23,12 @@ import Data.List (sortBy)
 import qualified Data.List.Safe as LS (head)
 import Data.Maybe (fromMaybe, isJust, isNothing)
 import Data.Text (Text, unpack)
-import qualified Data.Text as T
-import Data.Text.Lazy (toStrict)
+import qualified Data.Text as T (cons, takeWhile)
 
-import Database.Esqueleto.Experimental (selectOne, from, table, delete)
+import Database.Esqueleto.Experimental
+    ( selectOne, from, table, delete, Value (unValue), val, where_
+    , (^.), (==.)
+    )
 import Database.Persist (Entity (entityVal), insert_)
 
 import Foundation
@@ -34,12 +36,12 @@ import Foundation
     , Route (DataR)
     , DataR
       ( BboxR, SettingsGeoCountryR, SettingsGeoCityR, SettingsGeoBboxR, DisplayR
-      , SettingsGeoDeleR
+      , SettingsGeoDeleR, EndpointsR
       )
     , AppMessage
-      ( MsgSettings, MsgGeoRegion, MsgDisplay, MsgCountry, MsgCity, MsgRegion
+      ( MsgSettings, MsgGeoRegion, MsgDisplay, MsgCountry, MsgCity
       , MsgNext, MsgSave, MsgLatitude, MsgLongitude, MsgZoom, MsgCenter
-      , MsgRecordEdited, MsgBoundingBox, MsgDele
+      , MsgRecordEdited, MsgDele, MsgBbox, MsgEndpoints
       , MsgCancel, MsgConfirmPlease, MsgDeleteAreYouSure, MsgRecordDeleted
       , MsgInvalidFormData, MsgNoGeoRegionSetYet, MsgAdd
       )
@@ -47,13 +49,16 @@ import Foundation
 
 import Material3 (md3selectWidget, md3widget)
 import Model
-    ( overpass, msgSuccess, msgError
+    ( msgSuccess, msgError, keyEndpointOverpass
     , DefaultMapStyle (defaultMapStyleStyle)
+    , Endpoint
     , MapboxParam
       ( MapboxParam, mapboxParamLon, mapboxParamLat, mapboxParamZoom
       , mapboxParamCity, mapboxParamCountry
       )
+    , EntityField (EndpointKey, EndpointVal)
     )
+import qualified Model (overpass)
 
 import Network.Wreq (post, FormParam ((:=)), responseBody)
 
@@ -97,6 +102,11 @@ postSettingsGeoBboxR country city = do
     mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
                    <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
+
     r <- liftIO $ post (unpack overpass)
         [ "data" := [st|
                        [out:json];
@@ -132,10 +142,10 @@ postSettingsGeoBboxR country city = do
           addMessageI msgSuccess MsgRecordEdited
           redirect $ DataR $ SettingsGeoBboxR country city
       
-      _otherwise -> do    
+      _otherwise -> do
+          langs <- languages
           msgr <- getMessageRender
           msgs <- getMessages
-
           defaultLayout $ do
               setTitleI MsgSettings
               idOverlay <- newIdent
@@ -153,14 +163,21 @@ postSettingsGeoBboxR country city = do
 
 getSettingsGeoBboxR :: Text -> Text -> Handler Html
 getSettingsGeoBboxR country city = do
+
+    langs <- languages
     
     mapboxStyle <- fromMaybe "" . ((<|> snd <$> LS.head  mapboxStyles) . (defaultMapStyleStyle . entityVal <$>))
                    <$> runDB ( selectOne $ from $ table @DefaultMapStyle )
 
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
+
     r <- liftIO $ post (unpack overpass)
         [ "data" := [st|
                        [out:json];
-                       area[name="#{country}"] -> .country;                       
+                       area[name="#{country}"] -> .country;   
                        node(area.country)[place="city"][name="#{city}"];
                        out center;
                        |]
@@ -249,14 +266,21 @@ formMapViewport idInputLon idInputLat idInputZoom country city params extra = do
 
 postSettingsGeoCityR :: Text -> Handler Html
 postSettingsGeoCityR country = do
+
+    geo <- runDB $ selectOne $ from $ table @MapboxParam
     
-    lang <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages :: Handler (Maybe Text)
+    langSuffix <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages :: Handler (Maybe Text)
+
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
 
     r <- liftIO $ post (unpack overpass)
         [ "data" := renderMarkup [shamlet|
                         [out:json];
                         area[name="#{country}"] -> .country;
-                        $maybe lang <- lang
+                        $maybe lang <- langSuffix
                           node(area.country)[place="city"][name]["name#{lang}"];
                           convert tags ::id=id(),"name"=t["name"],"name#{lang}"=t["name#{lang}"];
                         $nothing
@@ -268,13 +292,13 @@ postSettingsGeoCityR country = do
 
     let cities = sortBy (\(a,_) (b,_) -> compare a b) $ (\(m,a) -> (fromMaybe a m,a)) <$>
             r ^.. responseBody . key "elements" . _Array . each . key "tags"
-            . to (\s -> ( case lang of
-                            Just l -> s L.^? key (fromText $ toStrict $ renderMarkup [shamlet|"name#{l}"|]) . _String
+            . to (\s -> ( case langSuffix of
+                            Just lang -> s L.^? key (fromText ("name" <> lang)) . _String
                             Nothing -> Nothing
                         , s L.^. key "name" . _String
                         ))
     
-    ((fr,fw),et) <- runFormPost $ formCity cities
+    ((fr,fw),et) <- runFormPost $ formCity cities geo
     case fr of
       FormSuccess city -> redirect $ DataR $ SettingsGeoBboxR country city
 
@@ -292,14 +316,21 @@ postSettingsGeoCityR country = do
 
 getSettingsGeoCityR :: Text -> Handler Html
 getSettingsGeoCityR country = do
+
+    geo <- runDB $ selectOne $ from $ table @MapboxParam
     
-    lang <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages :: Handler (Maybe Text)
+    langSuffix <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages
+
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
 
     r <- liftIO $ post (unpack overpass)
         [ "data" := renderMarkup [shamlet|
                         [out:json];
                         area[name="#{country}"] -> .country;
-                        $maybe lang <- lang
+                        $maybe lang <- langSuffix
                           node(area.country)[place="city"][name]["name#{lang}"];
                           convert tags ::id=id(),"name"=t["name"],"name#{lang}"=t["name#{lang}"];
                         $nothing
@@ -311,13 +342,13 @@ getSettingsGeoCityR country = do
 
     let cities = sortBy (\(a,_) (b,_) -> compare a b) $ (\(m,a) -> (fromMaybe a m,a)) <$>
             r ^.. responseBody . key "elements" . _Array . each . key "tags"
-            . to (\s -> ( case lang of
-                            Just l -> s L.^? key (fromText $ toStrict $ renderMarkup [shamlet|"name#{l}"|]) . _String
+            . to (\s -> ( case langSuffix of
+                            Just lang -> s L.^? key (fromText ("name" <> lang)) . _String
                             Nothing -> Nothing
                         , s L.^. key "name" . _String
                         ))
     
-    (fw,et) <- generateFormPost $ formCity cities
+    (fw,et) <- generateFormPost $ formCity cities geo
     (fw0,et0) <- generateFormPost formSettingsGeoDelete
     
     msgr <- getMessageRender
@@ -332,13 +363,20 @@ getSettingsGeoCityR country = do
 
 postSettingsGeoCountryR :: Handler Html
 postSettingsGeoCountryR = do
+
+    geo <- runDB $ selectOne $ from $ table @MapboxParam
     
-    lang <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages :: Handler (Maybe Text)
+    langSuffix <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages
+
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
 
     r <- liftIO $ post (unpack overpass)
          [ "data" := renderMarkup [shamlet|
                         [out:json];
-                        $maybe lang <- lang
+                        $maybe lang <- langSuffix
                           node[place=country][name]["name#{lang}"];
                           convert tags ::id=id(),"name"=t["name"],"name#{lang}"=t["name#{lang}"];
                         $nothing
@@ -350,19 +388,18 @@ postSettingsGeoCountryR = do
 
     let countries = sortBy (\(a,_) (b,_) -> compare a b) $ (\(m,a) -> (fromMaybe a m,a)) <$>
             r ^.. responseBody . key "elements" . _Array . each . key "tags"
-            . to (\s -> ( case lang of
-                            Just l -> s L.^? key (fromText $ toStrict $ renderMarkup [shamlet|"name#{l}"|]) . _String
+            . to (\s -> ( case langSuffix of
+                            Just lang -> s L.^? key (fromText ("name" <> lang)) . _String
                             Nothing -> Nothing
                         , s L.^. key "name" . _String
                         ))
 
-    ((fr,fw),et) <- runFormPost $ formCountry countries
+    ((fr,fw),et) <- runFormPost $ formCountry countries geo
     
     case fr of
       FormSuccess city -> redirect $ DataR $ SettingsGeoCityR city
           
       _otherwise -> do
-          geo <- runDB $ selectOne $ from $ table @MapboxParam
           (fw0,et0) <- generateFormPost formSettingsGeoDelete
           msgr <- getMessageRender
           msgs <- getMessages
@@ -377,12 +414,12 @@ postSettingsGeoCountryR = do
               $(widgetFile "data/settings/geo/country")
 
 
-formCity :: [(Text,Text)] -> Form Text
-formCity cities extra = do
+formCity :: [(Text,Text)] -> Maybe (Entity MapboxParam) -> Form Text
+formCity cities geo extra = do
     (cityR,cityV) <- mreq (selectField (optionsPairs cities)) FieldSettings
         { fsLabel = SomeMessage MsgCity
         , fsId = Nothing, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } Nothing
+        } (mapboxParamCity . entityVal <$> geo)
 
     return (cityR, [whamlet|^{extra} ^{md3selectWidget cityV}|])
 
@@ -392,12 +429,17 @@ getSettingsGeoCountryR = do
 
     geo <- runDB $ selectOne $ from $ table @MapboxParam
     
-    lang <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages
+    langSuffix <- (T.cons ':' . T.takeWhile (/= '-') <$>) .  LS.head <$> languages
+
+    overpass <- maybe Model.overpass unValue <$> runDB ( selectOne $ do
+        x <- from $ table @Endpoint
+        where_ $ x ^. EndpointKey ==. val keyEndpointOverpass
+        return $ x ^. EndpointVal )
 
     r <- liftIO $ post (unpack overpass)
          [ "data" := renderMarkup [shamlet|
                         [out:json];
-                        $maybe lang <- lang
+                        $maybe lang <- langSuffix
                           node[place=country][name]["name#{lang}"];
                           convert tags ::id=id(),"name"=t["name"],"name#{lang}"=t["name#{lang}"];
                         $nothing
@@ -406,18 +448,16 @@ getSettingsGeoCountryR = do
                         out tags;
                         |]
          ]
-
-    liftIO $ print r
          
     let countries = sortBy (\(a,_) (b,_) -> compare a b) $ (\(m,a) -> (fromMaybe a m,a)) <$>
             r ^.. responseBody . key "elements" . _Array . each . key "tags"
-            . to (\s -> ( case lang of
-                            Just l -> s L.^? key (fromText $ toStrict $ renderMarkup [shamlet|"name#{l}"|]) . _String
+            . to (\s -> ( case langSuffix of
+                            Just lang -> s L.^? key (fromText ("name" <> lang)) . _String
                             Nothing -> Nothing
                         , s L.^. key "name" . _String
-                        )) 
+                        ))
     
-    (fw,et) <- generateFormPost $ formCountry countries
+    (fw,et) <- generateFormPost $ formCountry countries geo
     (fw0,et0) <- generateFormPost formSettingsGeoDelete
 
     msgr <- getMessageRender
@@ -433,11 +473,16 @@ getSettingsGeoCountryR = do
         $(widgetFile "data/settings/geo/country")
 
 
-formCountry :: [(Text,Text)] -> Form Text
-formCountry countries extra = do
+formCountry :: [(Text,Text)] -> Maybe (Entity MapboxParam) -> Form Text
+formCountry countries geo extra = do
     (countryR,countryV) <- mreq (selectField (optionsPairs countries)) FieldSettings
         { fsLabel = SomeMessage MsgCountry
         , fsId = Nothing, fsName = Nothing, fsTooltip = Nothing, fsAttrs = []
-        } Nothing
+        } (mapboxParamCountry . entityVal <$> geo)
 
-    return (countryR, [whamlet|^{extra} ^{md3selectWidget countryV}|])
+    return ( countryR
+           , [whamlet|
+                     ^{extra}
+                     ^{md3selectWidget countryV}
+                     |]
+           )
